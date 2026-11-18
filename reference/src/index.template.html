@@ -1,0 +1,159 @@
+<title>Morphoclay</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* layout: one screen. The clay owns the stage; a narrow instrument panel sits beside it and drops below on a phone. */
+:root {
+  color-scheme: dark;
+  --void: #14242b; --ground: #41565f; --panel: #0f1b21; --well: #172a32; --line: #2a3e46;
+  --ink: #d9e2e3; --dim: #8298a0; --clay: #ddd5c8; --robot: #e8481c; --pick: #e6c36a;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+html, body { height: 100%; }
+body { background: var(--panel); color: var(--ink); font: 13px/1.45 var(--sans); overflow: hidden; }
+#app { display: grid; grid-template-columns: minmax(0, 1fr) 340px; height: 100%; }
+#stage { position: relative; background: var(--void); min-width: 0; min-height: 0; overflow: hidden; }
+#view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+#status { position: absolute; left: max(10px, env(safe-area-inset-left, 0px)); bottom: 10px; max-width: calc(100% - 20px); box-sizing: border-box; font: 11.5px var(--mono); color: var(--ink); pointer-events: none; background: color-mix(in srgb, var(--panel) 78%, transparent); padding: 3px 9px; border-radius: 4px; }
+#status.busy::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--robot); margin-right: 8px; animation: pulse 0.9s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { #status.busy::before { animation: none; } }
+#grid { position: absolute; inset: 0; background: var(--void); display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); gap: 6px; padding: 8px 8px 34px; }
+.tile { position: relative; padding: 0; border: 1px solid var(--line); border-radius: 5px; background: var(--void); overflow: hidden; cursor: pointer; min-width: 0; min-height: 0; }
+.tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tile img:not([src]) { visibility: hidden; }
+.tile.wait { background: linear-gradient(var(--void) 62%, var(--ground) 62%); opacity: 0.55; }
+.tile.bad { opacity: 0.25; }
+.tile:hover, .tile:focus-visible { border-color: var(--pick); outline: none; }
+.tile .cap { position: absolute; left: 5px; right: 5px; bottom: 3px; font: 9.5px var(--mono); color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+#fly { position: absolute; right: 14px; bottom: 36px; display: flex; gap: 6px; }
+#fly button { background: color-mix(in srgb, var(--panel) 80%, transparent); }
+
+#panel > * { flex-shrink: 0; }
+#panel { display: flex; flex-direction: column; gap: 12px; padding-block: 14px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); overflow-y: auto; border-left: 1px solid var(--line); min-height: 0; }
+h1 { font: 600 15px var(--sans); margin: 0; letter-spacing: 0.01em; }
+h1 small { font: 400 11.5px var(--mono); color: var(--dim); margin-left: 8px; }
+#modes { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+#modes button { border: 0; border-radius: 0; background: transparent; color: var(--dim); padding: 7px 0; }
+#modes button + button { border-left: 1px solid var(--line); }
+#modes button.on { background: var(--well); color: var(--ink); box-shadow: inset 0 -2px 0 var(--robot); }
+[data-pane] { display: flex; flex-direction: column; gap: 12px; }
+button, select, input, textarea { font: inherit; color: inherit; }
+button, select { background: var(--well); border: 1px solid var(--line); border-radius: 5px; padding: 6px 10px; cursor: pointer; }
+button:hover, select:hover { border-color: var(--dim); }
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--pick); outline-offset: 1px; }
+button.primary { background: var(--robot); border-color: var(--robot); color: #fff; font-weight: 500; }
+button.ghost { background: none; border: 0; color: var(--dim); padding: 0 2px; font: 11px var(--mono); }
+button.ghost:hover { color: var(--robot); }
+button:disabled { opacity: 0.5; cursor: progress; }
+.bar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.bar > select { flex: 1 1 120px; min-width: 0; }
+.bar .k { color: var(--dim); font: 11.5px var(--mono); }
+input[type="number"] { width: 74px; background: var(--well); border: 1px solid var(--line); border-radius: 5px; padding: 5px 7px; font-family: var(--mono); }
+#tree { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.node { display: flex; gap: 8px; align-items: baseline; text-align: left; border: 0; border-radius: 0; background: transparent; padding: 5px 8px; min-width: 0; }
+.node + .node { border-top: 1px solid var(--line); }
+.node.on { background: var(--well); box-shadow: inset 2px 0 0 var(--pick); }
+.node .kind { font-weight: 500; }
+.node .at { font: 11px var(--mono); color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#node { display: flex; flex-direction: column; gap: 10px; }
+.group { display: flex; flex-direction: column; gap: 3px; }
+.gh { display: flex; justify-content: space-between; font: 500 11px var(--mono); color: var(--dim); text-transform: uppercase; letter-spacing: 0.07em; padding-bottom: 2px; }
+.row { display: grid; grid-template-columns: 72px minmax(0, 1fr) 44px; align-items: center; gap: 8px; }
+.row .k { font: 11.5px var(--mono); color: var(--dim); overflow: hidden; text-overflow: ellipsis; }
+.row .v { font: 11.5px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.row select { grid-column: 2 / 4; padding: 3px 6px; min-width: 0; }
+div.row select { grid-column: 2; } div.row .ghost { justify-self: end; }
+input[type="range"] { width: 100%; accent-color: var(--clay); min-width: 0; height: 18px; }
+.adders { display: grid; gap: 6px; }
+textarea { width: 100%; height: 64px; resize: vertical; background: var(--well); border: 1px solid var(--line); border-radius: 5px; padding: 6px; font: 10.5px/1.4 var(--mono); color: var(--dim); }
+.hint { color: var(--dim); font-size: 12px; text-wrap: pretty; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { display: inline-flex; gap: 6px; align-items: center; font: 11px var(--mono); padding: 3px 8px; border: 1px solid var(--line); border-radius: 20px; background: var(--well); text-align: left; }
+.chip .x { border: 0; background: none; padding: 0; color: var(--dim); }
+details summary { cursor: pointer; color: var(--dim); font: 11.5px var(--mono); }
+details[open] summary { margin-bottom: 6px; }
+@media (max-width: 760px) {
+  #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 52% minmax(0, 1fr); }
+  #panel { border-left: 0; border-top: 1px solid var(--line); }
+  #grid { gap: 3px; padding: 4px 4px 30px; } .tile .cap { display: none; }
+}
+</style>
+
+<div id="app">
+  <div id="stage">
+    <canvas id="view" aria-label="Clay viewport. Drag to turn, scroll to zoom."></canvas>
+    <div id="grid" hidden></div>
+    <div id="fly" hidden>
+      <button id="next-view" type="button">Next vantage</button>
+      <button id="back" type="button" aria-label="Move back">▼</button>
+      <button id="fwd" type="button" aria-label="Move forward">▲</button>
+    </div>
+    <div id="status" role="status">starting…</div>
+  </div>
+
+  <div id="panel">
+    <h1>Morphoclay<small>skeleton ▸ clay</small></h1>
+    <div id="modes" role="tablist">
+      <button type="button" data-mode="specimen" class="on">Specimen</button>
+      <button type="button" data-mode="sweep">Sweep</button>
+      <button type="button" data-mode="cavern">Cavern</button>
+    </div>
+
+    <div data-pane="specimen">
+      <div class="bar">
+        <select id="recipe" aria-label="Load a recipe"></select>
+        <button id="breed" type="button" class="primary">Breed</button>
+        <button id="mutate" type="button">Mutate</button>
+        <select id="habit" aria-label="Which body plans Breed may use"><option value="formula" selected>breed by pack and relax</option><option value="stemless">breed stemless parts</option><option value="any">breed any parts</option></select>
+      </div>
+      <div class="bar">
+        <span class="k">seed</span><input id="seed" type="number" min="0" step="1" value="7">
+        <button id="reseed" type="button">Reroll</button>
+        <select id="cut" aria-label="Cut the body open"><option value="none">whole</option><option value="half">near half removed</option><option value="slice">thin slice</option></select>
+        <select id="res" aria-label="Clay resolution">
+          <option value="72">coarse</option><option value="112" selected>medium</option><option value="160">fine</option><option value="220">very fine</option>
+        </select>
+      </div>
+      <div id="tree"></div>
+      <div id="node"></div>
+      <details>
+        <summary>genome as text</summary>
+        <textarea id="json" spellcheck="false" aria-label="Genome JSON"></textarea>
+        <div class="bar"><button id="copy" type="button">Copy genome</button><button id="apply" type="button">Apply edits</button><button id="pin" type="button">Pin for caverns</button></div>
+      </details>
+    </div>
+
+    <div data-pane="sweep" hidden>
+      <div class="bar">
+        <select id="sweep-src" aria-label="What to sweep">
+          <option value="params">two parameters</option><option value="mutants">mutants of this specimen</option><option value="breeds">25 new breeds</option><option value="recipes">the recipe shelf</option>
+        </select>
+        <button id="sweep-run" type="button" class="primary">Run again</button>
+      </div>
+      <div id="axes" class="group">
+        <div class="gh"><span>axes on <span id="sweep-node"></span></span></div>
+        <label class="row"><span class="k">across</span><select id="sweep-x"></select></label>
+        <label class="row"><span class="k">down</span><select id="sweep-y"></select></label>
+      </div>
+      <p class="hint">Each tile is a full rebuild at coarse resolution. Click one to adopt it as the specimen. Axes sweep the node selected in the specimen tree.</p>
+    </div>
+
+    <div data-pane="cavern" hidden>
+      <div class="group">
+        <label class="row"><span class="k">void</span><select id="cav-kind"><option value="halls">halls (chambers and tunnels)</option><option value="sponge">sponge (one wave surface)</option><option value="geode">geode (single vault)</option></select></label>
+        <label class="row"><span class="k">organisms</span><input id="cav-count" type="range" min="0" max="70" step="1" value="34"><span class="v" id="cav-count-v">34</span></label>
+        <label class="row"><span class="k">detail</span><select id="cav-detail"><option value="40">coarse, faster</option><option value="54" selected>medium</option><option value="84">fine, slower</option></select></label>
+      </div>
+      <div class="bar"><span class="k">seed</span><input id="cav-seed" type="number" min="0" step="1" value="3"><button id="grow" type="button" class="primary">Grow cavern</button></div>
+      <div class="group"><div class="gh">pinned species</div><div id="pinned" class="chips"></div></div>
+      <div class="group"><div class="gh">growing here</div><div id="species" class="chips"></div></div>
+      <p class="hint">The cavern is 72 × 34 × 72 units and each orange capsule is 1 unit tall. Drag to look. W A S D or the arrow keys move, Q and E sink and rise, Shift goes faster, scroll moves along your gaze.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script id="kernel-src" type="text/plain">/*KERNEL*/</script>
+<script>/*APP*/</script>

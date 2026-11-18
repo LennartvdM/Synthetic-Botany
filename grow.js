@@ -22,11 +22,13 @@
   }
 
   function grow(recipe) {
-    const r = Object.assign({ c: 1, generations: 40, lift: 0.15, stiff: 0.6, settle: 400, rest: 0.0005, setAfter: 0, maxCells: 12000, seed: 1 }, recipe);
+    const r = Object.assign({ c: 1, generations: 40, lift: 0.15, stiff: 0.6, settle: 400, rest: 0.0005, setAfter: 0, maxCells: 12000, symmetry: 6, seed: 1 }, recipe);
     const X = [], tris = [], born = [], credit = [], nb = [], vt = [];
     const li = [], lj = [], linkAt = new Map();
     const key = (a, b) => (a < b ? a * 1e7 + b : b * 1e7 + a);
-    const cell = (x, y, z, g) => { X.push(x, y, z); born.push(g); credit.push(0); nb.push([]); vt.push([]); return born.length - 1; };
+    const rot = []; // for each cell, the cell that sits one sixth of a turn further round
+    let sym = r.symmetry === 6;
+    const cell = (x, y, z, g) => { X.push(x, y, z); born.push(g); credit.push(0); nb.push([]); vt.push([]); rot.push(-1); return born.length - 1; };
     const link = (a, b) => { const k = key(a, b); if (!linkAt.has(k)) { linkAt.set(k, li.length); li.push(a); lj.push(b); nb[a].push(b); nb[b].push(a); } };
     const unlink = (a, b) => { const k = key(a, b), e = linkAt.get(k); if (e === undefined) return; linkAt.delete(k); li[e] = -1; nb[a].splice(nb[a].indexOf(b), 1); nb[b].splice(nb[b].indexOf(a), 1); };
     const tri = (a, b, c) => { const t = tris.length / 3; tris.push(a, b, c); vt[a].push(t); vt[b].push(t); vt[c].push(t); link(a, b); link(b, c); link(c, a); return t; };
@@ -39,6 +41,7 @@
     let edge = [];
     for (let j = 0; j < 6; j++) edge.push(cell(Math.cos((j * Math.PI) / 3), 0.01, Math.sin((j * Math.PI) / 3), 0));
     for (let j = 0; j < 6; j++) tri(c0, edge[j], edge[(j + 1) % 6]);
+    rot[c0] = c0; for (let j = 0; j < 6; j++) rot[edge[j]] = edge[(j + 1) % 6];
 
     // how much the edge turns at cell v, measured in the sheet
     const turn = (v) => {
@@ -58,6 +61,8 @@
       const N = edge.length;
       let total = 0;
       const out = edge.map((v) => { const t = turn(v); total += t; credit[v] += r.c * t * H; let o = away(v); if (g === 1) o = unit([o[0], o[1] + r.lift, o[2]]); return o; });
+      // cells that are the same cell a sixth of a turn apart hold the same credit; rounding may not tell them apart
+      if (sym && N % 6 === 0) for (let i = 0; i < N / 6; i++) { let m = 0; for (let k = 0; k < 6; k++) m += credit[edge[i + (k * N) / 6]]; for (let k = 0; k < 6; k++) credit[edge[i + (k * N) / 6]] = m / 6; }
       // every edge cell divides away from the body; its daughter sits over the gap to the next edge cell
       const old = edge.slice(), pos = old.map(P), next = [];
       for (let i = 0; i < N; i++) {
@@ -67,6 +72,8 @@
         next.push(d);
       }
       for (let i = 0; i < N; i++) { tri(old[(i + 1) % N], old[i], next[i]); tri(old[i], next[(i + N - 1) % N], next[i]); }
+      if (sym && N % 6 === 0) for (let i = 0; i < N; i++) rot[next[i]] = next[(i + N / 6) % N]; else sym = false;
+      const made = [];
       edge = next;
       // an edge cell with enough credit also divides along the edge
       let along = 0;
@@ -81,8 +88,9 @@
         unlink(v, n);
         tris[t * 3 + q.indexOf(n)] = m; vt[n].splice(vt[n].indexOf(t), 1); vt[m].push(t); link(v, m); link(m, x);
         const k = q.slice(); k[q.indexOf(v)] = m; tri(k[0], k[1], k[2]);
-        edge.splice(i + 1, 0, m); i++; along++;
+        edge.splice(i + 1, 0, m); i++; along++; made.push(m);
       }
+      if (sym && along % 6 === 0) for (let k = 0; k < along; k++) rot[made[k]] = made[(k + along / 6) % along]; else if (along) sym = false;
       history.push({ generation: g, edge: N, turning: total, along, cells: born.length });
       settle(g);
     }
@@ -164,6 +172,7 @@
           }
           move(1.2);
         }
+        if (sym) hold();
         let moved = 0;
         for (let q = 0; q < was.length; q++) { const d = Math.abs(X[q] - was[q]); if (d > moved) moved = d; }
         passes++;
@@ -171,10 +180,25 @@
       }
     }
 
+    // Holding the body to its own symmetry. The start and the rule are the same every sixth of a turn, so the
+    // body they imply is too. Rounding error is the only thing that says otherwise, and it is removed here:
+    // each set of six matching cells is replaced by its average, turned into place. Nothing is added.
+    function hold() {
+      const n = born.length, C = 0.5, S = Math.sqrt(3) / 2, seen = new Uint8Array(n);
+      for (let i = 0; i < n; i++) {
+        if (seen[i] || rot[i] < 0) continue;
+        if (rot[i] === i) { X[i * 3] = 0; X[i * 3 + 2] = 0; seen[i] = 1; continue; }
+        let x = 0, y = 0, z = 0, j = i, c = 1, sn = 0;
+        for (let k = 0; k < 6; k++) { x += X[j * 3] * c + X[j * 3 + 2] * sn; z += -X[j * 3] * sn + X[j * 3 + 2] * c; y += X[j * 3 + 1]; j = rot[j]; const c2 = c * C - sn * S; sn = sn * C + c * S; c = c2; }
+        x /= 6; y /= 6; z /= 6; j = i; c = 1; sn = 0;
+        for (let k = 0; k < 6; k++) { X[j * 3] = x * c - z * sn; X[j * 3 + 2] = x * sn + z * c; X[j * 3 + 1] = y; seen[j] = 1; j = rot[j]; const c2 = c * C - sn * S; sn = sn * C + c * S; c = c2; }
+      }
+    }
+
     // how far links are from their set length: a check that the body has actually settled
     let strain = 0, links = 0;
     for (let e = 0; e < li.length; e++) { if (li[e] < 0) continue; strain += Math.abs(len(sub(P(li[e]), P(lj[e]))) - 1); links++; }
-    return { X: Float32Array.from(X), tris: Uint32Array.from(tris), edge, born, history, strain: strain / links, passes, recipe: r };
+    return { X: Float32Array.from(X), tris: Uint32Array.from(tris), edge, born, history, strain: strain / links, passes, held: sym, recipe: r };
   }
 
   const api = { grow, rng, H };

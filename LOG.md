@@ -268,3 +268,64 @@ along-edge division, not six), and the irregularity compounds.
 
 **Not done.** Neither is fixed. Both are worst exactly where this rule
 lives, in runaway folding.
+
+## Run 004: holding a body to its own symmetry
+
+A seeded lean to decide the fold was proposed after run 003 and rejected:
+it would be noise added to the surface, and it would make every folded body
+look alike. Nothing is to be added.
+
+**Change.** The start and the rule are the same every sixth of a turn, so
+the body they imply is too. After each settling pass, each set of six
+matching cells is replaced by its average turned into place, and matching
+edge cells hold the same credit. This removes rounding error. `symmetry: 0`
+turns it off.
+
+**Prediction, written before the run.**
+
+- Every body is exactly six-fold symmetric from above, and stays so.
+- Bodies above the threshold are no longer alike: fold count and fold depth
+  differ visibly with c.
+- Some bodies come to rest with links several percent off, because a
+  symmetric sheet with too much edge may have no symmetric way to fold. If
+  so, that is a property of the rule, not noise.
+
+**Result** (`runs/004-held-symmetry/`, 16 generations, c = 1.1, 1.2, 1.3, 1.5).
+
+| c | from above | from the side |
+| --- | --- | --- |
+| 1.1 | a rounded hexagon; the rim is turned inward, with six small notches | a cup: rounded base, wall rising to near vertical |
+| 1.2 | six broad lobes round a small tight centre, each creased along its middle | lobes rise and curl over; open space between them |
+| 1.3 | six lobes all swept the same way round, like vanes | lower, wider; lobes lean and overlap their neighbours |
+| 1.5 | many small folds in six repeating sectors, crowded at the centre | a low mass of layered folds |
+
+Along-edge divisions per generation differ clearly with c and are always
+multiples of six: at 1.1 they come in sixes with gaps; at 1.5 they reach 96.
+
+**Against the prediction.**
+
+- Right: every body is six-fold symmetric (matching cells agree to seven
+  decimal places) and stays so.
+- Right: the bodies are no longer alike. Lobe count is fixed at six by the
+  start, but lobe width, sweep and fold density change with c.
+- Not shown: bodies do not come to rest. Links end 3.5% to 4.7% off and
+  settling stops at its 400-pass limit in almost every generation. Whether
+  the symmetric body has a resting state at all is still unknown.
+
+**What surprised me.**
+
+- The sweep at c = 1.3. The lobes all lean the same way round. Nothing in
+  the rule has a handedness; my division does. A daughter is placed over the
+  gap to the *next* edge cell, never the previous one. That is a twist I put
+  in, and it should be removed or made a declared choice.
+- c = 1.1 is a cup. It is the first body from this rule that has an inside
+  and a rim and is not a tube or a folded mass.
+
+**What broke.**
+
+- The same recipe at c = 1.1 gives 649 cells in Node and 493 in the browser.
+  At 1.2 and above the two agree exactly. At 1.1 each starting cell's credit
+  is 1.002, a hair over the line, so the last digit of a rounding decides
+  whether it divides. A recipe that close to a threshold is not reproducible
+  across machines, which breaks "same recipe, same organism".
+- Not at rest, as above.

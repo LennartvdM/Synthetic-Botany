@@ -76,3 +76,56 @@ These are choices in the current implementation, not rules of the brief:
 - Can cone angle be predicted from gain alone, from link counts before
   settling, and then measured? Same for where folds first appear.
 - Why the tube at gain 0 leans near its top.
+
+## Per-cell division (`grow.js`), run 001: edge turning
+
+The kernel at the top of the repo replaces whole rows. Every cell has its own
+credit. An edge cell reads how much the edge turns around it, measured in the
+sheet from the corner angles of its triangles, and adds `c * turn * H` to its
+credit. Every edge cell divides away from the body each generation; one whose
+credit has reached 1 also divides along the edge. `c` is the only number.
+There is no per-row gain any more: a cell cannot know a total for the body.
+
+**Prediction.** Held before the run, written down after it, so weigh it
+accordingly. In a smooth sheet the edge's total turning equals how fast its
+length grows, so `c = 1` should hold whatever opening the body has, a flat
+start should stay a plate, `c < 1` should decay to a tube and `c > 1` should
+run away into folds.
+
+**Result** (`runs/001-edge-turning/`, 30 generations, c = 0, 0.5, 0.8, 1, 1.1):
+
+| c | body | slice |
+| --- | --- | --- |
+| 0 | narrow straight tube | two parallel walls |
+| 0.5 | tube that widens slowly toward the top | walls diverging slightly |
+| 0.8 | narrow tube for a few cells, then a wall that leans further out the higher it goes, ending in a near-level rim | a V whose arms curve outward |
+| 1 | the same narrow base and opening wall, then a wide edge thrown into a few large folds | arms curving out to near horizontal |
+| 1.1 | flat on the ground, edge in many small folds, a small raised bump at the centre | a straight horizontal line |
+
+**The prediction was wrong about where flat is.** The plate is at about 1.1,
+not 1. Reason, worked out after seeing the run: in a lattice of equal links a
+row of outward divisions leaves a straight edge, and each along-edge division
+adds one sixth of a turn to it. So next turning = (pi/3) * H * c * turning =
+0.911 * c * turning, which is neutral at c = 1.098. The smooth-sheet argument
+ignored that the lattice counts turning in sixths.
+
+**Not predicted, not explained.** For c between 0.5 and 1 the body is not a
+tube that stays a tube or a cone that stays a cone: its wall angle changes
+with height. That is new; a fixed gain per row could only give a straight
+cone. The recurrence above says turning should decay for c < 1.098. It does
+for the first five or so generations and then grows again.
+
+**What is suspect.**
+
+- Links end about 6% off their set length in every body. The bending rule
+  pulls cells toward the middle of their neighbours, which shrinks any curved
+  surface, and the links never fully win.
+- The plain tube shows 0.98 rad of edge turning where a tube of equal links
+  has none. That residue feeds credit even at small c, and may be what
+  re-opens the bodies between 0.5 and 1. Until it is removed the changing
+  wall angle cannot be called a property of the rule.
+- Feeding is equal for all edge cells, so division is still in step around
+  the edge even though each cell decides for itself.
+
+**Next.** Remove the strain so a tube reads zero turning, then rerun 001.
+If the changing wall angle survives, it belongs to the rule.

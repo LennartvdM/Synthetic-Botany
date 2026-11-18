@@ -1,0 +1,86 @@
+<title>Synthetic Botany</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* layout: the bodies fill the page; one strip of controls sits above them */
+:root { color-scheme: dark; --void: #14242b; --ground: #41565f; --panel: #0f1b21; --line: #2a3e46; --ink: #d9e2e3; --dim: #8298a0; --clay: #e4ddd1; --pick: #e6c36a;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; --sans: system-ui, -apple-system, "Segoe UI", sans-serif; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--panel); color: var(--ink); font: 13px/1.4 var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+#bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--line); }
+#bar label { display: flex; gap: 6px; align-items: center; color: var(--dim); font: 11.5px var(--mono); }
+input, select, button { font: 12px var(--mono); color: var(--ink); background: #172a32; border: 1px solid var(--line); border-radius: 4px; padding: 4px 7px; }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--pick); outline-offset: 1px; }
+#values { width: 150px; } #base { width: 230px; }
+button { cursor: pointer; background: #24404b; }
+#stage { position: relative; flex: 1; min-height: 0; background: var(--void); }
+#view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+#note { position: absolute; left: max(10px, env(safe-area-inset-left, 0px)); bottom: 8px; right: 10px; font: 11px/1.5 var(--mono); color: var(--ink); background: rgba(15, 27, 33, 0.8); padding: 5px 9px; border-radius: 4px; white-space: pre-wrap; pointer-events: none; }
+</style>
+
+<div id="bar">
+  <label>vary <select id="vary"><option>c</option><option>generations</option><option>lift</option><option>stiff</option><option>setAfter</option><option>settle</option><option>seed</option></select></label>
+  <label>values <input id="values" value="0, 0.5, 0.8, 1, 1.1" aria-label="Values to grow side by side, separated by commas"></label>
+  <label>everything else <input id="base" value="generations: 30" aria-label="Other recipe values, as name: number pairs"></label>
+  <label>show <select id="cut"><option value="none">whole</option><option value="half">near half removed</option><option value="slice">thin slice</option></select></label>
+  <button id="go" type="button">Grow</button>
+</div>
+<div id="stage"><canvas id="view" aria-label="Bodies side by side. Drag to turn, scroll to zoom."></canvas><div id="note" role="status">growing…</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="grow.js"></script>
+<script>
+const T = THREE, $ = (id) => document.getElementById(id);
+const renderer = new T.WebGLRenderer({ canvas: $('view'), antialias: true });
+renderer.outputEncoding = T.sRGBEncoding; renderer.localClippingEnabled = true;
+const scene = new T.Scene(); scene.background = new T.Color(0x14242b);
+const cam = new T.PerspectiveCamera(32, 1, 0.1, 5000);
+scene.add(new T.HemisphereLight(0xeaf2f5, 0x33464e, 0.75));
+const sun = new T.DirectionalLight(0xfff3e2, 0.6); sun.position.set(0.5, 1, 0.8); scene.add(sun);
+const ground = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ color: new T.Color(0x41565f).convertSRGBToLinear() }));
+ground.rotation.x = -Math.PI / 2; scene.add(ground);
+const mat = new T.MeshStandardMaterial({ color: new T.Color(0xe4ddd1).convertSRGBToLinear(), roughness: 0.95, side: T.DoubleSide });
+const group = new T.Group(); scene.add(group);
+let target = new T.Vector3(), rad = 50, az = 0.35, pol = 1.25, midZ = 0, span = 1;
+
+function place() {
+  cam.position.set(target.x + rad * Math.sin(pol) * Math.sin(az), target.y + rad * Math.cos(pol), target.z + rad * Math.sin(pol) * Math.cos(az));
+  cam.lookAt(target); renderer.render(scene, cam);
+}
+function fit() { const el = $('stage'); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setSize(el.clientWidth, el.clientHeight, false); cam.aspect = el.clientWidth / el.clientHeight; cam.updateProjectionMatrix(); place(); }
+function cut() {
+  const m = $('cut').value, w = span * 0.006;
+  mat.clippingPlanes = m === 'half' ? [new T.Plane(new T.Vector3(0, 0, -1), midZ)] : m === 'slice' ? [new T.Plane(new T.Vector3(0, 0, -1), midZ + w), new T.Plane(new T.Vector3(0, 0, 1), -(midZ - w))] : [];
+  mat.needsUpdate = true;
+  if (m !== 'none') { az = 0; pol = m === 'slice' ? 1.5 : 1.3; }
+  place();
+}
+function run() {
+  const name = $('vary').value, values = $('values').value.split(',').map((v) => parseFloat(v)).filter((v) => !isNaN(v)), base = {};
+  for (const part of $('base').value.split(',')) { const [k, v] = part.split(':'); if (k && !isNaN(parseFloat(v))) base[k.trim()] = parseFloat(v); }
+  while (group.children.length) { group.children[0].geometry.dispose(); group.remove(group.children[0]); }
+  const bodies = values.map((v) => Grow.grow(Object.assign({}, base, { [name]: v })));
+  let x = 0, top = 1, lines = [];
+  bodies.forEach((b, i) => {
+    let r = 1, h = 1;
+    for (let q = 0; q < b.X.length; q += 3) { r = Math.max(r, Math.hypot(b.X[q], b.X[q + 2])); h = Math.max(h, b.X[q + 1]); }
+    const g = new T.BufferGeometry(); g.setAttribute('position', new T.BufferAttribute(b.X, 3)); g.setIndex(new T.BufferAttribute(b.tris, 1)); g.computeVertexNormals();
+    const m = new T.Mesh(g, mat); x += r; m.position.x = x; group.add(m); x += r + 3; top = Math.max(top, h);
+    const last = b.history[b.history.length - 1];
+    lines.push(`${name} ${values[i]}: ${b.born.length} cells, edge ${b.edge.length}, edge turning ${last ? last.turning.toFixed(2) : '-'} rad, links off by ${(b.strain * 100).toFixed(1)}%`);
+  });
+  span = x - 3; midZ = 0;
+  ground.scale.set(span * 3 + 40, span * 3 + 40, 1); ground.position.set(span / 2, 0, 0);
+  target.set(span / 2, top * 0.45, 0); rad = Math.max(span * 0.62, top * 1.3) / Math.tan((cam.fov * Math.PI) / 360) / Math.max(1, cam.aspect * 0.62);
+  $('note').textContent = lines.join('\n');
+  cut();
+}
+let drag = null;
+$('view').addEventListener('pointerdown', (e) => { drag = [e.clientX, e.clientY]; $('view').setPointerCapture(e.pointerId); });
+$('view').addEventListener('pointerup', () => (drag = null));
+$('view').addEventListener('pointermove', (e) => { if (!drag) return; az -= (e.clientX - drag[0]) * 0.008; pol = Math.min(3.05, Math.max(0.08, pol - (e.clientY - drag[1]) * 0.008)); drag = [e.clientX, e.clientY]; place(); });
+$('view').addEventListener('wheel', (e) => { e.preventDefault(); rad *= Math.exp(e.deltaY * 0.0012); place(); }, { passive: false });
+$('go').addEventListener('click', run); $('cut').addEventListener('change', cut);
+new ResizeObserver(fit).observe($('stage'));
+fit(); run();
+window.__look = { run, cut };
+</script>

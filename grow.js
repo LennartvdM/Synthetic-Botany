@@ -86,19 +86,14 @@
     }
 
     function settle(g) {
-      const n = born.length, rep = 0.8, HS = 1 << 15, head = new Int32Array(HS), nxt = new Int32Array(n), nm = new Float32Array(n * 3), onEdge = new Uint8Array(n);
+      const n = born.length, rep = 0.8, HS = 1 << 15, head = new Int32Array(HS), nxt = new Int32Array(n), nm = new Float32Array(n * 3), dev = new Float32Array(n), onEdge = new Uint8Array(n);
       for (const v of edge) onEdge[v] = 1;
       const free = (i) => born[i] > 0 && (r.setAfter <= 0 || g - born[i] <= r.setAfter);
       const hk = (x, y, z) => ((Math.imul(x, 73856093) ^ Math.imul(y, 19349663) ^ Math.imul(z, 83492791)) >>> 0) & (HS - 1);
       for (let it = 0; it < r.settle; it++) {
-        for (let e = 0; e < li.length; e++) {
-          const u = li[e]; if (u < 0) continue;
-          const v = lj[e], wu = free(u) ? 1 : 0, wv = free(v) ? 1 : 0, ws = wu + wv; if (!ws) continue;
-          const dx = X[v * 3] - X[u * 3], dy = X[v * 3 + 1] - X[u * 3 + 1], dz = X[v * 3 + 2] - X[u * 3 + 2], d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1e-9, f = (d - 1) / d / ws;
-          X[u * 3] += dx * f * wu; X[u * 3 + 1] += dy * f * wu; X[u * 3 + 2] += dz * f * wu; X[v * 3] -= dx * f * wv; X[v * 3 + 1] -= dy * f * wv; X[v * 3 + 2] -= dz * f * wv;
-        }
         if (r.stiff > 0) {
-          // resisting bending: a cell moves toward the middle of its linked cells, along the sheet's normal only
+          // resisting bending. Pulling a cell toward the middle of its linked cells shrinks every curved surface,
+          // so a plain tube never reached its link lengths. Instead a cell resists being bent differently from its neighbours.
           nm.fill(0);
           for (let t = 0; t < tris.length; t += 3) {
             const a = tris[t] * 3, b = tris[t + 1] * 3, c = tris[t + 2] * 3;
@@ -106,13 +101,22 @@
             const x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx;
             nm[a] += x; nm[a + 1] += y; nm[a + 2] += z; nm[b] += x; nm[b + 1] += y; nm[b + 2] += z; nm[c] += x; nm[c + 1] += y; nm[c + 2] += z;
           }
+          // how far each cell sits from the middle of its linked cells, along the normal
           for (let i = 0; i < n; i++) {
-            if (onEdge[i] || !free(i)) continue;
+            if (onEdge[i]) continue;
             let cx = 0, cy = 0, cz = 0; const q = nb[i];
             for (const u of q) { cx += X[u * 3]; cy += X[u * 3 + 1]; cz += X[u * 3 + 2]; }
-            const l = Math.hypot(nm[i * 3], nm[i * 3 + 1], nm[i * 3 + 2]) || 1, nx = nm[i * 3] / l, ny = nm[i * 3 + 1] / l, nz = nm[i * 3 + 2] / l;
-            const d = ((cx / q.length - X[i * 3]) * nx + (cy / q.length - X[i * 3 + 1]) * ny + (cz / q.length - X[i * 3 + 2]) * nz) * 0.6 * r.stiff;
-            X[i * 3] += nx * d; X[i * 3 + 1] += ny * d; X[i * 3 + 2] += nz * d;
+            const l = Math.hypot(nm[i * 3], nm[i * 3 + 1], nm[i * 3 + 2]) || 1; nm[i * 3] /= l; nm[i * 3 + 1] /= l; nm[i * 3 + 2] /= l;
+            dev[i] = (cx / q.length - X[i * 3]) * nm[i * 3] + (cy / q.length - X[i * 3 + 1]) * nm[i * 3 + 1] + (cz / q.length - X[i * 3 + 2]) * nm[i * 3 + 2];
+          }
+          // a cell moves only by how much its own bend differs from its neighbours' bend
+          for (let i = 0; i < n; i++) {
+            if (onEdge[i] || !free(i)) continue;
+            let m = 0, k = 0;
+            for (const u of nb[i]) if (!onEdge[u]) { m += dev[u]; k++; }
+            if (!k) continue;
+            const d = (dev[i] - m / k) * 0.5 * r.stiff;
+            X[i * 3] += nm[i * 3] * d; X[i * 3 + 1] += nm[i * 3 + 1] * d; X[i * 3 + 2] += nm[i * 3 + 2] * d;
           }
         }
         if (it % 2 === 0) {
@@ -131,6 +135,12 @@
               if (fj) { X[j * 3] -= dx * f; X[j * 3 + 1] -= dy * f; X[j * 3 + 2] -= dz * f; }
             }
           }
+        }
+        for (let e = 0; e < li.length; e++) {
+          const u = li[e]; if (u < 0) continue;
+          const v = lj[e], wu = free(u) ? 1 : 0, wv = free(v) ? 1 : 0, ws = wu + wv; if (!ws) continue;
+          const dx = X[v * 3] - X[u * 3], dy = X[v * 3 + 1] - X[u * 3 + 1], dz = X[v * 3 + 2] - X[u * 3 + 2], d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1e-9, f = (d - 1) / d / ws;
+          X[u * 3] += dx * f * wu; X[u * 3 + 1] += dy * f * wu; X[u * 3 + 2] += dz * f * wu; X[v * 3] -= dx * f * wv; X[v * 3 + 1] -= dy * f * wv; X[v * 3 + 2] -= dz * f * wv;
         }
         for (let i = 0; i < n; i++) if (X[i * 3 + 1] < 0.01) X[i * 3 + 1] = 0.01;
       }

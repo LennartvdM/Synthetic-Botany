@@ -129,3 +129,74 @@ for the first five or so generations and then grows again.
 
 **Next.** Remove the strain so a tube reads zero turning, then rerun 001.
 If the changing wall angle survives, it belongs to the rule.
+
+## Run 002: run 001 again with the strain removed
+
+**Change.** The bending rule no longer pulls a cell toward the middle of its
+linked cells. A cell now moves only by how much its own bend differs from its
+neighbours' bend, and links are brought to length last in each pass.
+
+**Prediction, written before the run.** If the lattice recurrence from run
+001 is right (next turning = 0.911 * c * turning) and the re-opening was the
+strain residue, then:
+
+- the plain tube reads zero edge turning and links end within 1% of length;
+- for c below about 1.1 the turning dies away within a few generations, so a
+  body opens only near its base and then its wall runs parallel: the reverse
+  of run 001, where the wall opened more the higher it went;
+- c = 1.1 is still flat;
+- the opening wall of run 001 does not survive.
+
+**Result** (`runs/002-strain-removed/`, 30 generations).
+
+Same values as run 001 (c = 0, 0.5, 0.8, 1, 1.1), numbers only:
+
+| c | cells | edge cells at end | edge turning | links off by |
+| --- | --- | --- | --- | --- |
+| 0, 0.5, 0.8, 1 | 187 | 6 | 0.00 | 0.2% |
+| 1.1 | 766 | 43 | 1.02 | 2.0% |
+
+Pictured, c = 0.8, 1.1, 1.3, 1.6, 2:
+
+| c | body | slice |
+| --- | --- | --- |
+| 0.8 | plain narrow tube, identical to c = 0 | two parallel walls |
+| 1.1 | a wider upright column, irregular, crumpled at the top | a tall narrow loop of wall |
+| 1.3 | a wide V at the base, then a mass of folds | two arms rising from a point, each ending in folded wall |
+| 1.6, 2 | a dome-shaped mass of tightly folded sheet | wall folded back on itself many times; little open space |
+
+**Against the prediction.**
+
+- Right: the tube reads zero turning and links are within 1%.
+- Right: the opening wall of run 001 does not survive. *Run 001's main
+  finding is retracted.* The wall that leaned further out with height was the
+  strain residue feeding credit, not the rule.
+- Wrong: bodies below the threshold do not open at the base and then run
+  parallel. They never open at all. Every c below about 1.1 gives the same
+  tube.
+- Wrong: c = 1.1 is not flat.
+
+**What the rule actually is.** A cliff. The start gives each edge cell one
+sixth of a turn, worth 0.911 * c of credit. Below c = 1.098 that never
+reaches 1, no cell divides along the edge, the new edge is straight, and
+nothing ever changes. Above it every along-edge division adds turning, which
+earns more credit, which adds more divisions: the edge grows without limit
+and the sheet folds until it fills its own space. There is no value of c
+that gives a cone, a cup or a plate. Dividing in proportion to turning feeds
+on itself, so it can only die or run away.
+
+**Consequence.** The cones and plates of the row-based work were stable only
+because the gain was fixed from outside the body. A per-cell rule needs
+something that does not feed on its own result.
+
+**Still suspect.** Above the threshold links end 2% to 5% off length, so
+those bodies have not finished settling, and the largest stop at the cell
+cap rather than at 30 generations.
+
+**Next, candidate.** Inherited marks. A few edge cells carry a mark; a
+marked cell divides along the edge every p generations and only one of its
+two daughters keeps the mark. Gain per generation is then (marked cells)/p,
+constant, and decided by each cell alone. Prediction to test: this gives
+back the tube, cone, plate and fold range, with wall angle set by the number
+of marked cells and by p, and with the extra cells arriving at fixed places
+on the edge rather than spread round it.

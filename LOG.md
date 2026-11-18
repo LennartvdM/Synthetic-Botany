@@ -200,3 +200,71 @@ constant, and decided by each cell alone. Prediction to test: this gives
 back the tube, cone, plate and fold range, with wall angle set by the number
 of marked cells and by p, and with the extra cells arriving at fixed places
 on the edge rather than spread round it.
+
+## Run 003: noise from the implementation
+
+Not a growth rule. A check on the kernel itself.
+
+**The test.** The start has six-fold symmetry, every cell follows the same
+rule, and the kernel uses no randomness. So a body must keep six-fold
+symmetry. Any departure is put there by the implementation.
+
+**Suspected causes.** Settling moves cells one at a time, in storage order,
+so each move sees its neighbours half-updated; and it stops after a fixed 30
+passes whether or not the body is at rest.
+
+**Prediction, written before the change.** With cells moved all at once
+from the same state, and settling continued until nothing moves:
+
+- every body is six-fold symmetric seen from above, folds included;
+- links end within 1% of length up to c = 1.3;
+- the irregular column at c = 1.1 becomes regular.
+
+**Before** (`runs/003-implementation-noise/above-before.png`, c = 1.1, 1.2,
+1.3, 24 generations, seen from above): no symmetry of any kind in any body.
+
+**Change.** All cells now move together from the same state, in full
+precision, and settling runs until no cell moves more than `rest` in a whole
+pass, up to 400 passes.
+
+**After** (`above-after.png`, same c, 16 generations). The prediction failed
+on all three counts.
+
+- The plain tube is exactly symmetric and at rest (links 0.25% off).
+- At c = 1.1 the body is symmetric to eight decimal places for three
+  generations, then loses it entirely in the fourth. From above the bodies
+  are still irregular crumpled masses.
+- Links end about 4% off at c = 1.1 to 1.3. Settling hits its 400-pass limit
+  in almost every generation, so these bodies are never at rest.
+
+**What the generation-by-generation trace shows** (c = 1.1):
+
+| generation | edge cells | links off | distance from own copy turned a sixth |
+| --- | --- | --- | --- |
+| 1 | 12 | 0.05% | 7e-9 |
+| 2 | 18 | 1.3% | 3e-8 |
+| 3 | 18 | 6.5% | 4e-8 |
+| 4 | 24 | 4.2% | 0.49 |
+| 5 | 25 | 5.0% | 0.47 |
+
+In generation 3 the body comes to rest with links 6.5% off: it has more edge
+than it can hold, but while it is perfectly symmetric nothing pushes it out
+of that state. In generation 4 it gives way. The number of along-edge
+divisions in generation 4 is still six, so the rule is not what broke the
+symmetry; the settling is.
+
+**Reading.** Moving cells one at a time was a source of lopsidedness and is
+gone. It was not the main one. The main one is that a sheet with too much
+edge sits in a symmetric state that cannot last, and what decides how it
+folds is rounding error. After that the folded body differs from cell to
+cell, so the rule's own decisions differ too (generation 5 makes one
+along-edge division, not six), and the irregularity compounds.
+
+**So the noise has two parts.**
+
+1. Fold pattern chosen by rounding. Nothing in the recipe decides it.
+2. Bodies that are not at rest when the next generation reads them. The
+   rule then responds to the solver's unfinished state.
+
+**Not done.** Neither is fixed. Both are worst exactly where this rule
+lives, in runaway folding.

@@ -8,7 +8,8 @@
 //      (pi minus the corner angles of the triangles that meet at it), and adds c * turn * H to its credit.
 //   2. Each edge cell divides away from the body. The daughter takes its place on the edge and its credit.
 //   3. An edge cell whose credit has reached 1 also divides along the edge, and spends the credit.
-//   4. The body settles: links return to length 1, the sheet resists bending, unlinked cells give way.
+//   4. The body settles until it is at rest: links return to length 1, the sheet resists bending,
+//      unlinked cells give way. All cells move together, from the same state.
 //
 // With c = 1 a flat sheet gains exactly the cells it needs to stay flat. That is the only tuning in here.
 (function (root) {
@@ -21,7 +22,7 @@
   }
 
   function grow(recipe) {
-    const r = Object.assign({ c: 1, generations: 40, lift: 0.15, stiff: 0.6, settle: 30, setAfter: 0, maxCells: 12000, seed: 1 }, recipe);
+    const r = Object.assign({ c: 1, generations: 40, lift: 0.15, stiff: 0.6, settle: 400, rest: 0.0005, setAfter: 0, maxCells: 12000, seed: 1 }, recipe);
     const X = [], tris = [], born = [], credit = [], nb = [], vt = [];
     const li = [], lj = [], linkAt = new Map();
     const key = (a, b) => (a < b ? a * 1e7 + b : b * 1e7 + a);
@@ -52,6 +53,7 @@
     const away = (v) => { let m = [0, 0, 0]; for (const q of nb[v]) { m[0] += X[q * 3]; m[1] += X[q * 3 + 1]; m[2] += X[q * 3 + 2]; } const k = nb[v].length; return unit(sub(P(v), [m[0] / k, m[1] / k, m[2] / k])); };
 
     const history = [];
+    let passes = 0;
     for (let g = 1; g <= r.generations && born.length < r.maxCells; g++) {
       const N = edge.length;
       let total = 0;
@@ -85,15 +87,32 @@
       settle(g);
     }
 
+    // Settling. Every cell's move is worked out from the same state and then all cells move together.
+    // Moving them one at a time, in storage order, let each cell see half-updated neighbours, and that
+    // order showed up in the body as lopsidedness. Settling continues until nothing moves more than `rest`.
     function settle(g) {
-      const n = born.length, rep = 0.8, HS = 1 << 15, head = new Int32Array(HS), nxt = new Int32Array(n), nm = new Float32Array(n * 3), dev = new Float32Array(n), onEdge = new Uint8Array(n);
+      const n = born.length, rep = 0.8, HS = 1 << 15, head = new Int32Array(HS), nxt = new Int32Array(n);
+      const nm = new Float64Array(n * 3), dev = new Float64Array(n), acc = new Float64Array(n * 3), cnt = new Float64Array(n), onEdge = new Uint8Array(n), fr = new Uint8Array(n);
       for (const v of edge) onEdge[v] = 1;
-      const free = (i) => born[i] > 0 && (r.setAfter <= 0 || g - born[i] <= r.setAfter);
+      for (let i = 0; i < n; i++) fr[i] = born[i] > 0 && (r.setAfter <= 0 || g - born[i] <= r.setAfter) ? 1 : 0;
       const hk = (x, y, z) => ((Math.imul(x, 73856093) ^ Math.imul(y, 19349663) ^ Math.imul(z, 83492791)) >>> 0) & (HS - 1);
+      const move = (w) => {
+        let mx = 0;
+        for (let i = 0; i < n; i++) {
+          if (!cnt[i]) continue;
+          const k = w / cnt[i], dx = acc[i * 3] * k, dy = acc[i * 3 + 1] * k, dz = acc[i * 3 + 2] * k;
+          X[i * 3] += dx; X[i * 3 + 1] += dy; X[i * 3 + 2] += dz;
+          if (X[i * 3 + 1] < 0.01) X[i * 3 + 1] = 0.01;
+          const d = dx * dx + dy * dy + dz * dz; if (d > mx) mx = d;
+          acc[i * 3] = acc[i * 3 + 1] = acc[i * 3 + 2] = 0; cnt[i] = 0;
+        }
+        return Math.sqrt(mx);
+      };
       for (let it = 0; it < r.settle; it++) {
+        const was = Float64Array.from(X);
         if (r.stiff > 0) {
-          // resisting bending. Pulling a cell toward the middle of its linked cells shrinks every curved surface,
-          // so a plain tube never reached its link lengths. Instead a cell resists being bent differently from its neighbours.
+          // resisting bending: a cell resists being bent differently from its neighbours.
+          // (Pulling it toward the middle of its linked cells shrank every curved surface.)
           nm.fill(0);
           for (let t = 0; t < tris.length; t += 3) {
             const a = tris[t] * 3, b = tris[t + 1] * 3, c = tris[t + 2] * 3;
@@ -101,7 +120,6 @@
             const x = uy * vz - uz * vy, y = uz * vx - ux * vz, z = ux * vy - uy * vx;
             nm[a] += x; nm[a + 1] += y; nm[a + 2] += z; nm[b] += x; nm[b + 1] += y; nm[b + 2] += z; nm[c] += x; nm[c + 1] += y; nm[c + 2] += z;
           }
-          // how far each cell sits from the middle of its linked cells, along the normal
           for (let i = 0; i < n; i++) {
             if (onEdge[i]) continue;
             let cx = 0, cy = 0, cz = 0; const q = nb[i];
@@ -109,47 +127,54 @@
             const l = Math.hypot(nm[i * 3], nm[i * 3 + 1], nm[i * 3 + 2]) || 1; nm[i * 3] /= l; nm[i * 3 + 1] /= l; nm[i * 3 + 2] /= l;
             dev[i] = (cx / q.length - X[i * 3]) * nm[i * 3] + (cy / q.length - X[i * 3 + 1]) * nm[i * 3 + 1] + (cz / q.length - X[i * 3 + 2]) * nm[i * 3 + 2];
           }
-          // a cell moves only by how much its own bend differs from its neighbours' bend
           for (let i = 0; i < n; i++) {
-            if (onEdge[i] || !free(i)) continue;
+            if (onEdge[i] || !fr[i]) continue;
             let m = 0, k = 0;
             for (const u of nb[i]) if (!onEdge[u]) { m += dev[u]; k++; }
             if (!k) continue;
             const d = (dev[i] - m / k) * 0.5 * r.stiff;
-            X[i * 3] += nm[i * 3] * d; X[i * 3 + 1] += nm[i * 3 + 1] * d; X[i * 3 + 2] += nm[i * 3 + 2] * d;
+            acc[i * 3] += nm[i * 3] * d; acc[i * 3 + 1] += nm[i * 3 + 1] * d; acc[i * 3 + 2] += nm[i * 3 + 2] * d; cnt[i] = 1;
+          }
+          move(1);
+        }
+        // unlinked cells give way to each other
+        head.fill(-1);
+        for (let i = 0; i < n; i++) { const h = hk(Math.floor(X[i * 3] / rep), Math.floor(X[i * 3 + 1] / rep), Math.floor(X[i * 3 + 2] / rep)); nxt[i] = head[h]; head[h] = i; }
+        for (let i = 0; i < n; i++) {
+          const gx = Math.floor(X[i * 3] / rep), gy = Math.floor(X[i * 3 + 1] / rep), gz = Math.floor(X[i * 3 + 2] / rep);
+          for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let c = -1; c <= 1; c++) for (let j = head[hk(gx + a, gy + b, gz + c)]; j >= 0; j = nxt[j]) {
+            if (j <= i) continue;
+            const ws = fr[i] + fr[j]; if (!ws) continue;
+            const dx = X[i * 3] - X[j * 3], dy = X[i * 3 + 1] - X[j * 3 + 1], dz = X[i * 3 + 2] - X[j * 3 + 2], d2 = dx * dx + dy * dy + dz * dz;
+            if (d2 >= rep * rep || d2 < 1e-12 || linkAt.has(key(i, j))) continue;
+            const d = Math.sqrt(d2), f = (rep - d) / d / ws;
+            if (fr[i]) { acc[i * 3] += dx * f; acc[i * 3 + 1] += dy * f; acc[i * 3 + 2] += dz * f; cnt[i]++; }
+            if (fr[j]) { acc[j * 3] -= dx * f; acc[j * 3 + 1] -= dy * f; acc[j * 3 + 2] -= dz * f; cnt[j]++; }
           }
         }
-        if (it % 2 === 0) {
-          // unlinked cells give way to each other
-          head.fill(-1);
-          for (let i = 0; i < n; i++) { const h = hk(Math.floor(X[i * 3] / rep), Math.floor(X[i * 3 + 1] / rep), Math.floor(X[i * 3 + 2] / rep)); nxt[i] = head[h]; head[h] = i; }
-          for (let i = 0; i < n; i++) {
-            const fi = free(i), gx = Math.floor(X[i * 3] / rep), gy = Math.floor(X[i * 3 + 1] / rep), gz = Math.floor(X[i * 3 + 2] / rep);
-            for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let c = -1; c <= 1; c++) for (let j = head[hk(gx + a, gy + b, gz + c)]; j >= 0; j = nxt[j]) {
-              if (j <= i) continue;
-              const fj = free(j), ws = (fi ? 1 : 0) + (fj ? 1 : 0); if (!ws) continue;
-              const dx = X[i * 3] - X[j * 3], dy = X[i * 3 + 1] - X[j * 3 + 1], dz = X[i * 3 + 2] - X[j * 3 + 2], d2 = dx * dx + dy * dy + dz * dz;
-              if (d2 >= rep * rep || d2 < 1e-12 || linkAt.has(key(i, j))) continue;
-              const d = Math.sqrt(d2), f = (rep - d) / d / ws;
-              if (fi) { X[i * 3] += dx * f; X[i * 3 + 1] += dy * f; X[i * 3 + 2] += dz * f; }
-              if (fj) { X[j * 3] -= dx * f; X[j * 3 + 1] -= dy * f; X[j * 3 + 2] -= dz * f; }
-            }
+        move(1);
+        // links return to their set length (several sweeps, since moving together converges slowly)
+        for (let sweep = 0; sweep < 6; sweep++) {
+          for (let e = 0; e < li.length; e++) {
+            const u = li[e]; if (u < 0) continue;
+            const v = lj[e], ws = fr[u] + fr[v]; if (!ws) continue;
+            const dx = X[v * 3] - X[u * 3], dy = X[v * 3 + 1] - X[u * 3 + 1], dz = X[v * 3 + 2] - X[u * 3 + 2], d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1e-9, f = (d - 1) / d / ws;
+            if (fr[u]) { acc[u * 3] += dx * f; acc[u * 3 + 1] += dy * f; acc[u * 3 + 2] += dz * f; cnt[u]++; }
+            if (fr[v]) { acc[v * 3] -= dx * f; acc[v * 3 + 1] -= dy * f; acc[v * 3 + 2] -= dz * f; cnt[v]++; }
           }
+          move(1.2);
         }
-        for (let e = 0; e < li.length; e++) {
-          const u = li[e]; if (u < 0) continue;
-          const v = lj[e], wu = free(u) ? 1 : 0, wv = free(v) ? 1 : 0, ws = wu + wv; if (!ws) continue;
-          const dx = X[v * 3] - X[u * 3], dy = X[v * 3 + 1] - X[u * 3 + 1], dz = X[v * 3 + 2] - X[u * 3 + 2], d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1e-9, f = (d - 1) / d / ws;
-          X[u * 3] += dx * f * wu; X[u * 3 + 1] += dy * f * wu; X[u * 3 + 2] += dz * f * wu; X[v * 3] -= dx * f * wv; X[v * 3 + 1] -= dy * f * wv; X[v * 3 + 2] -= dz * f * wv;
-        }
-        for (let i = 0; i < n; i++) if (X[i * 3 + 1] < 0.01) X[i * 3 + 1] = 0.01;
+        let moved = 0;
+        for (let q = 0; q < was.length; q++) { const d = Math.abs(X[q] - was[q]); if (d > moved) moved = d; }
+        passes++;
+        if (moved < r.rest) break;
       }
     }
 
     // how far links are from their set length: a check that the body has actually settled
     let strain = 0, links = 0;
     for (let e = 0; e < li.length; e++) { if (li[e] < 0) continue; strain += Math.abs(len(sub(P(li[e]), P(lj[e]))) - 1); links++; }
-    return { X: Float32Array.from(X), tris: Uint32Array.from(tris), edge, born, history, strain: strain / links, recipe: r };
+    return { X: Float32Array.from(X), tris: Uint32Array.from(tris), edge, born, history, strain: strain / links, passes, recipe: r };
   }
 
   const api = { grow, rng, H };

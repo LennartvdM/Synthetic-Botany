@@ -24,10 +24,20 @@
     for (let i = 1; i < n; i++) L.push(L[i - 1] + H(K.C[i][0] - K.C[i - 1][0], K.C[i][1] - K.C[i - 1][1], K.C[i][2] - K.C[i - 1][2]));
     const lo = [9, 9, 9], hi = [-9, -9, -9]; K.C.forEach((c, i) => { const m = K.W[i] + K.Hh[i] + K.deep; for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], c[k] - m); hi[k] = Math.max(hi[k], c[k] + m); } });
     const f = (x, y, z) => {
+      // the nearest stretch of its line: found roughly first, then exactly near there
+      let near = 0, nd = 1e9; for (let i = 0; i < n; i += 6) { const c = K.C[i], q = (x - c[0]) ** 2 + (y - c[1]) ** 2 + (z - c[2]) ** 2; if (q < nd) { nd = q; near = i; } }
       let bd = 1e9, bi = 0, bt = 0;
-      for (let i = 0; i < n - 1; i++) { const a = K.C[i], b = K.C[i + 1], ax = b[0] - a[0], ay = b[1] - a[1], az = b[2] - a[2], t = clamp(((x - a[0]) * ax + (y - a[1]) * ay + (z - a[2]) * az) / (ax * ax + ay * ay + az * az), 0, 1), dx = x - a[0] - ax * t, dy = y - a[1] - ay * t, dz = z - a[2] - az * t, d2 = dx * dx + dy * dy + dz * dz; if (d2 < bd) { bd = d2; bi = i; bt = t; } }
-      const a = K.C[bi], b = K.C[bi + 1], T = unit(mix(Tv[bi], Tv[bi + 1], bt)), side = unit(cross(T, mix(K.O[bi], K.O[bi + 1], bt))), o = cross(side, T), d3 = [x - lerp(a[0], b[0], bt), y - lerp(a[1], b[1], bt), z - lerp(a[2], b[2], bt)];
-      const pre = (bi === 0 && bt === 0) || (bi === n - 2 && bt === 1) ? dot(d3, T) : 0, u = dot(d3, side), v = dot(d3, o), w = lerp(K.W[bi], K.W[bi + 1], bt), h = lerp(K.Hh[bi], K.Hh[bi + 1], bt), s = lerp(L[bi], L[bi + 1], bt) + pre;
+      for (let i = Math.max(0, near - 7); i < Math.min(n - 1, near + 7); i++) { const a = K.C[i], b = K.C[i + 1], ax = b[0] - a[0], ay = b[1] - a[1], az = b[2] - a[2], t = clamp(((x - a[0]) * ax + (y - a[1]) * ay + (z - a[2]) * az) / (ax * ax + ay * ay + az * az), 0, 1), dx = x - a[0] - ax * t, dy = y - a[1] - ay * t, dz = z - a[2] - az * t, d2 = dx * dx + dy * dy + dz * dz; if (d2 < bd) { bd = d2; bi = i; bt = t; } }
+      // then settle on the place along the line where the way to this point is square to the line's own
+      // direction there. Without this the place moves in straight steps while the facing turns smoothly, and
+      // every face comes out ribbed across the grain.
+      let at = bi + bt, T = Tv[0], c = K.C[0];
+      for (let pass = 0; pass < 4; pass++) { const i = clamp(Math.floor(at), 0, n - 2), g = at - i; c = mix(K.C[i], K.C[i + 1], g); T = unit(mix(Tv[i], Tv[i + 1], g)); if (pass < 3) at = clamp(at + ((x - c[0]) * T[0] + (y - c[1]) * T[1] + (z - c[2]) * T[2]) / (L[i + 1] - L[i]), 0, n - 1); }
+      // if that has wandered off (it can, on the inside of a tight bend), go back to the rough answer
+      if ((x - c[0]) ** 2 + (y - c[1]) ** 2 + (z - c[2]) ** 2 > (Math.sqrt(bd) + 0.03) ** 2) { at = bi + bt; c = mix(K.C[bi], K.C[bi + 1], bt); T = unit(mix(Tv[bi], Tv[bi + 1], bt)); }
+      bi = clamp(Math.floor(at), 0, n - 2); bt = at - bi;
+      const side = unit(cross(T, mix(K.O[bi], K.O[bi + 1], bt))), o = cross(side, T), d3 = [x - c[0], y - c[1], z - c[2]];
+      const pre = at <= 0 || at >= n - 1 ? dot(d3, T) : 0, u = dot(d3, side), v = dot(d3, o), w = lerp(K.W[bi], K.W[bi + 1], bt), h = lerp(K.Hh[bi], K.Hh[bi + 1], bt), s = lerp(L[bi], L[bi + 1], bt) + pre;
       const xm = K.ridge * w, yl = h * K.eL, yr = h * K.eR, lx = -(h - yl), ly = xm + w, rx = h - yr, ry = w - xm;
       // inside all of: the two faces of the roof, the two side walls, a floor well below, and the two ends
       return Math.max(((u + w) * lx + (v - yl) * ly) / H(lx, ly), ((u - xm) * rx + (v - h) * ry) / H(rx, ry), -u - w, u - w, -v - K.deep, -s, s - L[n - 1] + K.skew * u);
@@ -37,14 +47,15 @@
   // wood round a guide line that carries a girth. Two layers of shards on a hidden core: wide ones that give
   // the piece its bulk, and narrower, shorter ones lying on them.
   function wood(guide, o) {
-    const M = 72, G = through(guide, M), frames = [], r = rng(o.seed || 1), r2 = rng((o.seed || 1) + 100), give = o.give === undefined ? 1 : o.give; let N = null;
+    const M = 216, G = through(guide, M), frames = [], r = rng(o.seed || 1), r2 = rng((o.seed || 1) + 100), give = o.give === undefined ? 1 : o.give; let N = null;
     for (let i = 0; i <= M; i++) { const T = unit([0, 1, 2].map((k) => G[Math.min(M, i + 1)][k] - G[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); frames.push([T, N, cross(T, N)]); }
     const all = [];
     const lay = (i0, i1, th0, rho, wide, high, lift, point, stiff, P) => {
+      const fine = (q) => Math.min(1, (1 - q) / point, i0 ? q / 0.3 : 1);
       const C = [], O = [], W = [], Hh = [], n = i1 - i0; let run = 0, straight = null, T0 = null;
-      // a band is held at its ends and has give between them: it draws in or spreads a little, drifts a little
-      // to one side, and sinks a little, more than once along a long one. Slight, and never the same twice.
-      const waves = Math.max(1, Math.round(n / 24)), skew = 0.75 + 0.6 * r2(), draw = 0.14 * (r2() * 2 - 1) * give, drift = 0.16 * (r2() * 2 - 1) * give, sink = 0.12 * r2() * give;
+      // a band is held in a few places far apart and has give between them: it draws in or spreads, drifts to
+      // one side, and sinks. Nothing marks where it is held; the give is the only sign of it.
+      const waves = Math.max(1, Math.round(n / 110)), skew = 0.75 + 0.6 * r2(), sign = () => (r2() < 0.5 ? -1 : 1) * (0.5 + 0.5 * r2()), draw = 0.3 * sign() * give, drift = 0.32 * sign() * give, sink = 0.28 * r2() * give;
       const bow = (q) => Math.sin(PI * waves * Math.pow(q, skew)) * Math.sin(PI * q) ** 0.5;
       for (let i = i0; i <= i1; i += 2) {
         const [Tn, Nn, Bn] = frames[i], R = G[i][3], q = (i - i0) / n, th = th0 + TAU * o.turns * Math.pow(i / M, o.ramp || 1), out = [0, 1, 2].map((k) => Nn[k] * Math.cos(th) + Bn[k] * Math.sin(th));
@@ -53,7 +64,7 @@
         // too stiff for its line: part way between following it and running straight on from where it began
         // and never more than about half a girth off it
         const off = [0, 1, 2].map((k) => straight[k] + T0[k] * run - on[k]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff * q * q, 0.55 * R / far), p = [0, 1, 2].map((k) => on[k] + off[k] * stay);
-        C.push(p); O.push(out); W.push(Math.max(0.004, R * wide * (1 + draw * b) * (point ? Math.min(1, (1 - q) / point) : 1))); Hh.push(R * high * (1 - sink * Math.abs(b)) * (point ? 0.5 + 0.5 * Math.min(1, (1 - q) / point) : 1));
+        C.push(p); O.push(out); W.push(Math.max(0.004, R * wide * (1 + draw * b) * fine(q))); Hh.push(R * high * (1 - sink * Math.abs(b)) * (0.5 + 0.5 * fine(q)));
       }
       if (C.length > 1) all.push(shard(Object.assign({ C, O, W, Hh, deep: G[i0][3] * 0.5 }, P)));
     };

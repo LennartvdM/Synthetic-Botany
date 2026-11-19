@@ -735,3 +735,27 @@ the same twice. Its ends stay where they were. `sketch/page5.png`,
 Also meshed finer (0.0085 from 0.012), which takes the saw teeth off most
 shard edges; faint flats remain across wide faces where a shard's line is
 made of straight steps.
+
+The give called barely visible, with a correction: wood has no
+cross-segments that can be seen at all. Bands sag and contract, "but
+that's the only sign of their existence."
+
+Two kinds of visible cross-segment were in the page and are removed:
+
+- Faint flats, then fine ribbing, across every face. Cause: a point's
+  place along a shard was found in straight steps while the shard's facing
+  turned smoothly, and the mismatch repeated at every step. Making the
+  steps three times finer only made the ribs finer. Fixed by settling on
+  the place where the way to the point is square to the shard's own
+  direction there, with a fallback for the insides of tight bends, where
+  that search can wander and leave crumbs in the air.
+- Square starts. Each narrow shard ended in a point but began with a face
+  cut across the grain. Both ends are points now.
+
+The give itself now works over long stretches (once along a short shard,
+twice along one that runs the whole piece) and is about twice as strong:
+width by up to 30%, drift by up to 32% of width, thickness by up to 28%.
+`sketch/page5.png`, `sketch/page5-close.png`.
+
+Not there: thin tips are still jagged at the mesh's size; no hollows or
+knots.

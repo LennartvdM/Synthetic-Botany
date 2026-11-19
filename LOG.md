@@ -943,3 +943,52 @@ through a plate. Only plate against plate is prevented.
 Cost: a plate cut back is short, and its rise from sunk to raised happens
 over that short length, so some stand up steeply like flakes, most at the
 foot of the twist.
+
+**Knots and notches: attempt stopped, not kept.** Begun (eyes where the
+grain parts round a snapped stub or a hollow; rare notches in an edge) and
+stopped before it was shown, because the attempt lies elsewhere. Page 5 is
+back to the state above. One part is reused below: bands going round an
+opening. Put aside for later: the twist piece is ugly.
+
+## Intrusions (`sketch/page6.js`, `sketchbook6.html`)
+
+Given: the wood now has to answer other things. Intrusions are what hollows
+really are, and there are two kinds. Benevolent: an orb of life the tree
+feeds or protects; the tree is generous and makes ample space for it.
+Malevolent: tumours, boils, fruiting bodies, packed tightly in the wood and
+bursting out; the tree yields no more than it must, fights, and is losing.
+The difference is told by room. Benevolent first. "The orb of life is a
+simple orb, then it has a sphere of extra space around it, and then the
+tree grows around it. But it does happen within the trunk itself, the trunk
+does not curve around it (which is a different feature that comes later)."
+
+Built into page 5's wood as an option, so the material is unchanged:
+
+- The orb is a plain ball on the piece's own line. The line does not bend.
+- Round it is a ball of room, kept clear of all wood.
+- The wood swells: every band passing the orb is carried outward far
+  enough to clear the room with some wood to spare, and back in beyond it.
+- The wood opens: on one side the bands part and go round, leaving a
+  window on the orb. Bands shift aside and narrow a little; none is cut.
+- The rigid shell stays off the swelling.
+
+Page 6 has it in three places (low in a turn, in a winding, at the foot of
+a loop) with room 0.6 of the orb's radius, and the first again with room
+0.15. `sketch/page6.png`; `sketch/page6-cut-and-behind.png` shows three cut
+in half and one from behind. In the viewer the orb is lit from within and
+lights the wood near it; that is the viewer's doing, not the asset's.
+
+What it does: the piece swells into a bulb about twice its girth, the grain
+parts into an almond-shaped window following the twist, and the orb sits
+inside with clear space all round. Cut in half, the room is a clean ring
+round the orb. With little room the bulb is smaller and the ring thin.
+
+Broke, or not there yet:
+
+- From behind the bulb is closed and smooth, like an onion. One window
+  only, and it shows about half the orb.
+- The bands over the bulb are the same few broad ones stretched round it,
+  so the bulb is the barest part of the piece. No shell on it either.
+- Under the orb the piece is hollow down to the ground: the bands were
+  carried out and nothing fills the middle. Seen only when cut.
+- The orb touches nothing. It floats in its room.

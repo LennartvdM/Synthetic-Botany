@@ -8,6 +8,7 @@
 // on. Each has a direction: its back is sunk out of sight and its front lies on top, pointed, blunt or stepped.
 // No plate passes through another: each is laid clear of those already there, cut back where it would meet one.
 // Rarest of all, a band or a plate has split along the grain: a coarse gap, with one side lifted.
+// A piece can hold an orb inside it (used from page 6 on): the wood swells to leave room round it, and parts to show it.
 // The same four test pieces: a twist, a turn, a winding, and all three.
 // Throwaway like the other pages. Built with the clay kit from cheats/fantastic.js.
 (function () {
@@ -77,6 +78,23 @@
     const all = []; let turns = o.turns;
     // splits are rarer than anything else here: one band of the inner wood has one, and two plates of the shell
     const splitAt = { band: Math.floor(6 * r4()), plates: [Math.floor(10 * r4()), Math.floor(10 * r4())] }; let plates = 0;
+    // an orb held inside the piece (o.orb): a plain ball on the piece's own line, which does not bend for it.
+    // Round the ball is a ball of room that the wood keeps clear. To leave that room the wood swells: every
+    // band passing the orb is carried outward, far enough to clear the room with some wood to spare, and back
+    // in again beyond it. And it opens: on one side the bands part and go round, leaving a window on the orb.
+    const wrap = (a) => a - TAU * Math.round(a / TAU), eyes = []; let orb = null;
+    if (o.orb) {
+      const ic = Math.round(M * o.orb.at), c = G[ic].slice(0, 3), Rc = o.orb.r * (1 + o.orb.room), wall = o.orb.wall === undefined ? 0.07 : o.orb.wall, far = G.map((g) => H(g[0] - c[0], g[1] - c[1], g[2] - c[2]));
+      orb = { c, r: o.orb.r, Rc, far, reach: 1.6 * Rc, out: (i) => (Rc + wall) * Math.pow(Math.cos(PI / 2 * Math.min(1, far[i] / (1.6 * Rc))), 0.8) };
+      const [, Nn, Bn] = frames[ic], to = o.orb.toward || [0.43, 0.15, 0.9], step = H(G[ic + 1][0] - G[ic][0], G[ic + 1][1] - G[ic][1], G[ic + 1][2] - G[ic][2]);
+      if (o.orb.window !== 0) eyes.push({ i: ic, th: Math.atan2(dot(Bn, to), dot(Nn, to)) - TAU * o.turns * Math.pow(ic / M, o.ramp || 1), a: o.orb.window || 0.75, l: Math.round(1.2 * Rc / step) });
+    }
+    const swell = (i, rad) => (orb ? H(rad, orb.out(i)) : rad);
+    // a band that would pass through a window goes round it: it shifts to one side, and narrows a little as it squeezes past
+    const eye = (th0, i, Wk, rad) => { let dth = 0;
+      for (const e of eyes) { const di = (i - e.i) / e.l; if (Math.abs(di) >= 1) continue; const dq = wrap(th0 + dth - e.th), ab = Wk / rad, need = e.a * (1 - di * di) - (Math.abs(dq) - ab); if (need <= 0) continue;
+        const less = Math.min(need / 2, 0.4 * ab); dth += (dq >= 0 ? 1 : -1) * (need - less); Wk -= less * rad; }
+      return { dth, W: Wk }; };
     const lay = (i0, i1, th0, rho, wide, high, lift, point, stiff, P) => {
       const fine = (q) => Math.min(1, (1 - q) / point, i0 ? q / 0.3 : 1);
       const C = [], O = [], W = [], Hh = [], n = i1 - i0; let run = 0, straight = null, T0 = null;
@@ -85,13 +103,14 @@
       const waves = Math.max(1, Math.round(n / 110)), skew = 0.75 + 0.6 * r2(), sign = () => (r2() < 0.5 ? -1 : 1) * (0.5 + 0.5 * r2()), draw = 0.3 * sign() * give, drift = 0.32 * sign() * give, sink = 0.28 * r2() * give;
       const bow = (q) => Math.sin(PI * waves * Math.pow(q, skew)) * Math.sin(PI * q) ** 0.5;
       for (let i = i0; i <= i1; i += 2) {
-        const [Tn, Nn, Bn] = frames[i], R = G[i][3], q = (i - i0) / n, th = th0 + TAU * turns * Math.pow(i / M, o.ramp || 1), out = [0, 1, 2].map((k) => Nn[k] * Math.cos(th) + Bn[k] * Math.sin(th));
-        const b = bow(q), rh = typeof rho === 'function' ? rho(q) : rho, on = [0, 1, 2].map((k) => G[i][k] + out[k] * R * (rh + lift * q * q) + (Bn[k] * Math.cos(th) - Nn[k] * Math.sin(th)) * R * wide * drift * b);
+        const [Tn, Nn, Bn] = frames[i], R = G[i][3], q = (i - i0) / n, b = bow(q), rh = typeof rho === 'function' ? rho(q) : rho, rad = swell(i, R * (rh + lift * q * q)), ey = eye(th0, i, R * wide * (1 + draw * b) * fine(q), rad);
+        const th = th0 + ey.dth + TAU * turns * Math.pow(i / M, o.ramp || 1), out = [0, 1, 2].map((k) => Nn[k] * Math.cos(th) + Bn[k] * Math.sin(th));
+        const on = [0, 1, 2].map((k) => G[i][k] + out[k] * rad + (Bn[k] * Math.cos(th) - Nn[k] * Math.sin(th)) * R * wide * drift * b);
         if (!straight) { straight = on; T0 = unit([0, 1, 2].map((k) => Tn[k] + (Bn[k] * Math.cos(th) - Nn[k] * Math.sin(th)) * TAU * turns * rh * R * 0.5)); } else run += H(G[i][0] - G[i - 2][0], G[i][1] - G[i - 2][1], G[i][2] - G[i - 2][2]);
         // too stiff for its line: part way between following it and running straight on from where it began
         // and never more than about half a girth off it
         const off = [0, 1, 2].map((k) => straight[k] + T0[k] * run - on[k]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff * q * q, 0.55 * R / far), p = [0, 1, 2].map((k) => on[k] + off[k] * stay);
-        C.push(p); O.push(out); W.push(Math.max(0.004, R * wide * (1 + draw * b) * fine(q))); Hh.push(R * high * (1 - sink * Math.abs(b)) * (0.5 + 0.5 * fine(q)));
+        C.push(p); O.push(out); W.push(Math.max(0.004, ey.W)); Hh.push(R * high * (1 - sink * Math.abs(b)) * (0.5 + 0.5 * fine(q)));
       }
       for (let pass = 0; pass < 4; pass++) for (let k = 1; k < C.length - 1; k++) C[k] = [0, 1, 2].map((q) => 0.5 * C[k][q] + 0.25 * (C[k - 1][q] + C[k + 1][q]));   // its line is kept fair
       if (C.length > 1) all.push(shard(Object.assign({ C, O, W, Hh, deep: G[i0][3] * 0.5, seed: 1 + Math.floor(r3() * 1e6), wiggle: o.wiggle === undefined ? 1 : o.wiggle }, P)));
@@ -110,11 +129,11 @@
     // off blunt, or stepped, one side of it ending short of the other.
     const makePlate = (i0, i1, forward, th0, wide, high, ending, P) => {
       if (i1 - i0 < 10) return null;
-      const on = [], outs = [], Rs = [], qs = [];
+      const on = [], outs = [], Rs = [], qs = [], Is = [];
       for (let i = forward ? i0 : i1; forward ? i <= i1 : i >= i0; i += forward ? 2 : -2) {   // from its back to its front
         const [, Nn, Bn] = frames[i], R = G[i][3], q = Math.abs(i - (forward ? i0 : i1)) / (i1 - i0), th = th0 + TAU * o.turns * Math.pow(i / M, o.ramp || 1), out = [0, 1, 2].map((k) => Nn[k] * Math.cos(th) + Bn[k] * Math.sin(th));
         const rho = 0.42 + 0.63 * sstep(0, 0.5, q) + 0.1 * q * q;
-        on.push([0, 1, 2].map((k) => G[i][k] + out[k] * R * rho)); outs.push(out); Rs.push(R); qs.push(q);
+        on.push([0, 1, 2].map((k) => G[i][k] + out[k] * R * rho)); outs.push(out); Rs.push(R); qs.push(q); Is.push(i);
       }
       const n = on.length, km = clamp(Math.round(n * 0.62), 1, n - 2), Tm = unit([0, 1, 2].map((k) => on[km + 1][k] - on[km - 1][k])), arc = new Array(n).fill(0);
       for (let k = km + 1; k < n; k++) arc[k] = arc[k - 1] + H(on[k][0] - on[k - 1][0], on[k][1] - on[k - 1][1], on[k][2] - on[k - 1][2]);
@@ -128,7 +147,7 @@
       }
       const w1 = Rs[n - 1] * wide, r5 = rng(1 + Math.floor(r3() * 1e6));
       const end = ending === 'step' ? { skew: 0.4 * (r5() - 0.5), step: { u: 0.5 * (r5() - 0.5), side: r5() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r5()) } } : ending === 'blunt' ? { skew: (r5() < 0.5 ? -1 : 1) * (0.5 + 0.9 * r5()) } : { skew: 0 };   // a blunt front is cut on the slant, never square
-      return Object.assign({ C, O, W, Hh, deep: Rs[km] * 0.06, seed: 1 + Math.floor(r5() * 1e6), wiggle: o.wiggle === undefined ? 1 : o.wiggle }, P, end);
+      return Object.assign({ I: Is, C, O, W, Hh, deep: Rs[km] * 0.06, seed: 1 + Math.floor(r5() * 1e6), wiggle: o.wiggle === undefined ? 1 : o.wiggle }, P, end);
     };
     // plates give way to each other. A plate is laid only where it is clear of every plate laid before it.
     // Where it would run into one, it is cut back to its longest clear stretch and made again over that, with
@@ -141,6 +160,7 @@
         const K = makePlate(i0, i1, forward, th0, wide, high, ending, P); if (!K) break;
         const n = K.C.length, hit = new Uint8Array(n);
         for (let k = 0; k < n; k++) {
+          if (orb && orb.far[K.I[k]] < orb.reach) { hit[k] = 1; continue; }   // the shell is rigid: it does not go over a swelling
           const T = unit([0, 1, 2].map((q) => K.C[Math.min(n - 1, k + 1)][q] - K.C[Math.max(0, k - 1)][q])), side = unit(cross(T, K.O[k])), up = cross(side, T);
           for (let a = -3; a <= 3 && !hit[k]; a++) for (const v of [0, K.Hh[k] * 0.6]) { const pt = [0, 1, 2].map((q) => K.C[k][q] + side[q] * K.W[k] * a * 0.31 + up[q] * v); if (shell.some((A) => A.f(pt[0], pt[1], pt[2]) < room)) { hit[k] = 1; break; } }
         }
@@ -167,7 +187,10 @@
     // a shard is entered only in the cells along its own line, not in every cell of the box round it
     all.forEach((s, i) => { const seen = new Set(); s.C.forEach((c, j) => { const m = s.reach[j] + 0.1;
       for (let x = Math.floor((c[0] - m) / cell); x <= Math.floor((c[0] + m) / cell); x++) for (let y = Math.floor((c[1] - m) / cell); y <= Math.floor((c[1] + m) / cell); y++) for (let z = Math.floor((c[2] - m) / cell); z <= Math.floor((c[2] + m) / cell); z++) { const k = key(x, y, z); if (seen.has(k)) continue; seen.add(k); const b = grid.get(k); if (b) b.push(i); else grid.set(k, [i]); } }); });
-    return (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); if (!b) return 0.1; let d = 0.1; for (const i of b) d = Math.min(d, all[i].f(x, y, z)); return d; };   // joined hard: no blending anywhere
+    const f = (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); let d = 0.1; if (b) for (const i of b) d = Math.min(d, all[i].f(x, y, z));   // joined hard: no blending anywhere
+      return orb ? Math.max(d, orb.Rc - H(x - orb.c[0], y - orb.c[1], z - orb.c[2])) : d; };   // the room round an orb is kept clear
+    f.orb = orb && { c: orb.c, r: orb.r, room: orb.Rc };
+    return f;
   }
   const S = [
     ['twist', wood([[-0.1, -0.06, 0, 0.32], [-0.03, 0.5, 0, 0.29], [0.03, 1.05, 0, 0.24], [0.1, 1.62, 0, 0.15]], { seed: 1, turns: 1.3, ramp: 2, phase: 0.5, stiff: 0.5, lift: 0.25 })],
@@ -175,5 +198,6 @@
     ['winding', wood([[0, -0.06, 0, 0.3], [0.3, 0.4, 0.3, 0.27], [0, 0.8, 0.42, 0.24], [-0.3, 1.1, 0.1, 0.2], [0, 1.4, -0.2, 0.15], [0.25, 1.62, 0, 0.09]], { seed: 3, turns: 0.6, phase: 1.2, stiff: 0.45, lift: 0.25 })],
     ['all three', wood([[0.1, -0.06, 0, 0.34], [0.2, 0.5, 0, 0.3], [0.52, 0.98, 0.08, 0.24], [0.4, 1.48, 0.16, 0.2], [-0.16, 1.5, 0.08, 0.17], [-0.44, 1.06, -0.08, 0.14], [-0.1, 0.8, -0.22, 0.1], [0.3, 0.98, -0.34, 0.06]], { seed: 4, turns: 1.4, phase: 1.1, stiff: 0.45, lift: 0.25 })],
   ];
+  window.Wood5 = { wood };   // later pages build on this material
   window.Fantastic = { names: S.map((s) => s[0]), build: (i) => Fantastic.mesh(S[i][1], S[i][0], 0.0085, 1.9), mesh: Fantastic.mesh, kit: Fantastic.kit };
 })();

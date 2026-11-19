@@ -44,9 +44,38 @@ plans nothing. Add to it; do not tidy it into a system.
 - A hood with an opening. A pair of long legs from a knot. A veil of fine
   fibres. A string of scales. A large pod in a nest of pointed bracts.
 
+## How an asset is put together (given, not observed)
+
+Stated with a worked example, a mussel-like form that bites. The example is
+more specific than the scheme; any flora could fill the roles.
+
+| role | in the example | what it is for |
+| --- | --- | --- |
+| body | the mussel | the form itself |
+| base | meaty connective tissue | what it grows from; a rhizome |
+| moving part | a tongue | any part that is animated or reacts; optional |
+| flourish | barnacles | small things scattered at tasteful places: warts, tumours, fruiting bodies |
+| rooting | roots | joins the base to the ground; kept separate from the base for flexibility |
+
+Seen in the example sheet:
+
+- The body is shown in five states of opening: one form with a range, not
+  five forms.
+- Two thick valves, streaked along their length, a different lining inside,
+  a row of curved teeth down each edge, lumps where it seats.
+- The base is a low mound with one or more seats, each a pad with raised
+  concentric lips; it comes in sizes by number of seats.
+- The flourish is a small cluster of a few plates, in a few variants, about
+  a quarter of the body's size.
+- The rooting is a sprawl of thin limbs from one knot, each ending in a
+  flared foot, about as wide as the body is tall. It is the only thin part.
+
 ## Words used for the feeling
 
 More fantastic. More volume. Not noisy. Substance. Deft.
+
+Exaggerated. Beefy. Veiny. Comical. Exuberant. Gritty, in the manner of
+French graphic novels. Not realistic.
 
 ## Recurring across more than one source
 

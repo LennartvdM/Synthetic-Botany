@@ -808,3 +808,28 @@ thin, nearly featureless on their faces, and lie too obediently. One band
 on the twist ends in a blunt corner.
 
 Slower: each piece now takes 20 to 35 seconds to mesh.
+
+**Outer layer withdrawn.** "It's an exact layer. That's not what I meant, I
+meant partial, patches, strands running across." Given with a picture, and:
+"cables that are immersed in the core wood but also crudely applied. It's
+not a perfect fit, it's nature." Kept as
+`sketch/page5-exact-layer-withdrawn.png`.
+
+Replaced by cables: five thick round strands thrown across the shards. Each
+runs 35 to 75% of a piece and goes round at its own rate, with or against
+the grain (half a turn to a turn and a half more or less than the wood over
+a whole piece), so it crosses what is under it. Its section is the shape
+two overlapping circles share, which leaves a spine along the top. None is
+fitted: its depth wanders between half buried and barely touching, and it
+dives into the wood at both ends. Cables are the one thing allowed to blend
+into what they lie on; shards are still joined hard.
+`sketch/page5.png`, `sketch/page5-close.png`.
+
+First try was timid: thin and nearly all buried, they read as veins under a
+skin. Second: thicker (about a quarter to a third of the girth) and centred
+at the surface instead of under it.
+
+Not there: the cables are smooth all over, and next to the shards that
+reads as a softer stuff laid on, close to what was called squeezed before;
+the spine hardly shows; no place yet where one cable visibly crosses
+another; a ragged pit at the foot of the twist where a cable dives in.

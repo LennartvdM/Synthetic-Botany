@@ -1072,3 +1072,52 @@ Limits: a straight post only. No surface, so nothing here says how the
 shards and shell of page 5 go on. Windows are rarely open toward any one
 side; from the front the ball shows in two of five seeds. Strands neither
 split nor snap. About 9 seconds a run.
+
+**The ball off-centre.** The three lesser amounts of room were called
+largely redundant from outside, since what differs is inside. Asked for
+instead: the ball off the post's line, "a big variable in the appearance."
+
+Prediction, before running: a strand goes round the ball on whichever side
+it started. Off-centre, fewer strands start on the ball's outer side, so
+that side is covered thinly and opens first, and the bulge is one-sided.
+Once the ball's middle is at the edge of the bundle, almost no strand
+starts outside it: the ball will sit bare in a notch in the bundle's side,
+pressed against it and held by nothing. Nothing in these rules makes a
+strand reach round to hold something.
+
+Run: the ball moved off the post's line toward the right, in girths (0 is
+the middle, 1 puts the ball's middle about at the bundle's edge). A second
+view from outside was added to the drawing, from the right, facing the
+ball. Three strands in four give.
+
+- `off-centre-room-0.6.png`, `off-centre-room-1.2.png` Off 0, 0.35, 0.7, 1
+  and 1.35, at two amounts of room.
+- `off-centre-fine-steps.png` Off 0.3 to 0.7 in steps of 0.1, room 0.6.
+
+The prediction held. Widest single opening on the ball, room 0.6: 10
+degrees at the middle, 12 at 0.3, 22 at 0.4, 42 at 0.5, 79 at 0.6, 104 at
+0.7, 199 at 1, 240 at 1.35. From 0.4 on it faces straight outward, within
+20 degrees.
+
+By eye there are four states, not a smooth change:
+
+- Middle: a cage. Swollen all round, small openings wherever they fall.
+- 0.3 to 0.5: a cage with a face. One-sided bulge, a single opening toward
+  the outside, two or three strands still crossing the ball's outer side.
+- 0.6 to 0.7: a niche. No strand passes outside the ball. It sits bare in
+  a hollow of the bundle's side, strands parting above it and closing
+  below.
+- 1 and beyond: pressed against the side. The bundle dents to let it in
+  and carries on; the ball hangs outside with nothing round it.
+
+More room makes the dent and the bulge larger but does not change which
+state a position gives.
+
+So position does what room did not: it sets how much of the ball shows and
+which way it faces. And it shows the rule that is missing. Past about 0.6
+the wood yields to the ball but does not hold it. For the wood to keep an
+off-centre thing, some strands would have to go round its outer side on
+purpose.
+
+Also seen: at off 1.35, room 0.6, one pair of strands overlaps by 31%, the
+second such case. Both are at an extreme setting.

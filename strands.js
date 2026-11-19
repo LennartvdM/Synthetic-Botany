@@ -10,9 +10,10 @@
   function rng(seed) { let a = (seed * 2654435761) >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
   function settle(recipe) {
-    const P = Object.assign({ strands: 24, girth: 0.3, fill: 0.75, uneven: 0.4, height: 1.8, points: 91, twist: 0.4, taut: 0.35, stiff: 0.05, ball: { at: 0.45, r: 0.17, room: 0.6 }, giving: 0.75, passes: 700, seed: 1 }, recipe);
+    const P = Object.assign({ strands: 24, girth: 0.3, fill: 0.75, uneven: 0.4, height: 1.8, points: 91, twist: 0.4, taut: 0.35, stiff: 0.05, ball: { at: 0.45, r: 0.17, room: 0.6, off: 0 }, giving: 0.75, passes: 700, seed: 1 }, recipe);
     const r = rng(P.seed), n = P.strands, K = P.points, rho0 = P.girth * Math.sqrt(P.fill / n), S = [];
-    const c = P.ball ? [0, P.height * P.ball.at, 0] : null, room = P.ball ? P.ball.r * (1 + P.ball.room) : 0;
+    const c = P.ball ? [(P.ball.off || 0) * P.girth, P.height * P.ball.at, 0] : null,   // off: how far the ball is from the middle, in girths
+      room = P.ball ? P.ball.r * (1 + P.ball.room) : 0;
     // strands start packed in the section, the same at every height but for a slow turn
     for (let j = 0; j < n; j++) {
       const rho = rho0 * (1 + P.uneven * (r() - 0.5)), d = P.girth * Math.sqrt((j + 0.5) / n) * 0.85, a0 = j * GA, give = r() < P.giving ? 1 : 0.25 * r(), X = new Float64Array(K * 3);
@@ -45,11 +46,14 @@
     let inBall = 0; if (c) for (const s of S) for (let k = 0; k < K; k++) if (H(s.X[k * 3] - c[0], s.X[k * 3 + 1] - c[1], s.X[k * 3 + 2] - c[2]) < P.ball.r + s.rho * 0.9) inBall++;
     const cross = (y) => S.map((s) => { let k = 0; while (k < K - 2 && s.X[(k + 1) * 3 + 1] < y) k++; const t = (y - s.X[k * 3 + 1]) / ((s.X[(k + 1) * 3 + 1] - s.X[k * 3 + 1]) || 1e-9); return { x: s.X[k * 3] + (s.X[(k + 1) * 3] - s.X[k * 3]) * t, z: s.X[k * 3 + 2] + (s.X[(k + 1) * 3 + 2] - s.X[k * 3 + 2]) * t, rho: s.rho, give: s.give }; });
     const radius = (sec) => Math.max(...sec.map((q) => H(q.x, q.z) + q.rho));
-    // how much of the way round the ball's widest part is open: no strand between the ball and the outside
-    const open = (sec) => { let free = 0; const N = 720; for (let a = 0; a < N; a++) { const t = 2 * PI * a / N, ux = Math.cos(t), uz = Math.sin(t); if (!sec.some((q) => { const along = q.x * ux + q.z * uz; return along > 0 && Math.abs(q.x * uz - q.z * ux) < q.rho; })) free++; } return free / N; };
+    // how much of the way round the ball's widest part is open: no strand between the ball and the outside.
+    // Also which way the middle of the widest opening faces (0 is straight away from the bundle's middle).
+    const open = (sec) => { const N = 720, free = new Uint8Array(N); let count = 0; for (let a = 0; a < N; a++) { const t = 2 * PI * a / N, ux = Math.cos(t), uz = Math.sin(t); if (!sec.some((q) => { const x = q.x - c[0], z = q.z - c[2], along = x * ux + z * uz; return along > 0 && Math.abs(x * uz - z * ux) < q.rho; })) { free[a] = 1; count++; } }
+      let best = 0, at = 0; for (let a = 0; a < N; a++) { if (!free[a] || free[(a + N - 1) % N]) continue; let l = 0; while (l < N && free[(a + l) % N]) l++; if (l > best) { best = l; at = a + l / 2; } }
+      return { share: count / N, widest: best / N, faces: ((at / N * 360 + 180) % 360) - 180 }; };
     const mid = c ? cross(c[1]) : null, far = cross(P.height * 0.92), widths = S.reduce((v, s) => v + 2 * s.rho, 0), rhoMean = widths / (2 * n);
     return { S, K, ball: c && { c, r: P.ball.r, room }, cross, recipe: P,
-      measure: { bundle: radius(far), bulb: mid ? radius(mid) : 0, bulbPredicted: c ? Math.sqrt(room * room + radius(far) ** 2) : 0, open: mid ? open(mid) : 0, roomToOpen: widths / (2 * PI) - rhoMean, worstOverlap: worst, pointsInBall: inBall } };
+      measure: { bundle: radius(far), bulb: mid ? radius(mid) : 0, bulbPredicted: c ? Math.sqrt(room * room + radius(far) ** 2) : 0, open: mid ? open(mid).share : 0, widest: mid ? open(mid).widest : 0, faces: mid ? open(mid).faces : 0, roomToOpen: widths / (2 * PI) - rhoMean, worstOverlap: worst, pointsInBall: inBall } };
   }
 
   const api = { settle };

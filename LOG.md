@@ -329,3 +329,28 @@ multiples of six: at 1.1 they come in sixes with gaps; at 1.5 they reach 96.
   whether it divides. A recipe that close to a threshold is not reproducible
   across machines, which breaks "same recipe, same organism".
 - Not at rest, as above.
+
+## Sculpted references (`cheats/`): the first rule suspended, on request
+
+Twelve shapes made by hand, to be studied later for which of their features
+a growth rule can reach. None is grown. Each is built from a profile and a
+petal outline chosen by eye, and they are named for the flowers they are
+modelled on. The growth kernel does not use them and must not.
+
+`cheats/shapes.js` builds them, `cheats/index.html` shows them whole, cut or
+sliced, and `cheats/sheet.png` is all twelve.
+
+They were chosen to differ in how the cup or bell is put together:
+
+| built as | shapes |
+| --- | --- |
+| separate overlapping sheets in two rings of three | tulip, lily, fritillary, snowdrop (outer ring long, inner ring short and notched) |
+| flat separate sheets round a fused ruffled tube | daffodil |
+| one fused sheet with a lobed rim | foxglove (one side longer, one side bellied), bellflower (pointed lobes), bluebell (lobes rolled back), lily of the valley (mouth narrower than the body), angel's trumpet (pleated, lobes drawn to points) |
+| one sheet rolled so its edges overlap | calla |
+| one fused sheet closed at both ends, creased | lantern |
+
+Features in them that no rule here has produced yet: a wall that opens,
+runs parallel and opens again; a mouth narrower than the body; a rim that
+rolls back without folding; one side of a mouth longer than the other;
+sheets that overlap without crossing; a closed form.

@@ -992,3 +992,83 @@ Broke, or not there yet:
 - Under the orb the piece is hollow down to the ground: the bands were
   carried out and nothing fills the middle. Seen only when cut.
 - The orb touches nothing. It floats in its room.
+
+## Stepping back: strands with an inside (`strands.js`, `runs/008-strands-round-a-ball/`)
+
+The orb exposed the build under page 5. Its bands do not know about each
+other or about anything else, and the piece has no inside: the core "was
+just a massive abstract thing", and a foreign body put into it showed that
+by fitting awkwardly. Said in reply: with an inner world, the inner world
+would make space by itself, "AND add the flair of cables and shards that
+drift around the foreign body because not everything needs to give."
+
+Kept from page 5: its surface rules, the test pieces, material apart from
+form. Taken back from the withdrawn tree: strands that run unbroken from
+end to end, girth being how many pass.
+
+Tried small first, with no surface at all. A bundle of round strands fills
+a straight post. Each strand is a line of points that is pulled taut,
+resists bending (more if thick), and gives way to every other strand. A
+ball sits on the post's line. Each strand either gives the ball its room or
+does not; one that does not still may not pass through the ball itself.
+
+Prediction, written before the first run:
+
+1. The bundle swells round the ball by a budget, with no swelling rule:
+   strands that filled the section must go round, so the bulb's radius is
+   about sqrt(room radius^2 + bundle radius^2).
+2. Windows open by themselves once the room is big enough that the
+   strands, side by side, no longer reach round it: when the way round at
+   the ball's widest exceeds the sum of the strands' widths. Little room:
+   closed. Ample room: open.
+3. Strands that do not give end up lying on the ball inside the room, and
+   are seen crossing the windows.
+4. No strand ends inside another or inside the ball.
+
+Expected to disappoint: strands spread evenly, so windows will be many
+thin slits of equal width, not a few generous openings.
+
+Run, 24 strands, a straight post, ball of radius 0.17 a little below the
+middle. Drawn as slices only (`runs/008-strands-round-a-ball/draw.js`): seen
+from the front, cut lengthwise, cut across at the ball's widest. Pale
+strands give the ball its room; brown ones do not.
+
+- `room.png` No ball, then room 0.15, 0.6, 1.2 and 2 times the ball's
+  radius, three strands in four giving.
+- `giving.png` Room 1.2; all, three in four, half, one in four, none give.
+- `seeds.png` Room 1.2, three in four giving, five seeds.
+
+Against the predictions:
+
+1. Swelling by budget: holds for little room, runs over for ample. Bulb
+   0.45 against 0.44 at room 0.15; 0.51 against 0.48 at 0.6; 0.60 against
+   0.55 at 1.2; 0.73 against 0.64 at 2. Across seeds at room 1.2, from 3%
+   under to 15% over. The budget assumes strands packed solid round the
+   room; with ample room they are one loose ring with gaps, some riding on
+   others.
+2. A size of room at which windows open: wrong. There is no threshold.
+   Open share of the way round rises steadily: 2%, 11%, 16%, 26%. Strands
+   do not line up side by side until they run out; they bunch, leaving gaps
+   long before the sum of their widths is used up.
+3. Strands that do not give lie on the ball inside the room: yes, plainly
+   in every cut. At room 2 one is seen through a window, crossing behind
+   it.
+4. No strand inside another or the ball: holds (worst overlap under 5% of
+   two radii, no point in the ball) in every run but one. At room 2 one
+   pair overlaps by 37%. Not looked into.
+
+Expected to disappoint and did not: the windows are not even slits. The
+slow turn of the bundle bunches strands as they go round, and the openings
+come out few and unequal.
+
+Not predicted: the share of strands that give is by itself a dial from one
+kind of intrusion to the other. All give: a wide loose cage standing off
+the ball. None gives: the same strands packed tight on the ball, a small
+hard swelling, nothing open. That is the difference described for
+benevolent and malevolent, from one number. (A malevolent thing should
+also push, and the wood should fail; none of that is here.)
+
+Limits: a straight post only. No surface, so nothing here says how the
+shards and shell of page 5 go on. Windows are rarely open toward any one
+side; from the front the ball shows in two of five seeds. Strands neither
+split nor snap. About 9 seconds a run.

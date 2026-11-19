@@ -1406,3 +1406,109 @@ What this does not show, and must not be claimed from it:
   large pieces. Only next to the body is it fine.
 - Sheets were taken as whole rings linked only round the ring. Wood also
   holds from sheet to sheet. Not tried.
+
+**Two objections to run 009, both accepted.** "Your test doesn't vary the
+cables. But I also don't think you'll be able to test the meaning of girth
+in just a cross section." Its fibres were identical, so it could say where
+pieces of unlike size come from, never what a girth does; and stiffness is
+a property along a length.
+
+A different account, given: girths are given, and what differs is how each
+answers the body.
+
+- "Girthy cables are less flexible, which means that they either stop the
+  object from expanding, or give way to the object by sliding around it."
+- "The thinner a cable gets, the more flexible it becomes and the longer
+  it can hold on, yielding to the expanding object rather than falling
+  around it."
+
+On that account, fine roots over the body's face and heavy ones round its
+sides is a matter of who is left there.
+
+## Girth and give (`runs/010-girth-and-give/`)
+
+A lengthwise test. A post is a bundle of about 67 cables of unlike girth
+(radius 0.014 to 0.064, most of them thin), packed in its section. A ball
+grows from nothing on the post's line, or off it.
+
+Premise, the only place girth enters: a cable will not bend over a stretch
+shorter than its own stiff length, and that length rises with girth (as
+girth squared in the main runs; a beam under tension has such a length,
+and it goes as radius squared). Longer than that, every cable is a taut
+string. Cables cannot pass through each other or the ball, and in a
+collision the thinner gives more. Cable ends are held in height only: the
+ends of the bundle stay packed but may rearrange.
+
+Nothing tells any cable to stay on the ball or to leave it.
+
+Control: the same run with one stiff length for every cable.
+
+Predictions, before running:
+
+1. Bow. A thin cable in the ball's way bends over it where it is; a thick
+   one stays nearly straight. Greatest departure from its own straight
+   line: large for thin, small for thick.
+2. Shift. A thick cable in the ball's way is moved aside whole, its ends
+   too; a thin one's ends stay where they were.
+3. Contact. A thin cable lies on the ball along a length; a thick one
+   touches it at a place. So the ball's surface is covered by thin cables.
+4. In the control none of the three depends on girth, or only weakly
+   (the thinner still gives more in a collision).
+5. Not sure: with the ball off the post's line, whether the thick cables
+   end up on the near side, the far side, or both.
+
+"Stop the object from expanding" cannot be tested here: the ball's growth
+is set, not pushed. A stand-in is recorded: how hard each cable is pressed
+into the ball at the end.
+
+Runs. `stiffness-law.png`: ball as wide as the post, on its line; control,
+then stiff length rising as girth, girth squared, girth cubed.
+`smaller-ball-off-centre.png`: a smaller ball (0.18) on the line, half way
+to the post's edge, at the edge; and the control half way.
+`face-by-seed.png`: half way, four seeds. Thin cables pale, thick dark.
+Each column: from the front, cut lengthwise, cut across at the ball, cut
+across the end of the post. `cables.js` is the whole experiment.
+
+Against the predictions:
+
+1. Bow: holds. With stiff length as girth squared and the ball half way,
+   thin cables in its way bow 0.15, 0.21, 0.24, 0.19 over four seeds; thick
+   ones 0.10, 0.11, 0.11, 0.11. In the control the thin bowed less than the
+   thick (0.08 against 0.12, one seed).
+2. Shift: fails. Ends moved 0.01 to 0.05 whatever the girth. No cable was
+   moved aside whole.
+3. Contact: fails, and the other way round. Thick cables lie on the ball
+   (0.18 to 0.20 of length, gap none); thin ones mostly do not touch it
+   (0.00 to 0.09, standing 0.02 to 0.03 off). The thin are outside the
+   thick, not under them.
+4. Control: as expected for bow; contact and shift show no clear relation
+   to girth there either.
+5. Off the line: no sorting to a side. Counted over the ball's outer face,
+   four seeds: 12 thin, 13 middling, 13 thick with stiffness by girth; 3
+   thin, 14 middling, 11 thick in the control. So stiffness by girth puts
+   more thin cables over the face than the control does, but the thick are
+   there just as much.
+
+Stand-in for "stop the object": thick cables are pressed into the ball 5
+to 10 times harder than thin ones (0.15 against 0.02).
+
+Against the account given: "less flexible" shows (half the bow); "stop the
+object" cannot be tested but the stand-in agrees; "sliding around" was not
+seen; thin cables yield but do not hold on. Neither confirmed nor refuted,
+because the test is wrong in ways that bear on exactly those two points:
+
+- Nothing can slide around. Cable ends are kept packed in the bundle, so
+  no cable can move aside whole; and a ball as wide as the post leaves no
+  side to go to.
+- Nothing can hold on. There is no grip between a cable and the ball. A
+  thin cable has no way to stay on a surface that is moving out from under
+  it except by being pushed.
+- A rule of mine works against it: in a collision the thinner gives more.
+  That pushes thin cables off the ball and out behind the thick ones,
+  whatever their stiffness. It may be right or wrong; it was not in the
+  account given and it decided result 3.
+- The cables start straight and the ball grows from nothing among them.
+  "Hold on" suggests cables that were already lying on the body when it
+  was small. Not modelled.
+
+Each run takes about 20 seconds.

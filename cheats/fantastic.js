@@ -112,10 +112,10 @@
   ];
 
   // mesh a distance function: sample it on a grid (skipping blocks far from the surface), then one vertex per surface cell
-  function build(i) {
-    const f = SHAPES[i][1], h = 0.0145, ox = -1.03, oy = -0.07, oz = -1.03, nx = 143, ny = 124, nz = 143, nxy = nx * ny, d = new Float32Array(nx * ny * nz);
+  function mesh(f, name, h = 0.0145, top = 1.73) {
+    const ox = -1.03, oy = -0.07, oz = -1.03, nx = Math.ceil(2.06 / h) + 1, ny = Math.ceil((top + 0.07) / h) + 1, nz = nx, nxy = nx * ny, d = new Float32Array(nx * ny * nz);
     for (let k = 0; k < nz; k += 4) for (let j = 0; j < ny; j += 4) for (let a = 0; a < nx; a += 4) {
-      const c = f(ox + (a + 1.5) * h, oy + (j + 1.5) * h, oz + (k + 1.5) * h), far = Math.abs(c) > 0.085;
+      const c = f(ox + (a + 1.5) * h, oy + (j + 1.5) * h, oz + (k + 1.5) * h), far = Math.abs(c) > 5.9 * h;
       for (let kk = k; kk < Math.min(nz, k + 4); kk++) for (let jj = j; jj < Math.min(ny, j + 4); jj++) for (let ii = a; ii < Math.min(nx, a + 4); ii++)
         d[ii + nx * (jj + ny * kk)] = far ? c : f(ox + ii * h, oy + jj * h, oz + kk * h);
     }
@@ -148,9 +148,11 @@
       let occ = 0; for (const t of [0.03, 0.07, 0.14, 0.26]) occ += 1 - clamp(f(x + gx * t, y + gy * t, z + gz * t) / t, 0, 1);
       tone[q] = 1 - 0.22 * occ;
     }
-    return { name: SHAPES[i][0], pos: Float32Array.from(pos), idx: Uint32Array.from(idx), nrm, tone, centre: [0, 0.62, 0] };
+    return { name, pos: Float32Array.from(pos), idx: Uint32Array.from(idx), nrm, tone, centre: [0, 0.62, 0] };
   }
 
-  const api = { names: SHAPES.map((s) => s[0]), build };
+  const build = (i) => mesh(SHAPES[i][1], SHAPES[i][0]);
+  const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const api = { names: SHAPES.map((s) => s[0]), build, mesh, kit: { PI, TAU, GA, H, clamp, sstep, smin, smax, ball, egg, cone, limb, fold, plate } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Fantastic = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

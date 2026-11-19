@@ -1,5 +1,5 @@
 // Trees, as strands with an inside. A tree is a fixed number of fat strands and nothing else. Each strand
-// begins as a root on the ground, goes up the trunk with the rest, leaves with some of them along a limb
+// begins as a root, goes up the trunk with the rest, leaves with some of them along a limb
 // or carries on to the top, and ends in a point. Where strands share a way they are a bundle; a fork is the
 // bundle parting. The trunk's and limbs' lines are given; where each strand lies is not. That is settled:
 // every strand is pulled taut, resists bending, keeps to its bundle, and gives way to every other strand,
@@ -25,7 +25,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 12, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.02, roots: 0.6, giving: 0.75, passes: 500, ds: 0.025, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.02, roots: 0.6, giving: 0.75, passes: 700, ds: 0.025, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     const r = rng(P.seed), n = P.strands, ds = P.ds, trunk = line(P.trunk, ds), nT = trunk.length, R0 = trunk[0][3], rho0 = R0 * Math.sqrt(P.fill / n), turn = (i) => P.twist * TAU * i / nT;
     // every strand has a place in the bundle's section, and a girth of its own
     const S = Array.from({ length: n }, (_, j) => { const d = Math.sqrt((j + 0.5) / n), a = j * GA + 0.5 * (r() - 0.5); return { a: d * Math.cos(a), b: d * Math.sin(a), fat: 1 + P.uneven * (r() - 0.5), limb: -1, give: r() < P.giving ? 1 : 0.25 * r() }; });
@@ -34,7 +34,7 @@
     for (const [li, lb] of limbs.entries()) {
       const fi = lb.fi, ctrl = [trunk[Math.max(0, fi - 14)], trunk[fi], ...lb.L.path.map((p) => [p[0], p[1], p[2], 0])], all = line(ctrl, ds), skip = all.findIndex((p) => H(p[0] - trunk[fi][0], p[1] - trunk[fi][1], p[2] - trunk[fi][2]) < ds * 0.8);
       const own = all.slice(Math.max(1, skip + 1)), count = Math.max(1, Math.round(lb.L.share * n)), Rl = trunk[fi][3] * Math.sqrt(count / n);
-      own.forEach((p, i) => (p[3] = Rl * (1 - 0.7 * i / own.length)));
+      own.forEach((p, i) => (p[3] = Rl * (1 - 0.45 * i / own.length)));   // a limb keeps most of its girth to its end
       const [, Nn, Bn] = tf[fi], d = unit([0, 1, 2].map((k) => own[Math.min(own.length - 1, 8)][k] - trunk[fi][k])), dn = dot(d, Nn), db = dot(d, Bn), c = Math.cos(turn(fi)), s = Math.sin(turn(fi));
       S.filter((q) => q.limb < 0).sort((x, y) => ((y.a * c - y.b * s) * dn + (y.a * s + y.b * c) * db) - ((x.a * c - x.b * s) * dn + (x.a * s + x.b * c) * db)).slice(0, count).forEach((q) => (q.limb = li));
       lb.path = trunk.slice(0, fi + 1).concat(own); lb.frames = frames(lb.path); lb.scale = trunk[fi][3] / R0;
@@ -46,17 +46,19 @@
       return [(s.a - m.ca) / m.ext, (s.b - m.cb) / m.ext, m.n]; };
     for (const s of S) {
       const path = s.limb >= 0 ? limbs[s.limb].path : trunk, fr = s.limb >= 0 ? limbs[s.limb].frames : tf, fi = s.limb >= 0 ? limbs[s.limb].fi : -1, own = path.length - 1 - Math.max(0, fi);
-      const end = path.length - 1 - (s === S.find((q) => q.limb === s.limb) ? 0 : Math.round(own * 0.3 * r())), X = [], rho = [], goal = [], hold = [];
+      const first = s === S.find((q) => q.limb === s.limb), u1 = r(), u2 = r(), u3 = r(); s.snapped = !first && u1 < 0.6;   // some strands snap short of the end, and keep their girth to the break
+      const end = path.length - 1 - (first ? 0 : Math.round(own * (s.snapped ? 0.25 + 0.4 * u2 : 0.3 * u2))), fine = 0.12 + 0.2 * u3, X = [], rho = [], goal = [], hold = [];
       for (let i = 0; i <= end; i++) {
         const [u, v, m] = place(s, i), onLimb = fi >= 0 && i > fi, Rg = (onLimb ? path[i][3] : path[i][3] * Math.sqrt(m / n)) * 0.8, c = Math.cos(turn(i)), sn = Math.sin(turn(i)), a = u * c - v * sn, b = u * sn + v * c, [, Nn, Bn] = fr[i];
-        const tip = Math.max(0.12, Math.pow(Math.min(1, (end - i) * ds / 0.45), 0.7));   // it fines down to a point
+        const tip = s.snapped ? 1 : Math.max(0.12, Math.pow(Math.min(1, (end - i) * ds / fine), 0.7));   // or it fines down to a point
         X.push([0, 1, 2].map((k) => path[i][k] + (Nn[k] * a + Bn[k] * b) * Rg)); goal.push(path[i].slice(0, 3)); hold.push(P.hug);
-        rho.push(rho0 * s.fat * tip * (onLimb ? limbs[s.limb].scale * (0.45 + 0.55 * path[i][3] / path[fi + 1][3]) : path[i][3] / R0));
+        rho.push(rho0 * s.fat * tip * (onLimb ? limbs[s.limb].scale * (0.7 + 0.3 * path[i][3] / path[fi + 1][3]) : path[i][3] / R0));
       }
-      // its root: out along the ground the way it faces at the foot, curling a little, down to a point
-      const p0 = X[0], away = H(p0[0] - trunk[0][0], p0[2] - trunk[0][2]) > 1e-4 ? unit([p0[0] - trunk[0][0], 0, p0[2] - trunk[0][2]]) : [1, 0, 0], len = P.roots * (0.6 + 0.8 * r()), Kr = Math.max(6, Math.round(len / ds)), bend = 1.6 * (r() - 0.5), rx = [], rr = [], rg = []; let q = p0;
-      for (let m = 1; m <= Kr; m++) { const g = m / Kr, t = bend * g * g, dir = [away[0] * Math.cos(t) - away[2] * Math.sin(t), 0, away[0] * Math.sin(t) + away[2] * Math.cos(t)], rad = rho[0] * (0.15 + 0.85 * Math.pow(1 - g, 0.8));
-        q = [q[0] + dir[0] * ds, p0[1] + (rad * 0.6 - p0[1]) * sstep(0, 0.5, g), q[2] + dir[2] * ds]; rx.push(q); rr.push(rad); rg.push(q); }
+      // its root: the strand itself coming down from the foot of the trunk the way it faces there, heavy, and
+      // most often going into the ground. A few stay on it and run out to a point.
+      const p0 = X[0], away = H(p0[0] - trunk[0][0], p0[2] - trunk[0][2]) > 1e-4 ? unit([p0[0] - trunk[0][0], 0, p0[2] - trunk[0][2]]) : [1, 0, 0], len = P.roots * (0.4 + 0.6 * Math.pow(r(), 1.3)), Kr = Math.max(6, Math.round(len / ds)), bend = 2.6 * (r() - 0.5), dives = r() < 0.75, rx = [], rr = [], rg = []; let q = p0;
+      for (let m = 1; m <= Kr; m++) { const g = m / Kr, t = bend * g * g, dir = [away[0] * Math.cos(t) - away[2] * Math.sin(t), 0, away[0] * Math.sin(t) + away[2] * Math.cos(t)], rad = rho[0] * (dives ? 0.75 + 0.25 * (1 - g) : 0.25 + 0.75 * Math.pow(1 - g, 0.8));
+        q = [q[0] + dir[0] * ds, p0[1] + (rad * 0.6 - p0[1]) * sstep(0, 0.8, g) - (dives ? 0.35 * sstep(0.6, 1, g) : 0), q[2] + dir[2] * ds]; rx.push(q); rr.push(rad); rg.push(q); }
       s.root = Kr; s.K = Kr + X.length; const all = rx.reverse().concat(X), goals = rg.reverse().concat(goal);
       s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho)); s.hold = Float64Array.from(new Array(Kr).fill(0.12).concat(hold)); s.bend = P.stiff * Math.min(1.6, s.fat * s.fat);
     }
@@ -82,19 +84,19 @@
       S.forEach((s, i) => { for (let q = 0; q < s.K * 3; q++) s.X[q] += M[i][q]; });
       for (const s of S) for (let k = 0; k < s.K; k++) {   // to the orb, each as far as it is willing; and to the ground
         if (orb) { const keep = orb.r + s.rho[k] + (orb.room - orb.r) * s.give, dx = s.X[k * 3] - orb.c[0], dy = s.X[k * 3 + 1] - orb.c[1], dz = s.X[k * 3 + 2] - orb.c[2], d = H(dx, dy, dz) || 1e-9; if (d < keep) { const f = keep / d; s.X[k * 3] = orb.c[0] + dx * f; s.X[k * 3 + 1] = orb.c[1] + dy * f; s.X[k * 3 + 2] = orb.c[2] + dz * f; } }
-        if (s.X[k * 3 + 1] < s.rho[k] * 0.6) s.X[k * 3 + 1] = s.rho[k] * 0.6; }
+        if (s.goal[k * 3 + 1] > 0 && s.X[k * 3 + 1] < s.rho[k] * 0.6) s.X[k * 3 + 1] = s.rho[k] * 0.6; }   // but a root that dives is let through
     }
     // which way each strand faces outward: away from the middle of whatever wood is round it
     const big = R0 * 1.3, g = new Map(), kk = (x, y, z) => (Math.floor(x / big) + 512) * 1048576 + (Math.floor(y / big) + 512) * 1024 + Math.floor(z / big) + 512;
     S.forEach((s) => { for (let k = 0; k < s.K; k++) { const q = kk(s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]), b = g.get(q); if (b) b.push(s, k); else g.set(q, [s, k]); } });
-    for (const s of S) { s.O = []; let last = [1, 0, 0];
+    for (const s of S) { s.O = []; s.F = []; let last = [1, 0, 0];
       for (let k = 0; k < s.K; k++) { const x = s.X[k * 3], y = s.X[k * 3 + 1], z = s.X[k * 3 + 2]; let cx = 0, cy = 0, cz = 0, w = 0;
         for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let e = -1; e <= 1; e++) { const q = g.get(kk(x + a * big, y + b * big, z + e * big)); if (!q) continue; for (let t = 0; t < q.length; t += 2) { const o = q[t], l = q[t + 1], dx = o.X[l * 3] - x, dy = o.X[l * 3 + 1] - y, dz = o.X[l * 3 + 2] - z; if (dx * dx + dy * dy + dz * dz < big * big) { const m = o.rho[l] ** 2; cx += dx * m; cy += dy * m; cz += dz * m; w += m; } } }
-        let o = [-cx / w, -cy / w, -cz / w]; if (H(o[0], o[1], o[2]) < 0.25 * s.rho[k]) o = last; o = unit(o); if (k < s.root) { const t = sstep(0, 0.7, 1 - k / s.root); o = unit([o[0] * (1 - t), o[1] * (1 - t) + t, o[2] * (1 - t)]); } s.O.push(o); last = o; }
+        let o = [-cx / w, -cy / w, -cz / w]; s.F.push(H(o[0], o[1], o[2])); if (H(o[0], o[1], o[2]) < 0.25 * s.rho[k]) o = last; o = unit(o); if (k < s.root) { const t = sstep(0, 0.7, 1 - k / s.root); o = unit([o[0] * (1 - t), o[1] * (1 - t) + t, o[2] * (1 - t)]); } s.O.push(o); last = o; }
       for (let pass = 0; pass < 8; pass++) s.O = s.O.map((o, k) => (k === 0 || k === s.K - 1 ? o : unit([0, 1, 2].map((q) => 0.5 * o[q] + 0.25 * (s.O[k - 1][q] + s.O[k + 1][q])))));
     }
     let worst = 0, over = 0, pairs = 0; each((i, k, j, l, dx, dy, dz, d, want) => { const v = (want - d) / want; worst = Math.max(worst, v); pairs++; if (v > 0.15) over++; });
-    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, K: s.K, root: s.root, limb: s.limb, give: s.give })), orb, measure: { worstOverlap: worst, touching: pairs, overlapping: over }, recipe: P };
+    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped })), orb, measure: { worstOverlap: worst, touching: pairs, overlapping: over }, recipe: P };
   }
 
   const api = { grow };

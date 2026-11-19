@@ -1164,3 +1164,27 @@ Broke, or not there yet:
 - Ragged crumbs under the orb, where thin strand ends meet inside the
   room.
 - Cut in half, the inside is strands with gaps between them, not solid.
+
+**The casing does not fix the body.** The first trees were called
+questionable. Slivers, snapped ends, the rigid shell and splits were then
+laid on the strands (`sketch/page7-with-casing.png`), and judged: "I don't
+believe the outer casing solves the issues with the initial build."
+Agreed on looking: the same thin spikes, starfish roots and ring of tubes
+are under it. The casing code stays in page 7 but is switched off (`bare`).
+
+Second body, shown bare (`sketch/page7.png`, `sketch/page7-behind.png`).
+Read against page 5's approved pieces, the first body was wrong in
+proportion: 12 to 14 thin strands where page 5 had 6 broad bands; every
+strand tapered twice, along the trunk and again to a long point; roots laid
+flat on the ground as thin arms. Changed in `trees.js`: 8 to 10 strands;
+bands broader and flatter; limbs keep most of their girth; six ends in ten
+snap short at full girth and the rest fine down quickly; roots are heavy,
+come down from a foot raised off the ground, and three in four go into it.
+
+What it does: the trees have mass now. Broad faces, heavy limbs with
+broken or hooked ends, and the orb sits in a deep cradle.
+
+What is wrong: they stand on legs. Raising the foot and sending fat roots
+down from it left open air between the roots, so the trunk reads as a body
+on stilts, and with the heavy forked limbs above, as animals. Blunt ends
+are cut too cleanly. Third guess in a row at the body; not yet judged.

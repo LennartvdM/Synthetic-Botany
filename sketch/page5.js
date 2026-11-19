@@ -6,6 +6,7 @@
 // lean, and jog to one side, at uneven intervals.
 // Over that, in a few patches only, is a shell of the same wood: thin plates more rigid than what they sit
 // on. Each has a direction: its back is sunk out of sight and its front lies on top, pointed, blunt or stepped.
+// No plate passes through another: each is laid clear of those already there, cut back where it would meet one.
 // Rarest of all, a band or a plate has split along the grain: a coarse gap, with one side lifted.
 // The same four test pieces: a twist, a turn, a winding, and all three.
 // Throwaway like the other pages. Built with the clay kit from cheats/fantastic.js.
@@ -107,8 +108,8 @@
     // what is under it. Nearly all plates point the same way, back toward the foot of the piece and front
     // toward its tip; now and then one is the other way round. The front is not always a point: it may be cut
     // off blunt, or stepped, one side of it ending short of the other.
-    const plate = (i0, i1, forward, th0, wide, high, ending, P) => {
-      i0 = Math.max(0, i0); i1 = Math.min(M, i1); if (i1 - i0 < 10) return;
+    const makePlate = (i0, i1, forward, th0, wide, high, ending, P) => {
+      if (i1 - i0 < 10) return null;
       const on = [], outs = [], Rs = [], qs = [];
       for (let i = forward ? i0 : i1; forward ? i <= i1 : i >= i0; i += forward ? 2 : -2) {   // from its back to its front
         const [, Nn, Bn] = frames[i], R = G[i][3], q = Math.abs(i - (forward ? i0 : i1)) / (i1 - i0), th = th0 + TAU * o.turns * Math.pow(i / M, o.ramp || 1), out = [0, 1, 2].map((k) => Nn[k] * Math.cos(th) + Bn[k] * Math.sin(th));
@@ -127,7 +128,28 @@
       }
       const w1 = Rs[n - 1] * wide, r5 = rng(1 + Math.floor(r3() * 1e6));
       const end = ending === 'step' ? { skew: 0.4 * (r5() - 0.5), step: { u: 0.5 * (r5() - 0.5), side: r5() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r5()) } } : ending === 'blunt' ? { skew: (r5() < 0.5 ? -1 : 1) * (0.5 + 0.9 * r5()) } : { skew: 0 };   // a blunt front is cut on the slant, never square
-      all.push(shard(Object.assign({ C, O, W, Hh, deep: Rs[km] * 0.06, seed: 1 + Math.floor(r5() * 1e6), wiggle: o.wiggle === undefined ? 1 : o.wiggle }, P, end)));
+      return Object.assign({ C, O, W, Hh, deep: Rs[km] * 0.06, seed: 1 + Math.floor(r5() * 1e6), wiggle: o.wiggle === undefined ? 1 : o.wiggle }, P, end);
+    };
+    // plates give way to each other. A plate is laid only where it is clear of every plate laid before it.
+    // Where it would run into one, it is cut back to its longest clear stretch and made again over that, with
+    // its back sunk and its front raised as before; if too little is left, it is not laid at all. So no plate
+    // ever passes through another. One may still lie over another's sunk back, with room between.
+    const shell = [], laid = { whole: 0, cut: 0, none: 0 }, room = 0.015;
+    const plate = (i0, i1, forward, th0, wide, high, ending, P) => {
+      i0 = Math.max(0, i0 - (i0 % 2)); i1 = Math.min(M, i1 - (i1 % 2));
+      for (let go = 0; go < 4; go++) {
+        const K = makePlate(i0, i1, forward, th0, wide, high, ending, P); if (!K) break;
+        const n = K.C.length, hit = new Uint8Array(n);
+        for (let k = 0; k < n; k++) {
+          const T = unit([0, 1, 2].map((q) => K.C[Math.min(n - 1, k + 1)][q] - K.C[Math.max(0, k - 1)][q])), side = unit(cross(T, K.O[k])), up = cross(side, T);
+          for (let a = -3; a <= 3 && !hit[k]; a++) for (const v of [0, K.Hh[k] * 0.6]) { const pt = [0, 1, 2].map((q) => K.C[k][q] + side[q] * K.W[k] * a * 0.31 + up[q] * v); if (shell.some((A) => A.f(pt[0], pt[1], pt[2]) < room)) { hit[k] = 1; break; } }
+        }
+        if (!hit.some((h) => h)) { const sh = shard(K); all.push(sh); shell.push(sh); laid[go ? 'cut' : 'whole']++; return; }
+        let best = [0, -1], from = 0; for (let k = 0; k <= n; k++) if (k === n || hit[k]) { if (k - 1 - from > best[1] - best[0]) best = [from, k - 1]; from = k + 1; }
+        const a = best[0] + (best[0] > 0 ? 1 : 0), b = best[1] - (best[1] < n - 1 ? 1 : 0); if (b - a < 6) break;   // and a little clear of where it would have met
+        if (forward) { const z = i0; i0 = z + 2 * a; i1 = z + 2 * b; } else { const z = i1; i1 = z - 2 * a; i0 = z - 2 * b; }
+      }
+      laid.none++;
     };
     // a patch is one to three plates near each other, of unlike length and width, set off from each other along
     // the piece, with unlike fronts

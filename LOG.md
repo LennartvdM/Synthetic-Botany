@@ -914,3 +914,32 @@ read as sawn planks. Thinner, tapering, and slant-cut is better.
 Not there: the foot of the twist is a jumble of plates; a blunt or stepped
 front still has a little of the plank about it where it is seen square on;
 the inner band's split is deep and dark, more a trench than a split.
+
+The last state called great, with one thing disliked: two plates passing
+through each other. A pet peeve, argued: stacking assets through each
+other is how most games are built now, but where the join shows, both
+assets show, "and the tapestry unwinds." Since this is built by rule, a
+rule can prevent it.
+
+It is also this project's own rule, unkept until now: bodies give way to
+each other. Each plate was laid without knowing of any other.
+
+Now: a plate is laid only where it is clear of every plate laid before it,
+with a little room to spare. Where it would run into one, it is cut back
+to its longest clear stretch and made again over that, back sunk and front
+raised as before. If too little is left it is not laid. One plate may
+still lie over another's sunk back, with room between.
+
+Measured, as the share of plate volume that lies inside two plates at
+once: before 6.1, 5.5, 5.0 and 4.9% on the four pieces; now 0.0 on all
+four. Of about a dozen plates tried on a piece, three to seven go down
+whole, three to five are cut back, two to four are not laid. Looked at as
+well as measured: no crossing found in the views taken.
+
+Not covered: plates and the inner wood. A plate's back goes into the inner
+wood on purpose, and an inner shard that stands off can still come up
+through a plate. Only plate against plate is prevented.
+
+Cost: a plate cut back is short, and its rise from sunk to raised happens
+over that short length, so some stand up steeply like flakes, most at the
+foot of the twist.

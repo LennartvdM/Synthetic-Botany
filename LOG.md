@@ -700,3 +700,23 @@ two to four fat crested planks laid round a line, on four plain test
 pieces, one each for a twist, a turn, a winding, and all three. On the turn
 the plank on the outside does not take it, runs straight on and snaps, as
 in the drawing given earlier. Not yet judged by anyone but me.
+
+**Page 4 called a McFlurry**: "the stuff you squeeze through the mould so
+to speak, is buttery smooth." True of it and of the tree before it: both
+are a section pushed along a line, with the joins smoothed.
+
+Page 5 (`sketch/page5.js`, `sketchbook5.html`) drops sweeping and blending.
+A piece is a heap of shards laid along the grain. Each shard has two flat
+faces meeting at a ridge, starts somewhere and ends somewhere in a point,
+and is too stiff for the line it follows, so its far end stands off on the
+outside of a bend or a twist. Wide shards give the bulk, narrow ones lie on
+them. Joined hard, no blending.
+
+- `page5-first-too-stiff.png` Long shards as stiff as short ones: over a
+  whole bend they fly off, and with sawn-off ends the tops look like a
+  dropped stack of offcuts.
+- `page5.png` Standing off capped at about half a girth, every end a point.
+  The gesture holds and the surface is long flat faces, steps and splits.
+
+Not there: shard edges are jagged at the grid's size; the faces all run
+long and parallel, like stacked boards; no hollows or knots.

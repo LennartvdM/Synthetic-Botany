@@ -619,3 +619,22 @@ Broke, or not there yet:
 - Surfaces are smooth between crest and grooves. No bark.
 - Lone strands bend one way then the other like the rest, so nothing
   loops.
+
+**Marks, first way: stamped** (`marks-stamped.png`,
+`marks-stamped-close.png`, `snapped-end-close.png`). After being told the
+surface was too clean, with a drawing of three things: a strand that does
+not follow a bend and runs straight on, the same ending in splinters, and a
+branch that failed leaving a stub and a notch. And in words: springy and
+brittle at once; splinters and notches; parts resist a bend and growth may
+overshoot; branches that fail; twigs eaten into hollows; bark fresh, old,
+yielding, bladdering.
+
+Built: a stretch can fail and be left as a stub; a strand on the outside of
+a turn can run straight on and snap into slivers; and, on the finished
+surface, bark plates, hollows with swollen rims, and notches.
+
+The stub and the snap are made during the build and change what follows.
+The bark, hollows and notches are not: they were placed at random on a
+finished form, and nothing in the tree has an age. Called an anachronism,
+rightly. It shows: the marks sit on the wood like damage to a carving.
+This commit keeps that version as a record.

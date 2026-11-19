@@ -487,3 +487,53 @@ Broke, or not there yet:
 
 Open: what the traits are that the style needs (a first list is in
 `LANGUAGE.md`), and what form the boiled-down version takes.
+
+**Corrected: the cover was a billiard ball.** Said of the third build: it is
+an elastic body in a thick elastic sheet, both elastic, the inner more so,
+and the sheet deforms when it tears. The third build's cover was pulled
+back to the positions it started at, so it could rip but never give. That
+rule (clench) is removed. Four further builds of `tear.js`, same day:
+
+1. Stretch and bend only (`elastic-1-cracks-no-spill.png`). The cover
+   swells, then cracks in long straight branching lines that follow the
+   cells. Nothing comes out. Measured why: the inside's push came to 0.0001
+   a pass. In this kind of solver a stretched sheet pulls along its surface
+   and hardly at all inward, so wrapping something tightly does not
+   pressurise it. The clench had been hiding that.
+2. Push made a trait, squeeze: the tighter the sheet, the harder the body
+   comes out where bare. Contacts made mutual: what lies on the cover
+   presses it in, what squeezes past a torn edge drags it
+   (`elastic-2-balloons.png`). The cover now deforms: it shrinks as the body
+   leaves, and slits are forced into round mouths with a frilled edge. But
+   the body comes out as taut balloons larger than what is left, and the
+   same picture comes back across drag, squeeze, sag and sheet stiffness.
+3. Bulk: the body drawn back in proportion to how far out it has come, as a
+   solid would be (`elastic-3-mound-then-destroyed.png`). For a while the
+   body sits as a low mound filling an oval mouth, the first frame that is
+   not a bubble. Then the whole sheet tears off.
+4. The inside made to swell to a set size and settle. It still tears the
+   whole sheet off, at every size tried. So the runaway is not over-filling.
+   Not understood. `tear.js` is left in this state, with its viewer set to
+   the frame before it goes.
+
+Retracted from the entry above: "the cover stays whole and keeps its
+shape" was the fault, not a finding.
+
+What this run of builds shows about the tool, not the material: each fix
+was a rule added by hand to stand in for something a real solver for
+elastic solids does by itself (pressure from a tight wrap, a body with
+bulk, contact that pushes both ways, tears that do not follow the cells).
+
+## The same question in a material-point solver (`sim/`)
+
+Asked whether there are libraries that solve this. There are. Tried here:
+Taichi 1.7.4 and Warp 1.19 both install with pip under Python 3.13 on this
+machine (4 cores, no graphics card needed).
+
+`sim/burst.py` is the burst in Taichi's material-point method: about 137,000
+particles in a ball, the outer layer stiffer (the sheet), the inner softer
+(the body). Both are elastic solids. The body's size at ease grows. A sheet
+particle stretched past its limit fails and from then on only resists being
+squashed. Weak streaks as before. `sim/skin.py` turns particles into two
+surfaces. It needs Python with taichi, numpy, scipy and scikit-image; this
+is the first thing in the repository that is not plain JavaScript.

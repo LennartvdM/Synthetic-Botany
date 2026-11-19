@@ -17,12 +17,17 @@ input:focus-visible { outline: 2px solid var(--pick); outline-offset: 1px; }
 </style>
 
 <div id="bar">
-  <label>inflate <input id="steps" type="range" min="0" max="400" step="10" value="100"><output></output></label>
+  <label>time <input id="steps" type="range" min="0" max="400" step="10" value="90"><output></output></label>
+  <label>swell <input id="swell" type="range" min="1" max="1.8" step="0.02" value="1.28"><output></output></label>
   <label>strength <input id="strength" type="range" min="0.05" max="0.5" step="0.01" value="0.2"><output></output></label>
-  <label>clench <input id="clench" type="range" min="0.02" max="0.3" step="0.01" value="0.08"><output></output></label>
+  <label>sheet stiff <input id="stiff" type="range" min="0.05" max="0.7" step="0.01" value="0.3"><output></output></label>
+  <label>body stiff <input id="soft" type="range" min="0.02" max="0.5" step="0.01" value="0.12"><output></output></label>
+  <label>squeeze <input id="squeeze" type="range" min="0" max="0.6" step="0.01" value="0.1"><output></output></label>
+  <label>bulk <input id="bulk" type="range" min="0" max="0.2" step="0.005" value="0.03"><output></output></label>
+  <label>drag <input id="drag" type="range" min="0" max="1" step="0.05" value="0.2"><output></output></label>
   <label>thickness <input id="thick" type="range" min="0.02" max="0.16" step="0.01" value="0.06"><output></output></label>
-  <label>expanse <input id="expanse" type="range" min="0" max="0.6" step="0.02" value="0.2"><output></output></label>
-  <label>tension <input id="tension" type="range" min="0" max="0.5" step="0.01" value="0.15"><output></output></label>
+  <label>expanse <input id="expanse" type="range" min="0" max="0.6" step="0.01" value="0.05"><output></output></label>
+  <label>tension <input id="tension" type="range" min="0" max="0.5" step="0.01" value="0.05"><output></output></label>
   <label>sag <input id="sag" type="range" min="0" max="3" step="0.1" value="0.6"><output></output></label>
   <label>flaws <input id="flaws" type="range" min="1" max="7" step="1" value="4"><output></output></label>
   <label>seed <input id="seed" type="range" min="1" max="20" step="1" value="1"><output></output></label>
@@ -32,7 +37,7 @@ input:focus-visible { outline: 2px solid var(--pick); outline-offset: 1px; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="tear.js"></script>
 <script>
-const T = THREE, $ = (id) => document.getElementById(id), IDS = ['steps', 'strength', 'clench', 'thick', 'expanse', 'tension', 'sag', 'flaws', 'seed'];
+const T = THREE, $ = (id) => document.getElementById(id), IDS = ['steps', 'swell', 'strength', 'stiff', 'soft', 'squeeze', 'bulk', 'drag', 'thick', 'expanse', 'tension', 'sag', 'flaws', 'seed'];
 const renderer = new T.WebGLRenderer({ canvas: $('view'), antialias: true });
 renderer.outputEncoding = T.sRGBEncoding; renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
 const scene = new T.Scene(); scene.background = new T.Color(0x14242b);
@@ -41,7 +46,7 @@ scene.add(new T.HemisphereLight(0xeaf2f5, 0x33464e, 0.6));
 const sun = new T.DirectionalLight(0xfff3e2, 0.7); sun.position.set(3, 6, 4); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.02;
 Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 1, far: 20 }); scene.add(sun);
 const fill = new T.DirectionalLight(0xcfe3ee, 0.22); fill.position.set(-4, 2, -3); scene.add(fill);
-const floor = new T.Group(); floor.rotation.x = -Math.PI / 2; floor.position.y = -1.02;
+const floor = new T.Group(); floor.rotation.x = -Math.PI / 2; floor.position.y = -1.03;
 floor.add(new T.Mesh(new T.CircleGeometry(20, 64), new T.MeshBasicMaterial({ color: new T.Color(0x41565f).convertSRGBToLinear() })));
 const shade = new T.Mesh(new T.CircleGeometry(20, 64), new T.ShadowMaterial({ opacity: 0.3 })); shade.position.z = 0.002; shade.receiveShadow = true; floor.add(shade); scene.add(floor);
 const lin = (h) => new T.Color(h).convertSRGBToLinear();

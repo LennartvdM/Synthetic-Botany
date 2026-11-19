@@ -354,3 +354,33 @@ Features in them that no rule here has produced yet: a wall that opens,
 runs parallel and opens again; a mouth narrower than the body; a rim that
 rolls back without folding; one side of a mouth longer than the other;
 sheets that overlap without crossing; a closed form.
+
+## Sculpted references, second set (`cheats/fantastic.*`)
+
+The flower set was judged a likely dead end: too botanical, too thin. A
+second set was sculpted from picture samples of invented, bulbous forms. The
+brief for it: more fantastic, more volume, not noisy, with substance and
+deftness. Still sculpted, not grown, and still off limits to the kernel.
+
+Eight solid shapes, each a hand-built distance function of a few bold parts,
+meshed at one resolution (`cheats/fantastic.js`, viewer `fantastic.html`,
+sheet `fantastic.png`):
+
+| shape | how it is put together |
+| --- | --- |
+| plated dome | a core under ten thick plates laid in a spiral from the top, each standing off the core |
+| crowned globe | a globe split into ten gores by slits that close at the poles, held by eight knobbed prongs |
+| capped globe | a softly ribbed globe under a cap of seven pointed tongues, rings of spheres round the base |
+| finger tuft | twenty-four fat tapering fingers from one mound, each turning upward |
+| split pod | an egg-shaped shell cut by four slanting crescent openings over a smooth inner body, on three fins |
+| tiered caps | five hollow caps of falling size on one stalk, each overhanging the next |
+| scaled cup | a ball seated in three rings of thick scales, each ring wider open |
+| horned gourd | two swellings joined at a collar, the lower ribbed, six horns curling in over the top |
+
+What these have that the flower set did not: thickness everywhere; parts
+that stand off one another and leave gaps; a body inside a body; repetition
+round an axis at more than one count in the same form.
+
+Known flaw: a faint beaded line along some sharp edges (plate rims on the
+dome, slit edges on the pod). A small blend at the joins did not visibly
+remove it. It comes from meshing a sharp crease on a grid.

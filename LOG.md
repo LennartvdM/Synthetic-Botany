@@ -833,3 +833,29 @@ Not there: the cables are smooth all over, and next to the shards that
 reads as a softer stuff laid on, close to what was called squeezed before;
 the spine hardly shows; no place yet where one cable visibly crosses
 another; a ragged pit at the foot of the twist where a cable dives in.
+
+**Cables withdrawn.** Better, but smooth, as feared. "The layer needs to be
+its own thing, immersing it in the core wood doesn't mean it has to be
+smooth along with it, it also doesn't mean it has to be sunk into the wood
+at all times." And: treat it as a bark, but not a bark texture: "a more
+rigid but sporadic outer shell of the same material." Kept as
+`sketch/page5-cables-withdrawn.png`.
+
+Replaced by a shell: thin plates of the same flat-faced shards, in five
+patches a piece and nowhere else. A patch is two or three plates side by
+side, like one sheet split along the grain. The one new rule is rigidity:
+a plate is fixed at its middle and hardly bends or twists from there. So
+it fits only at that place. Where the piece curves away its ends lift
+clear and leave a gap beneath; where the piece curves toward it they bite
+in. Nothing says which. Plates are joined hard like everything else, and
+the blending the cables had is gone.
+
+- `sketch/page5-shell-too-rigid.png` Allowed to stand a whole girth off,
+  the plates are blades stuck on at angles.
+- `sketch/page5.png`, `sketch/page5-close.png` Held to a third of a girth
+  and made shorter. They sit as a broken shell, lifting at the ends.
+
+Not there: every plate has the same outline, long and pointed at both
+ends, so a patch reads as scales or stacked blades; plates are bare on
+their faces; on the outside of the turn they pile up; the foot of the
+winding piece has a clump of them.

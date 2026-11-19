@@ -4,12 +4,12 @@
 // it follows, so on the outside of a bend or a twist its far end stands off. Between its ends a shard has a
 // little give: it draws in or spreads, drifts and sinks. And its ridge and edges do not run true: they hold,
 // lean, and jog to one side, at uneven intervals.
-// Across all that run a few cables: thick round strands, partly sunk in the wood and partly standing off it,
-// each going its own way. Not a layer and not fitted.
+// Over that, in a few patches only, is a shell of the same wood: thin plates more rigid than what they sit
+// on, so they fit only where they are fixed and lift clear or bite in elsewhere.
 // The same four test pieces: a twist, a turn, a winding, and all three.
 // Throwaway like the other pages. Built with the clay kit from cheats/fantastic.js.
 (function () {
-  const { PI, TAU, H, clamp, sstep, smin } = Fantastic.kit;
+  const { PI, TAU, H, clamp, sstep } = Fantastic.kit;
   const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
   const unit = (a) => { const l = H(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }, lerp = (a, b, t) => a + (b - a) * t, mix = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
   function rng(seed) { let a = (seed * 2654435761) >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -49,13 +49,11 @@
       bi = clamp(Math.floor(at), 0, n - 2); bt = at - bi;
       const side = unit(cross(T, mix(K.O[bi], K.O[bi + 1], bt))), o = cross(side, T), d3 = [x - c[0], y - c[1], z - c[2]];
       const along = dot(d3, T), pre = at <= 0 || at >= n - 1 ? along : 0, v = dot(d3, o), w = lerp(K.W[bi], K.W[bi + 1], bt), h = lerp(K.Hh[bi], K.Hh[bi + 1], bt), s = lerp(L[bi], L[bi + 1], bt) + pre, u = dot(d3, side) - jog(s) * 0.16 * K.wiggle * w;
-      // a cable is round, not flat-faced: the shape two overlapping circles share, which leaves a spine along its top
-      if (K.round) { const e = 0.35 * w, a = rjog(s) * 0.2 * K.wiggle; return Math.max(H(u - e, v) - 1.35 * w * (1 + a), H(u + e, v) - 1.35 * w * (1 - a), -s, s - L[n - 1], pre ? -1 : Math.abs(along) - 0.03); }
       const xm = clamp(K.ridge + rjog(s) * 0.3 * K.wiggle, -0.85, 0.85) * w, yl = h * K.eL, yr = h * K.eR, lx = -(h - yl), ly = xm + w, rx = h - yr, ry = w - xm;
       // inside all of: the two faces of the roof, the two side walls, a floor well below, and the two ends
       return Math.max(((u + w) * lx + (v - yl) * ly) / H(lx, ly), ((u - xm) * rx + (v - h) * ry) / H(rx, ry), -u - w, u - w, -v - K.deep, -s, s - L[n - 1] + K.skew * u, pre ? -1 : Math.abs(along) - 0.03);   // and never out past a fold in its own line
     };
-    return { f, C: K.C, soft: !!K.round, reach: K.C.map((c, i) => K.W[i] + K.Hh[i] + K.deep) };
+    return { f, C: K.C, reach: K.C.map((c, i) => K.W[i] + K.Hh[i] + K.deep) };
   }
   // wood round a guide line that carries a girth. Two layers of shards on a hidden core: wide ones that give
   // the piece its bulk, and narrower, shorter ones lying on them.
@@ -88,24 +86,36 @@
     // the narrow ones: anywhere, any length, their far ends lifting
     for (let j = 0; j < (o.narrow || 14); j++) { const i0 = Math.round(M * 0.86 * r()), len = Math.round(M * (0.12 + 0.3 * r()));
       lay(i0, Math.min(M, i0 + len), TAU * r(), 0.7 + 0.1 * r(), 0.2 + 0.2 * r(), 0.14 + 0.14 * r(), o.lift * (0.4 + r()), 0.6, o.stiff, { ridge: 0.8 * (r() - 0.5), eL: 0.1 + 0.6 * r(), eR: 0.1 + 0.6 * r(), skew: 2 * (r() - 0.5) }); }
-    // cables: a few thick round strands thrown across all of that. Each runs only part of the way and goes
-    // round at its own rate, with or against the grain, so it crosses what is under it and crosses other
-    // cables. None is fitted: its depth wanders between half buried in the wood and barely touching it, and
-    // it dives in at both ends.
-    const nC = o.cables === undefined ? 5 : o.cables;
-    for (let j = 0; j < nC; j++) {
-      const i0 = Math.round(M * 0.55 * r3()), i1 = Math.min(M, i0 + Math.round(M * (0.35 + 0.4 * r3()))), depth = wander(1, r3, 0.1), base = 1.0 + 0.12 * r3();
-      turns = o.turns + (r3() < 0.5 ? -1 : 1) * (0.5 + 0.9 * r3());
-      lay(i0, i1, TAU * r3(), (q) => base + 0.2 * depth(q) - 0.5 * (1 - Math.min(1, q / 0.12, (1 - q) / 0.12)), 0.22 + 0.12 * r3(), 0.2, 0, 0.22, o.stiff * 0.6, { round: true });
+    // the shell: the same wood again, as plates, in a few patches and nowhere else. A plate is more rigid
+    // than what it sits on. It is fixed at its middle and hardly bends or twists from there, so it fits only
+    // at that place: where the piece curves away from it its ends lift clear and leave a gap beneath, and
+    // where the piece curves toward it they bite in. A plate is thin, so the gap shows.
+    const plate = (mid, half, th0, rho, wide, high, P) => {
+      const i0 = Math.max(0, mid - half), i1 = Math.min(M, mid + half), on = [], outs = [], Rs = []; if (i1 - i0 < 8) return;
+      for (let i = i0; i <= i1; i += 2) { const [, Nn, Bn] = frames[i], R = G[i][3], th = th0 + TAU * o.turns * Math.pow(i / M, o.ramp || 1), out = [0, 1, 2].map((k) => Nn[k] * Math.cos(th) + Bn[k] * Math.sin(th)); on.push([0, 1, 2].map((k) => G[i][k] + out[k] * R * rho)); outs.push(out); Rs.push(R); }
+      const n = on.length, km = clamp(Math.round((mid - i0) / 2), 1, n - 2), Tm = unit([0, 1, 2].map((k) => on[km + 1][k] - on[km - 1][k])), arc = new Array(n).fill(0);
+      for (let k = km + 1; k < n; k++) arc[k] = arc[k - 1] + H(on[k][0] - on[k - 1][0], on[k][1] - on[k - 1][1], on[k][2] - on[k - 1][2]);
+      for (let k = km - 1; k >= 0; k--) arc[k] = arc[k + 1] - H(on[k][0] - on[k + 1][0], on[k][1] - on[k + 1][1], on[k][2] - on[k + 1][2]);
+      const rigid = o.rigid === undefined ? 0.8 : o.rigid, C = [], O = [], W = [], Hh = [];
+      for (let k = 0; k < n; k++) {
+        // part way between lying on the piece and running dead straight through its middle, and never more than a third of a girth off
+        const off = [0, 1, 2].map((q) => on[km][q] + Tm[q] * arc[k] - on[k][q]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(rigid, 0.3 * Rs[k] / far), end = Math.min(1, k / (n * 0.22), (n - 1 - k) / (n * 0.22));
+        C.push([0, 1, 2].map((q) => on[k][q] + off[q] * stay)); O.push(unit(mix(outs[k], outs[km], rigid))); W.push(Math.max(0.004, Rs[k] * wide * Math.pow(end, 0.7))); Hh.push(Rs[k] * high * (0.5 + 0.5 * end));
+      }
+      all.push(shard(Object.assign({ C, O, W, Hh, deep: Rs[km] * 0.1, seed: 1 + Math.floor(r3() * 1e6), wiggle: o.wiggle === undefined ? 1 : o.wiggle }, P)));
+    };
+    // a patch is two or three plates side by side, like one sheet that has split along the grain
+    for (let j = 0; j < (o.patches === undefined ? 5 : o.patches); j++) {
+      const mid = Math.round(M * (0.14 + 0.72 * r3())), half = Math.round(M * (0.07 + 0.08 * r3())), th = TAU * r3(), rho = 0.92 + 0.16 * r3(), m = r3() < 0.5 ? 2 : 3;
+      for (let k = 0; k < m; k++) { const wide = 0.26 + 0.14 * r3();
+        plate(mid + Math.round(M * 0.08 * (r3() - 0.5)), Math.round(half * (0.7 + 0.5 * r3())), th + (k - (m - 1) / 2) * 0.62, rho + 0.06 * (r3() - 0.5), wide, 0.1 + 0.05 * r3(), { ridge: 0.6 * (r3() - 0.5), eL: 0.5 + 0.4 * r3(), eR: 0.5 + 0.4 * r3(), skew: 0 }); }
     }
-    turns = o.turns;
     // which shards are near which place, so that only those are asked
     const cell = 0.12, grid = new Map(), key = (x, y, z) => (x + 64) * 16384 + (y + 64) * 128 + z + 64;
     // a shard is entered only in the cells along its own line, not in every cell of the box round it
     all.forEach((s, i) => { const seen = new Set(); s.C.forEach((c, j) => { const m = s.reach[j] + 0.1;
       for (let x = Math.floor((c[0] - m) / cell); x <= Math.floor((c[0] + m) / cell); x++) for (let y = Math.floor((c[1] - m) / cell); y <= Math.floor((c[1] + m) / cell); y++) for (let z = Math.floor((c[2] - m) / cell); z <= Math.floor((c[2] + m) / cell); z++) { const k = key(x, y, z); if (seen.has(k)) continue; seen.add(k); const b = grid.get(k); if (b) b.push(i); else grid.set(k, [i]); } }); });
-    // shards are joined hard, with no blending. Cables alone are let sink into what they lie on.
-    return (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); if (!b) return 0.1; let d = 0.1; for (const i of b) if (!all[i].soft) d = Math.min(d, all[i].f(x, y, z)); for (const i of b) if (all[i].soft) d = smin(d, all[i].f(x, y, z), 0.03); return d; };
+    return (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); if (!b) return 0.1; let d = 0.1; for (const i of b) d = Math.min(d, all[i].f(x, y, z)); return d; };   // joined hard: no blending anywhere
   }
   const S = [
     ['twist', wood([[-0.1, -0.06, 0, 0.32], [-0.03, 0.5, 0, 0.29], [0.03, 1.05, 0, 0.24], [0.1, 1.62, 0, 0.15]], { seed: 1, turns: 1.3, ramp: 2, phase: 0.5, stiff: 0.5, lift: 0.25 })],

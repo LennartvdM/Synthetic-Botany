@@ -1,7 +1,8 @@
 // Sketchbook, page 5. Wood again, after page 4 came out like something squeezed through a nozzle.
 // Nothing here is swept or blended. A piece is a heap of shards laid along the grain: each shard has flat
 // faces meeting at a ridge, starts somewhere and ends somewhere, and is a little too stiff for the line
-// it follows, so on the outside of a bend or a twist its far end stands off.
+// it follows, so on the outside of a bend or a twist its far end stands off. Between its ends a shard has a
+// little give: it draws in or spreads, drifts and sinks, very slightly.
 // The same four test pieces: a twist, a turn, a winding, and all three.
 // Throwaway like the other pages. Built with the clay kit from cheats/fantastic.js.
 (function () {
@@ -36,19 +37,23 @@
   // wood round a guide line that carries a girth. Two layers of shards on a hidden core: wide ones that give
   // the piece its bulk, and narrower, shorter ones lying on them.
   function wood(guide, o) {
-    const M = 72, G = through(guide, M), frames = [], r = rng(o.seed || 1); let N = null;
+    const M = 72, G = through(guide, M), frames = [], r = rng(o.seed || 1), r2 = rng((o.seed || 1) + 100), give = o.give === undefined ? 1 : o.give; let N = null;
     for (let i = 0; i <= M; i++) { const T = unit([0, 1, 2].map((k) => G[Math.min(M, i + 1)][k] - G[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); frames.push([T, N, cross(T, N)]); }
     const all = [];
     const lay = (i0, i1, th0, rho, wide, high, lift, point, stiff, P) => {
       const C = [], O = [], W = [], Hh = [], n = i1 - i0; let run = 0, straight = null, T0 = null;
+      // a band is held at its ends and has give between them: it draws in or spreads a little, drifts a little
+      // to one side, and sinks a little, more than once along a long one. Slight, and never the same twice.
+      const waves = Math.max(1, Math.round(n / 24)), skew = 0.75 + 0.6 * r2(), draw = 0.14 * (r2() * 2 - 1) * give, drift = 0.16 * (r2() * 2 - 1) * give, sink = 0.12 * r2() * give;
+      const bow = (q) => Math.sin(PI * waves * Math.pow(q, skew)) * Math.sin(PI * q) ** 0.5;
       for (let i = i0; i <= i1; i += 2) {
         const [Tn, Nn, Bn] = frames[i], R = G[i][3], q = (i - i0) / n, th = th0 + TAU * o.turns * Math.pow(i / M, o.ramp || 1), out = [0, 1, 2].map((k) => Nn[k] * Math.cos(th) + Bn[k] * Math.sin(th));
-        const on = [0, 1, 2].map((k) => G[i][k] + out[k] * R * (rho + lift * q * q));
+        const b = bow(q), on = [0, 1, 2].map((k) => G[i][k] + out[k] * R * (rho + lift * q * q) + (Bn[k] * Math.cos(th) - Nn[k] * Math.sin(th)) * R * wide * drift * b);
         if (!straight) { straight = on; T0 = unit([0, 1, 2].map((k) => Tn[k] + (Bn[k] * Math.cos(th) - Nn[k] * Math.sin(th)) * TAU * o.turns * rho * R * 0.5)); } else run += H(G[i][0] - G[i - 2][0], G[i][1] - G[i - 2][1], G[i][2] - G[i - 2][2]);
         // too stiff for its line: part way between following it and running straight on from where it began
         // and never more than about half a girth off it
         const off = [0, 1, 2].map((k) => straight[k] + T0[k] * run - on[k]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff * q * q, 0.55 * R / far), p = [0, 1, 2].map((k) => on[k] + off[k] * stay);
-        C.push(p); O.push(out); W.push(Math.max(0.004, R * wide * (point ? Math.min(1, (1 - q) / point) : 1))); Hh.push(R * high * (point ? 0.5 + 0.5 * Math.min(1, (1 - q) / point) : 1));
+        C.push(p); O.push(out); W.push(Math.max(0.004, R * wide * (1 + draw * b) * (point ? Math.min(1, (1 - q) / point) : 1))); Hh.push(R * high * (1 - sink * Math.abs(b)) * (point ? 0.5 + 0.5 * Math.min(1, (1 - q) / point) : 1));
       }
       if (C.length > 1) all.push(shard(Object.assign({ C, O, W, Hh, deep: G[i0][3] * 0.5 }, P)));
     };
@@ -69,5 +74,5 @@
     ['winding', wood([[0, -0.06, 0, 0.3], [0.3, 0.4, 0.3, 0.27], [0, 0.8, 0.42, 0.24], [-0.3, 1.1, 0.1, 0.2], [0, 1.4, -0.2, 0.15], [0.25, 1.62, 0, 0.09]], { seed: 3, turns: 0.6, phase: 1.2, stiff: 0.45, lift: 0.25 })],
     ['all three', wood([[0.1, -0.06, 0, 0.34], [0.2, 0.5, 0, 0.3], [0.52, 0.98, 0.08, 0.24], [0.4, 1.48, 0.16, 0.2], [-0.16, 1.5, 0.08, 0.17], [-0.44, 1.06, -0.08, 0.14], [-0.1, 0.8, -0.22, 0.1], [0.3, 0.98, -0.34, 0.06]], { seed: 4, turns: 1.4, phase: 1.1, stiff: 0.45, lift: 0.25 })],
   ];
-  window.Fantastic = { names: S.map((s) => s[0]), build: (i) => Fantastic.mesh(S[i][1], S[i][0], 0.012, 1.9), mesh: Fantastic.mesh, kit: Fantastic.kit };
+  window.Fantastic = { names: S.map((s) => s[0]), build: (i) => Fantastic.mesh(S[i][1], S[i][0], 0.0085, 1.9), mesh: Fantastic.mesh, kit: Fantastic.kit };
 })();

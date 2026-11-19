@@ -720,3 +720,18 @@ them. Joined hard, no blending.
 
 Not there: shard edges are jagged at the grid's size; the faces all run
 long and parallel, like stacked boards; no hollows or knots.
+
+Page 5 called much better. Asked for next, with a drawing of straight
+jointed bands beside the same bands bowing between their joints: let bands
+sag and contract, "but only very subtly to imply elasticity and wear and
+tear."
+
+Added: between its ends each shard draws in or spreads (up to about 14% of
+its width), drifts to one side (up to about 16% of its width) and sinks a
+little, once along a short shard and more than once along a long one, never
+the same twice. Its ends stay where they were. `sketch/page5.png`,
+`sketch/page5-close.png`.
+
+Also meshed finer (0.0085 from 0.012), which takes the saw teeth off most
+shard edges; faint flats remain across wide faces where a shard's line is
+made of straight steps.

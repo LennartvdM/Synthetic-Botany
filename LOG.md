@@ -1301,3 +1301,108 @@ of middling bands, inside the heavy ones. What is wrong: the cage is now
 many bands of similar width side by side, striped like a gourd; the orb
 shows only as glow in the gaps; the fine roots are all inside the cage and
 none comes out over the heavy wood; the side limb is still ragged.
+
+**Fudging.** Said of both answers above: "You're solving this on a 'I need
+to apply extra cables around an orb' problem." And: no rush, no shortcuts;
+if it takes weeks to find the reason why there is a variation of girths
+round an encompassed body, then it takes weeks. Both answers are withdrawn
+as explanations. In both, girth was put in: first at random, then assigned
+by distance, with a table that only measured what had been assigned. The
+code stays in `trees.js` and page 7 as a record of the fudge.
+
+## Why girths differ round an enclosed body (`runs/009-why-girths-differ/`)
+
+No building. One question, taken in cross-section.
+
+Starting point, from the first rule this project had for wood: girth is
+how many pass. If that holds all the way down, a thin root is not another
+kind of thing; it is a few fibres going alone, and a heavy one is many
+going together. The question is then why a body inside the wood would
+leave some fibres in large groups and others nearly alone.
+
+Candidate reason. Wood is laid in sheets, one round another. A body
+swelling inside pushes all of them outward. A sheet that began at distance
+p from the middle and is pushed out past a body of radius R is stretched
+round its circumference by about sqrt(p^2 + R^2) / p: without limit near
+the middle, hardly at all far out. A sheet cannot stretch much, so it
+tears and draws together into a ribbon. An inner sheet has few fibres, so
+its ribbon is thin, and it lies nearest the body. An outer sheet has many,
+tears less, and stays a broad band further off.
+
+Experiment: a cross-section. Equal fibres (discs) in concentric rings fill
+a round trunk. Each fibre is linked to its two neighbours in its own ring;
+a link snaps when stretched past a limit; link strengths differ a little
+(the one thing put in). Fibres cannot overlap each other or the body.
+Nothing else. A round body grows from nothing at the middle.
+
+Predictions, before running:
+
+1. Every ring tears. The inner rings first, the outer last or not at all
+   for a small body.
+2. The pieces are graded: mean number of fibres in a piece rises with the
+   ring's original distance from the middle.
+3. After the body has grown, the pieces lie in order: those from inner
+   rings nearest the body.
+4. Unsure, and the result decides it: whether a ring tears once (one
+   ribbon to a ring, girth simply proportional to the ring's size) or many
+   times. With nothing to hold a fibre in place round the circumference, a
+   torn ring has lost its tension, which argues for once. But discs of
+   neighbouring rings sit in each other's hollows like gear teeth, which
+   may hold arcs in place and tear them again.
+
+What would count against the candidate: pieces of the same size from every
+ring; or no order by distance; or rings that do not tear but slide aside
+whole.
+
+Run: 9 rings, 278 fibres, links snapping at 25% stretch give or take a
+fifth. `body-size.png` (no body, then a body of 0.3, 0.6 and 0.9 of the
+trunk's radius), `seeds.png` (body 0.6, four more seeds), `limit.png`
+(links snapping at 10, 25, 50 and 100% stretch). Rings are shaded from
+pale (innermost) to dark (outermost) so that where each ends up can be
+read. `rings.js` is the whole experiment.
+
+Against the predictions:
+
+1. Every ring tears, inner first: holds. Seed 1, body growing to 0.6:
+   first tears at body size 0.07, 0.15, 0.18, 0.22, 0.30, 0.33, 0.35,
+   0.43, 0.45, ring by ring outward. With a body of 0.3 the three outer
+   rings are still whole.
+2. Pieces graded by the ring's distance: holds. Mean fibres to a piece
+   over five seeds, rings 1 to 9: 5.0, 7.5, 10.0, 13.9, 11.9, 18.5, 23.9,
+   41.7, 56.0. Smallest piece 2, largest 56.
+3. Pieces lie in order: holds. Mean distance off the body, rings 1 to 9:
+   0.06, 0.07, 0.14, 0.18, 0.23, 0.27, 0.33, 0.39, 0.48.
+4. Once or many times: mostly once or twice, at most four. The outermost
+   ring always once. Weaker links tear more often (three or four tears in
+   most rings at 10%); stronger links once each (50%). At 100% the middle
+   rings tore more than at 50%, which is not understood; one seed.
+
+Nothing counted against the candidate: sizes differ by ring, they lie in
+order, and no ring slid aside whole.
+
+Not predicted, and the largest thing in the pictures: the tears line up.
+Once an inner ring has opened, the next tears beside it, and the body
+breaks out through all the layers on one side. In seed 2 it is bare on
+that side. The wood is left as a crescent, many layers deep on one side
+and one or none on the other, with the body off-centre in it. The fine
+inner pieces do not spread round the body: they are swept together on the
+far side from the opening.
+
+So, in this toy, a difference of girths and an order by distance both
+follow from three premises: wood is in sheets, a sheet cannot stretch
+far, and an inner sheet is stretched more. Girth was not put in.
+
+What this does not show, and must not be claimed from it:
+
+- It is a cross-section. Nothing here has length, so nothing here is a
+  root. Whether a torn sheet draws together into a cord running over the
+  body, anchored above and below, is the next question and is not answered.
+- Crossing. In the pictures given, fine roots cross each other over the
+  body's face. Here the fine pieces sit together away from the opening,
+  and nothing crosses anything. Unexplained.
+- Forking. A tear that stops part-way along a sheet would leave a fork,
+  but there is no "along" here. Unexplained.
+- "Mostly thin." By count of fibres most of the wood here is in a few
+  large pieces. Only next to the body is it fine.
+- Sheets were taken as whole rings linked only round the ring. Wood also
+  holds from sheet to sheet. Not tried.

@@ -1595,3 +1595,51 @@ Wrong, or not there:
 - No crossing and no forking. Cables here are straight and parallel to
   begin with, so there is nothing to cross.
 - Run with one girth distribution, one ball size, one starting place.
+
+**Hold against resist.** Run 011 again, varying the two numbers that
+decide how far the body goes: how firmly it is held to where it began
+(hold, 0.02 in run 011) and how hard thick cables push it (resist, 1).
+Wanted, from the pictures given: a body still in the wood, half out, with
+a spread of thin roots over its face.
+
+Prediction, before running: a trade-off with no good middle. Held
+firmly, the ball cannot escape the thick cables, so they are pushed out
+over its face as in run 010 (many cables over the face, thick among
+them). Held loosely, it leaves as in run 011 (one or two thin). Whether
+any setting gives many over the face and mostly thin is the question; I
+expect not, because the thin are carried out only by a ball that moves.
+
+Runs: `hold-resist-1.png`, `hold-resist-0.4.png` (hold 0.02, 0.05, 0.12,
+0.3 at two strengths of resist), `hold-fine.png` (hold 0.025 to 0.04).
+Seed 1, ball starting 0.3 of the post's radius off its line.
+
+Found on the way: the strength of resist made no difference at all. In
+the code it multiplied both the push and the weight the push was averaged
+by, so it cancelled; it was only ever on or off. Fixed. After the fix only
+the ratio of hold to resist matters (hold 0.02 with resist 0.5 gives the
+same as hold 0.04 with resist 1), so there is one dial, not two.
+
+Where the ball ends, in the post's radius from its line, and the cables
+over its outer face (thin, middling, thick):
+
+  hold 0.02   1.05   1, 1, 0
+  hold 0.025  0.92   1, 1, 0
+  hold 0.03   0.71   2, 3, 1
+  hold 0.035  0.31   2, 5, 5
+  hold 0.05+  0.30   2, 6, 5
+
+The prediction held: there is no setting with many cables over the face
+and mostly thin. The change from out to in is steep (between 0.025 and
+0.035), and the one setting in the middle, hold 0.03, has the ball half
+out under six cables of mixed girth.
+
+The telling number is the thin column: two, at every setting. Holding the
+ball in or letting it go changes which thick and middling cables are left
+behind, not how many thin ones are carried out. The thin over the face
+are the thin that began there, and the ball's outer side starts at the
+rim of the post, where there are few cables of any girth.
+
+So in this model girth decides who is left behind, and nothing decides
+who comes over. The spread of fine roots over a body in the pictures has
+to come from somewhere else: cables drawn over it from the sides, or
+wood that grows over it after it is there. Neither is in any test so far.

@@ -782,3 +782,29 @@ along a shard.
   smooth again.
 
 Not there: thin tips still jagged at the mesh's size; no hollows or knots.
+
+Knots and hollows put off: "one step ahead of what needs to be done."
+Asked for first: "a secondary layer of bands around the branch. It's not
+necessarily bark, still core wood, but the outer layer."
+
+Added, as read here: four broad thin bands of the same shards lying over
+everything else. They do not close round the piece. The inner wood shows
+in the gaps between them, at the foot where every second band starts above
+the ground, and past where each one ends. They go round 0.3 of a turn more
+than the inner wood over the length of a piece, so the two grains cross at
+a slight angle. They have the same give and the same wandering edges.
+`sketch/page5.png`, `sketch/page5-close.png`; the state before is kept as
+`sketch/page5-before-outer-layer.png`.
+
+Broke on the way: stray bits in the air beside the winding piece. An outer
+band on the inside of a tight bend has a line that folds back on itself,
+and a shard's shape was unbounded past such a fold. Now bounded, and lines
+are kept fair.
+
+What it looks like: there are plainly two layers now, with depth between
+them. But in places, most on the twist and at the foot of the turn, the
+outer bands read as cloth wound round the piece, not wood: they are broad,
+thin, nearly featureless on their faces, and lie too obediently. One band
+on the twist ends in a blunt corner.
+
+Slower: each piece now takes 20 to 35 seconds to mesh.

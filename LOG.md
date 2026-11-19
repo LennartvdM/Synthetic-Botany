@@ -859,3 +859,24 @@ Not there: every plate has the same outline, long and pointed at both
 ends, so a patch reads as scales or stacked blades; plates are bare on
 their faces; on the outside of the turn they pile up; the foot of the
 winding piece has a clump of them.
+
+**The shell approved**: "Gorgeous. I'm happy with this." That state is kept
+as `sketch/page5-shell-approved.png`. Asked for next: "cracks across its
+lengths following the curves, but sporadic, even more sporadic than the
+casing."
+
+Added: a crack is a narrow split down from a band's face, running with the
+grain along half to four fifths of the band. It keeps to the band's curve
+but has its own wandering line, is widest and deepest at its middle and
+closes at both ends. On a thin plate it goes right through. Three a piece:
+one on a band of the inner wood, two on plates of the shell.
+`sketch/page5.png`, `sketch/page5-cracks-from-behind.png`.
+
+Tries: by chance per band, the count ran from one to seven a piece, and the
+cracks were short and wide, like slots. Fixed at three and made longer and
+narrower, they fell below what the mesh holds and came out as dotted
+lines. Widened again to about three cells at the mouth.
+
+Not there: with three a piece most land out of sight from any one side;
+from the front of the page as it opens, hardly one shows. Crack ends are
+still dotted where they close. No crack crosses from one band to the next.

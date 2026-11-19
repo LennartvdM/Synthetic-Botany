@@ -6,6 +6,7 @@
 // lean, and jog to one side, at uneven intervals.
 // Over that, in a few patches only, is a shell of the same wood: thin plates more rigid than what they sit
 // on, so they fit only where they are fixed and lift clear or bite in elsewhere.
+// Rarest of all, a band or a plate has a crack along it: a thin split that keeps to the grain.
 // The same four test pieces: a twist, a turn, a winding, and all three.
 // Throwaway like the other pages. Built with the clay kit from cheats/fantastic.js.
 (function () {
@@ -34,6 +35,7 @@
     const n = K.C.length, L = [0], Tv = K.C.map((c, i) => unit([0, 1, 2].map((k) => K.C[Math.min(n - 1, i + 1)][k] - K.C[Math.max(0, i - 1)][k])));
     for (let i = 1; i < n; i++) L.push(L[i - 1] + H(K.C[i][0] - K.C[i - 1][0], K.C[i][1] - K.C[i - 1][1], K.C[i][2] - K.C[i - 1][2]));
     const rw = rng(K.seed), wmax = Math.max(0.05, ...K.W), jog = wander(L[n - 1], rw, wmax), rjog = wander(L[n - 1], rw, wmax);   // its whole run wanders a little side to side, and its ridge wanders more
+    const ck = K.crack, cjog = ck ? wander(L[n - 1], rng(K.seed + 7), wmax) : null;   // a crack keeps to the grain but has its own wandering line
     const f = (x, y, z) => {
       // the nearest stretch of its line: found roughly first, then exactly near there
       let near = 0, nd = 1e9; for (let i = 0; i < n; i += 6) { const c = K.C[i], q = (x - c[0]) ** 2 + (y - c[1]) ** 2 + (z - c[2]) ** 2; if (q < nd) { nd = q; near = i; } }
@@ -51,16 +53,25 @@
       const along = dot(d3, T), pre = at <= 0 || at >= n - 1 ? along : 0, v = dot(d3, o), w = lerp(K.W[bi], K.W[bi + 1], bt), h = lerp(K.Hh[bi], K.Hh[bi + 1], bt), s = lerp(L[bi], L[bi + 1], bt) + pre, u = dot(d3, side) - jog(s) * 0.16 * K.wiggle * w;
       const xm = clamp(K.ridge + rjog(s) * 0.3 * K.wiggle, -0.85, 0.85) * w, yl = h * K.eL, yr = h * K.eR, lx = -(h - yl), ly = xm + w, rx = h - yr, ry = w - xm;
       // inside all of: the two faces of the roof, the two side walls, a floor well below, and the two ends
-      return Math.max(((u + w) * lx + (v - yl) * ly) / H(lx, ly), ((u - xm) * rx + (v - h) * ry) / H(rx, ry), -u - w, u - w, -v - K.deep, -s, s - L[n - 1] + K.skew * u, pre ? -1 : Math.abs(along) - 0.03);   // and never out past a fold in its own line
+      let d = Math.max(((u + w) * lx + (v - yl) * ly) / H(lx, ly), ((u - xm) * rx + (v - h) * ry) / H(rx, ry), -u - w, u - w, -v - K.deep, -s, s - L[n - 1] + K.skew * u, pre ? -1 : Math.abs(along) - 0.03);   // and never out past a fold in its own line
+      // a crack: a narrow split down from the face, widest and deepest at its middle and closing to nothing at both ends
+      if (ck && s > ck.s0 * L[n - 1] && s < ck.s1 * L[n - 1]) {
+        const open = Math.pow(Math.sin(PI * (s / L[n - 1] - ck.s0) / (ck.s1 - ck.s0)), 0.3), cu = clamp(ck.u + 0.2 * cjog(s), -0.75, 0.75) * w, top = cu < xm ? yl + (cu + w) * (h - yl) / (xm + w) : yr + (w - cu) * (h - yr) / (w - xm);
+        d = Math.max(d, ck.wide * open * (1 - Math.max(0, top - v) / (ck.deep * open + 1e-6)) - Math.abs(u - cu));
+      }
+      return d;
     };
     return { f, C: K.C, reach: K.C.map((c, i) => K.W[i] + K.Hh[i] + K.deep) };
   }
   // wood round a guide line that carries a girth. Two layers of shards on a hidden core: wide ones that give
   // the piece its bulk, and narrower, shorter ones lying on them.
   function wood(guide, o) {
-    const M = 216, G = through(guide, M), frames = [], r = rng(o.seed || 1), r2 = rng((o.seed || 1) + 100), r3 = rng((o.seed || 1) + 200), give = o.give === undefined ? 1 : o.give; let N = null;
+    const M = 216, G = through(guide, M), frames = [], r = rng(o.seed || 1), r2 = rng((o.seed || 1) + 100), r3 = rng((o.seed || 1) + 200), r4 = rng((o.seed || 1) + 300), give = o.give === undefined ? 1 : o.give; let N = null;
     for (let i = 0; i <= M; i++) { const T = unit([0, 1, 2].map((k) => G[Math.min(M, i + 1)][k] - G[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); frames.push([T, N, cross(T, N)]); }
     const all = []; let turns = o.turns;
+    // cracks are rarer than anything else here: one band of the inner wood has one, and two plates of the shell
+    const crackAt = { band: Math.floor(6 * r4()), plates: [Math.floor(10 * r4()), Math.floor(10 * r4())] }; let plates = 0;
+    const crack = (yes) => { const s0 = 0.06 + 0.25 * r4(), len = 0.45 + 0.35 * r4(), u = 0.8 * (r4() - 0.5), wide = 0.017 + 0.006 * r4(), deep = 0.06 + 0.04 * r4(); return yes && o.cracks !== 0 ? { s0, s1: Math.min(0.96, s0 + len), u, wide, deep } : null; };
     const lay = (i0, i1, th0, rho, wide, high, lift, point, stiff, P) => {
       const fine = (q) => Math.min(1, (1 - q) / point, i0 ? q / 0.3 : 1);
       const C = [], O = [], W = [], Hh = [], n = i1 - i0; let run = 0, straight = null, T0 = null;
@@ -82,7 +93,7 @@
     };
     // the wide ones: side by side all the way round, most from the ground up, ending at different heights
     const nA = o.wide || 6;
-    for (let j = 0; j < nA; j++) lay(0, Math.round(M * (j % 3 === 0 ? 1 : 0.55 + 0.45 * r())), o.phase + TAU * (j + 0.4 * (r() - 0.5)) / nA, 0.56, 3.6 / nA * (0.85 + 0.3 * r()), 0.2 + 0.2 * r(), 0, 0.3, o.stiff * 0.3, { ridge: 0.7 * (r() - 0.5), eL: 0.2 + 0.5 * r(), eR: 0.2 + 0.5 * r(), skew: 1.5 * (r() - 0.5) });
+    for (let j = 0; j < nA; j++) lay(0, Math.round(M * (j % 3 === 0 ? 1 : 0.55 + 0.45 * r())), o.phase + TAU * (j + 0.4 * (r() - 0.5)) / nA, 0.56, 3.6 / nA * (0.85 + 0.3 * r()), 0.2 + 0.2 * r(), 0, 0.3, o.stiff * 0.3, { ridge: 0.7 * (r() - 0.5), eL: 0.2 + 0.5 * r(), eR: 0.2 + 0.5 * r(), skew: 1.5 * (r() - 0.5), crack: crack(j === crackAt.band) });
     // the narrow ones: anywhere, any length, their far ends lifting
     for (let j = 0; j < (o.narrow || 14); j++) { const i0 = Math.round(M * 0.86 * r()), len = Math.round(M * (0.12 + 0.3 * r()));
       lay(i0, Math.min(M, i0 + len), TAU * r(), 0.7 + 0.1 * r(), 0.2 + 0.2 * r(), 0.14 + 0.14 * r(), o.lift * (0.4 + r()), 0.6, o.stiff, { ridge: 0.8 * (r() - 0.5), eL: 0.1 + 0.6 * r(), eR: 0.1 + 0.6 * r(), skew: 2 * (r() - 0.5) }); }
@@ -108,7 +119,7 @@
     for (let j = 0; j < (o.patches === undefined ? 5 : o.patches); j++) {
       const mid = Math.round(M * (0.14 + 0.72 * r3())), half = Math.round(M * (0.07 + 0.08 * r3())), th = TAU * r3(), rho = 0.92 + 0.16 * r3(), m = r3() < 0.5 ? 2 : 3;
       for (let k = 0; k < m; k++) { const wide = 0.26 + 0.14 * r3();
-        plate(mid + Math.round(M * 0.08 * (r3() - 0.5)), Math.round(half * (0.7 + 0.5 * r3())), th + (k - (m - 1) / 2) * 0.62, rho + 0.06 * (r3() - 0.5), wide, 0.1 + 0.05 * r3(), { ridge: 0.6 * (r3() - 0.5), eL: 0.5 + 0.4 * r3(), eR: 0.5 + 0.4 * r3(), skew: 0 }); }
+        plate(mid + Math.round(M * 0.08 * (r3() - 0.5)), Math.round(half * (0.7 + 0.5 * r3())), th + (k - (m - 1) / 2) * 0.62, rho + 0.06 * (r3() - 0.5), wide, 0.1 + 0.05 * r3(), { ridge: 0.6 * (r3() - 0.5), eL: 0.5 + 0.4 * r3(), eR: 0.5 + 0.4 * r3(), skew: 0, crack: crack(crackAt.plates.includes(plates++)) }); }
     }
     // which shards are near which place, so that only those are asked
     const cell = 0.12, grid = new Map(), key = (x, y, z) => (x + 64) * 16384 + (y + 64) * 128 + z + 64;

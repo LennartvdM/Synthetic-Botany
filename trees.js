@@ -2,8 +2,10 @@
 // begins as a root, goes up the trunk with the rest, leaves with some of them along a limb
 // or carries on to the top, and ends in a point. Where strands share a way they are a bundle; a fork is the
 // bundle parting. The trunk's and limbs' lines are given; where each strand lies is not. That is settled:
-// every strand is pulled taut, resists bending, keeps to its bundle, and gives way to every other strand,
-// to the ground, and to an orb if the tree holds one (see strands.js for that by itself).
+// every strand is anchored at the far end of its root and nowhere else, is pulled taut, resists bending, and
+// gives way to every other strand, to the ground, and to an orb if the tree holds one. Only the bundle as
+// a whole is kept on its line. So whatever pushes a strand aside is felt all the way along it: there is
+// tension, from the root's anchor to the strand's end.
 // Nothing here has a surface. grow() returns where the strands go, how thick they are and which way each
 // faces outward. No dependencies. Works as a plain <script> (globalThis.Trees) and in Node.
 (function (root) {
@@ -25,7 +27,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.02, roots: 0.6, giving: 0.75, passes: 700, ds: 0.025, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.001, roots: 0.6, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     const r = rng(P.seed), n = P.strands, ds = P.ds, trunk = line(P.trunk, ds), nT = trunk.length, R0 = trunk[0][3], rho0 = R0 * Math.sqrt(P.fill / n), turn = (i) => P.twist * TAU * i / nT;
     // every strand has a place in the bundle's section, and a girth of its own
     const S = Array.from({ length: n }, (_, j) => { const d = Math.sqrt((j + 0.5) / n), a = j * GA + 0.5 * (r() - 0.5); return { a: d * Math.cos(a), b: d * Math.sin(a), fat: 1 + P.uneven * (r() - 0.5), limb: -1, give: r() < P.giving ? 1 : 0.25 * r() }; });
@@ -51,7 +53,7 @@
       for (let i = 0; i <= end; i++) {
         const [u, v, m] = place(s, i), onLimb = fi >= 0 && i > fi, Rg = (onLimb ? path[i][3] : path[i][3] * Math.sqrt(m / n)) * 0.8, c = Math.cos(turn(i)), sn = Math.sin(turn(i)), a = u * c - v * sn, b = u * sn + v * c, [, Nn, Bn] = fr[i];
         const tip = s.snapped ? 1 : Math.max(0.12, Math.pow(Math.min(1, (end - i) * ds / fine), 0.7));   // or it fines down to a point
-        X.push([0, 1, 2].map((k) => path[i][k] + (Nn[k] * a + Bn[k] * b) * Rg)); goal.push(path[i].slice(0, 3)); hold.push(P.hug);
+        X.push([0, 1, 2].map((k) => path[i][k] + (Nn[k] * a + Bn[k] * b) * Rg)); goal.push(path[i].slice(0, 3)); hold.push(0);
         rho.push(rho0 * s.fat * tip * (onLimb ? limbs[s.limb].scale * (0.7 + 0.3 * path[i][3] / path[fi + 1][3]) : path[i][3] / R0));
       }
       // its root: the strand itself coming down from the foot of the trunk the way it faces there, heavy, and
@@ -60,7 +62,8 @@
       for (let m = 1; m <= Kr; m++) { const g = m / Kr, t = bend * g * g, dir = [away[0] * Math.cos(t) - away[2] * Math.sin(t), 0, away[0] * Math.sin(t) + away[2] * Math.cos(t)], rad = rho[0] * (dives ? 0.75 + 0.25 * (1 - g) : 0.25 + 0.75 * Math.pow(1 - g, 0.8));
         q = [q[0] + dir[0] * ds, p0[1] + (rad * 0.6 - p0[1]) * sstep(0, 0.8, g) - (dives ? 0.35 * sstep(0.6, 1, g) : 0), q[2] + dir[2] * ds]; rx.push(q); rr.push(rad); rg.push(q); }
       s.root = Kr; s.K = Kr + X.length; const all = rx.reverse().concat(X), goals = rg.reverse().concat(goal);
-      s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho)); s.hold = Float64Array.from(new Array(Kr).fill(0.12).concat(hold)); s.bend = P.stiff * Math.min(1.6, s.fat * s.fat);
+      s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho)); s.hold = Float64Array.from(Array.from({ length: Kr }, (_, k) => (k < Kr * 0.45 ? 0.2 : 0)).concat(hold));   // anchored at the far end of its root, and nowhere else
+      s.limbAt = fi; s.bend = P.stiff * Math.min(1.6, s.fat * s.fat);
     }
     // an orb held in the trunk: a ball, with room round it for the strands that are willing to give it
     let orb = null;
@@ -73,12 +76,20 @@
         for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let e = -1; e <= 1; e++) { const q = g.get((cx + a + 512) * 1048576 + (cy + b + 512) * 1024 + cz + e + 512); if (!q) continue;
           for (let t = 0; t < q.length; t += 2) { const j = q[t]; if (j <= i) continue; const l = q[t + 1], o = S[j].X, dx = x - o[l * 3], dy = y - o[l * 3 + 1], dz = z - o[l * 3 + 2], d = H(dx, dy, dz), want = s.rho[k] + S[j].rho[l]; if (d < want) fn(i, k, j, l, dx, dy, dz, d || 1e-9, want); } } } });
     };
+    // which strands pass each step of the trunk and of each limb together
+    const stations = new Map();
+    S.forEach((s) => { for (let k = s.root; k < s.K; k++) { const i = k - s.root, key = (s.limbAt >= 0 && i > s.limbAt ? 'limb' + s.limb : 'trunk') + ':' + i; let st = stations.get(key); if (!st) { st = { goal: [s.goal[k * 3], s.goal[k * 3 + 1], s.goal[k * 3 + 2]], who: [] }; stations.set(key, st); } st.who.push(s, k); } });
     const M = S.map((s) => new Float64Array(s.K * 3));
     for (let pass = 0; pass < P.passes; pass++) {
       S.forEach((s, i) => { const X = s.X, m = M[i], K = s.K; m.fill(0);   // taut, stiff, and kept to its bundle's line
         for (let k = 0; k < K; k++) for (let q = 0; q < 3; q++) { const p = X[k * 3 + q]; let v = s.hold[k] * (s.goal[k * 3 + q] - p);
           if (k > 1 && k < K - 2) { const a = X[(k - 2) * 3 + q], b = X[(k - 1) * 3 + q], d = X[(k + 1) * 3 + q], e = X[(k + 2) * 3 + q]; v += P.taut * ((b + d) / 2 - p) - s.bend * (a - 4 * b + 6 * p - 4 * d + e); } m[k * 3 + q] = v; }
         for (let q = 0; q < K * 3; q++) X[q] += m[q]; });
+      // the bundle as a whole is kept on its line: all the strands at a step are moved together, so the line holds
+      // the tree's gesture without pulling any one strand back to where it began
+      for (const st of stations.values()) { let cx = 0, cy = 0, cz = 0, w = 0; for (let t = 0; t < st.who.length; t += 2) { const o = st.who[t], k = st.who[t + 1], m = o.rho[k] ** 2; cx += o.X[k * 3] * m; cy += o.X[k * 3 + 1] * m; cz += o.X[k * 3 + 2] * m; w += m; }
+        const dx = P.hug * (st.goal[0] - cx / w), dy = P.hug * (st.goal[1] - cy / w), dz = P.hug * (st.goal[2] - cz / w); for (let t = 0; t < st.who.length; t += 2) { const o = st.who[t], k = st.who[t + 1], b = k >= o.K - 5 ? 0.04 : P.bind;   // each is bound to the bundle's middle, very lightly; its free end more, or it would wander off
+          o.X[k * 3] += dx + b * (cx / w - o.X[k * 3]); o.X[k * 3 + 1] += dy + b * (cy / w - o.X[k * 3 + 1]); o.X[k * 3 + 2] += dz + b * (cz / w - o.X[k * 3 + 2]); } }
       M.forEach((m) => m.fill(0));   // they give way to each other, the thinner one more
       each((i, k, j, l, dx, dy, dz, d, want) => { const f = 0.5 * (want - d) / d, wi = S[j].rho[l] / want, wj = S[i].rho[k] / want; M[i][k * 3] += dx * f * wi; M[i][k * 3 + 1] += dy * f * wi; M[i][k * 3 + 2] += dz * f * wi; M[j][l * 3] -= dx * f * wj; M[j][l * 3 + 1] -= dy * f * wj; M[j][l * 3 + 2] -= dz * f * wj; });
       S.forEach((s, i) => { for (let q = 0; q < s.K * 3; q++) s.X[q] += M[i][q]; });

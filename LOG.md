@@ -1188,3 +1188,47 @@ What is wrong: they stand on legs. Raising the foot and sending fat roots
 down from it left open air between the roots, so the trunk reads as a body
 on stilts, and with the heavy forked limbs above, as animals. Blunt ends
 are cut too cleanly. Third guess in a row at the body; not yet judged.
+
+**A sock filled with sand.** What bothers, said straight out about the orb
+tree: the branch abruptly makes a spherical container and abruptly ends it
+"without consequences, which means there's no tension in the roots, it's
+just a sock filled with sand." The legged body above is kept as
+`sketch/page7-sock.png`.
+
+The cause was in the settling. Every point of every strand was pulled back
+to its own place on the trunk's line, and that pull was far stronger than
+the strand's tautness: a push died out within about 0.07, under three
+steps of a strand. And root points were pinned along their whole length, so
+nothing reached them. The wood conformed and had no tension in it.
+
+Changed in `trees.js`:
+
+- A strand is anchored at the far end of its root and nowhere else.
+- The bundle as a whole is kept on the trunk's line: at each step all its
+  strands are moved together. No strand is pulled back to where it began.
+- Each strand is bound to its bundle's middle only very lightly (its free
+  end more, or it wanders off: one did, to a whole tree's width away).
+
+Measured on the orb tree, girth of the trunk at heights 0.3, 0.45, 0.6,
+0.75, 0.9, 1.05 (the orb's middle is at about 0.55, its room 0.24 in
+radius): without the orb 0.38, 0.37, 0.34, 0.33, 0.29, 0.27; with it 0.50,
+0.51, 0.51, 0.50, 0.46, 0.31. The swelling now runs from the ground to
+about 0.4 above the orb, where before it began and ended at the room.
+Overlaps also fell: no touching pair overlaps by more than 15% now, where
+102 did.
+
+`sketch/page7.png` (all four, bare), `sketch/page7-orb-tree-round.png`
+(the orb tree from three sides and cut in half).
+
+What it looks like: strands run in long lines from the ground past the orb
+to the top, and part round it like two curtains; the orb is no longer in a
+ball of wood. The roots under it are spread and the foot is wide.
+
+What is wrong now: it is a tent. The swelling is so long that the orb tree
+is one cone from ground to shoulder, and the roots have merged into a
+skirt; the other three trees have gone the same way at the foot. One
+strand on the orb tree is squeezed thin and kinked where it leaves for the
+limb. The loop's top has a ragged tear.
+
+Also found: a stiffness setting above about 0.055 makes the settling blow
+up. Left at 0.05.

@@ -1232,3 +1232,37 @@ limb. The loop's top has a ragged tear.
 
 Also found: a stiffness setting above about 0.055 makes the settling blow
 up. Left at 0.05.
+
+Told: no further check-ins until it looks right. Worked on by eye from
+there. The tent is kept as `sketch/page7-tent.png`.
+
+- Tent: each strand bound four times more firmly to its bundle. The
+  swelling now reaches a little above the orb and gathers: girth with the
+  orb 0.39, 0.43, 0.53, 0.48, 0.43, 0.30 at the six heights, against 0.38,
+  0.34, 0.33, 0.33, 0.26, 0.23 without.
+- Paddles: a strand standing alone was drawn as flat as one in a bundle.
+  A lone strand is now as deep as it is wide, and a limb's strands wind
+  round each other as they go out.
+- Casing back on, with slimmer plates and more of them pointed.
+
+**Forks tacked on**, said while that was going on, of the limbs: "the same
+problem." (`sketch/page7-forks-tacked-on.png`.) Same cause in a second
+place: a limb was held to its drawn line from its first step past the
+fork, and the trunk was held to its own line straight through. So a limb
+turned off abruptly and the trunk did not answer.
+
+Changed: a limb is held to its line only along its far part (from about a
+third of the way out), and the trunk is let go where a limb leaves. The
+limb's strands, anchored at their roots, find their own way there.
+
+What it does (`sketch/page7.png`, `sketch/page7-other-side.png`): a limb's
+strands peel away from low on the trunk and sweep up into it, and the
+trunk is drawn over toward the limb below the fork and stands off above
+it. On the tree forked low, the two limbs and the top read as one body
+parting three ways. On the orb tree, strands run from the roots past the
+orb and on into the top.
+
+Still wrong: the orb tree's side limb is thin and ragged where it leaves;
+a thin strand hangs loose down the back of the one-limb tree; the top of
+the loop is a jumble of ends; shell plates are few on the forked trees,
+since most of their length is now forks, which plates keep off.

@@ -63,8 +63,9 @@
       }
       // inside all of: the two faces of the roof, the two side walls, a floor below, and the two ends. The front end
       // may be cut on the slant, or stepped: one side of it ending short of the other.
+      const dp = K.D ? lerp(K.D[bi], K.D[bi + 1], bt) : K.deep;   // how far it goes down below its line: one depth, or one for each step of it
       const cut = K.skew * u + (K.step && (u - K.step.u * w) * K.step.side > 0 ? K.step.a : 0);
-      let d = Math.max(((u + w) * lx + (vv - yl) * ly) / H(lx, ly), ((u - xm) * rx + (vv - h) * ry) / H(rx, ry), -u - w, u - w, -vv - K.deep, -s, s - L[n - 1] + cut, pre ? -1 : Math.abs(along) - 0.03);   // and never out past a fold in its own line
+      let d = Math.max(((u + w) * lx + (vv - yl) * ly) / H(lx, ly), ((u - xm) * rx + (vv - h) * ry) / H(rx, ry), -u - w, u - w, -vv - dp, -s, s - L[n - 1] + cut, pre ? -1 : Math.abs(along) - 0.03);   // and never out past a fold in its own line
       if (gap) d = Math.max(d, Math.min(gap - Math.abs(u - cu), v + sp.depth * K.deep));
       return d;
     };
@@ -198,6 +199,6 @@
     ['winding', wood([[0, -0.06, 0, 0.3], [0.3, 0.4, 0.3, 0.27], [0, 0.8, 0.42, 0.24], [-0.3, 1.1, 0.1, 0.2], [0, 1.4, -0.2, 0.15], [0.25, 1.62, 0, 0.09]], { seed: 3, turns: 0.6, phase: 1.2, stiff: 0.45, lift: 0.25 })],
     ['all three', wood([[0.1, -0.06, 0, 0.34], [0.2, 0.5, 0, 0.3], [0.52, 0.98, 0.08, 0.24], [0.4, 1.48, 0.16, 0.2], [-0.16, 1.5, 0.08, 0.17], [-0.44, 1.06, -0.08, 0.14], [-0.1, 0.8, -0.22, 0.1], [0.3, 0.98, -0.34, 0.06]], { seed: 4, turns: 1.4, phase: 1.1, stiff: 0.45, lift: 0.25 })],
   ];
-  window.Wood5 = { wood };   // later pages build on this material
+  window.Wood5 = { wood, shard };   // later pages build on this material
   window.Fantastic = { names: S.map((s) => s[0]), build: (i) => Fantastic.mesh(S[i][1], S[i][0], 0.0085, 1.9), mesh: Fantastic.mesh, kit: Fantastic.kit };
 })();

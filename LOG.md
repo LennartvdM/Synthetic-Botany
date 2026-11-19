@@ -1121,3 +1121,46 @@ purpose.
 
 Also seen: at off 1.35, room 0.6, one pair of strands overlaps by 31%, the
 second such case. Both are at an extreme setting.
+
+## Trees (`trees.js`, `sketch/page7.js`, `sketchbook7.html`)
+
+"Let's build some trees." Built on the strand model, not on page 5's
+guide-line build.
+
+Structure (`trees.js`): a tree is 12 to 14 fat strands and nothing else.
+Each begins as a root on the ground, goes up the trunk with the rest,
+leaves with some of them along a limb or carries on to the top, and ends
+in a point. The trunk's and limbs' lines are given; where each strand lies
+is settled: taut, stiff, kept to its bundle's line, giving way to every
+other strand, to the ground, and to an orb with its room. A limb takes its
+strands from the side of the bundle it leaves on. Each strand's outward
+facing is away from the middle of the wood round it.
+
+Surface (`sketch/page7.js`): page 5's shard, one to a strand, with its
+flat faces, wandering ridge and give in width. Page 5's shard was changed
+in one way to allow it: its depth below its line may vary along it.
+
+Four trees: one limb; a loop with a limb; one holding an orb 0.45 girths
+off-centre, with a limb; one forked low twice. `sketch/page7.png`,
+`sketch/page7-close.png` (the last panel is the orb tree cut in half).
+
+What it does: roots splay and taper, trunks read as bundles, limbs leave
+as part of the bundle and not as something stuck on, the loop passes
+itself without touching, and the orb sits in a cradle with strands going
+round its outer side and a window on it. About 2 seconds to settle and 9
+to mesh a tree.
+
+Broke, or not there yet:
+
+- Too smooth. One long unbroken band to a strand, tapering evenly to a
+  point, reads as tentacles. Of page 5's surface only the first layer is
+  here: no narrow shards lying on the bands, no shell, no splits, no
+  stiffness standing a piece off its line.
+- Roots are an even star: all much the same length, all flat, all pointed.
+- Every limb and top ends in the same long spike.
+- Strands still overlap in places: worst 25 to 30% of two radii on three
+  trees, 51% on the orb tree, where 102 of 1973 touching pairs overlap by
+  more than 15%. The surface hides it, since shards are joined hard.
+- Ragged crumbs under the orb, where thin strand ends meet inside the
+  room.
+- Cut in half, the inside is strands with gaps between them, not solid.

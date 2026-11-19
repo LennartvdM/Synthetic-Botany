@@ -18,5 +18,5 @@ def surface(pts, blur, level):
     v, f, nrm, _ = marching_cubes(g, level * g.max())
     return {'pos': np.round((v + 0.5) / R, 5).ravel().tolist(), 'idx': f.ravel().tolist()}
 
-# the sheet is whatever sheet particles have not failed; the body is everything that is not sheet
-json.dump({'sheet': surface(X[m == 1], 1.3, 0.3), 'body': surface(X[m != 1], 1.3, 0.3), 'failed': int((m == 2).sum()), 'n': len(m)}, open(out, 'w'))
+# the sheet is whatever sheet particles have not failed; failed ones are left out of both surfaces
+json.dump({'sheet': surface(X[m == 1], 2.0, 0.35), 'body': surface(X[m == 0], 2.0, 0.35), 'failed': int((m == 2).sum()), 'n': len(m)}, open(out, 'w'))

@@ -537,3 +537,28 @@ particle stretched past its limit fails and from then on only resists being
 squashed. Weak streaks as before. `sim/skin.py` turns particles into two
 surfaces. It needs Python with taichi, numpy, scipy and scikit-image; this
 is the first thing in the repository that is not plain JavaScript.
+
+**First full run** (`runs/006-material-point/first-run.png`; body 120,
+sheet 900, limit 0.3, swell 1.3, 6000 steps, about 6.5 minutes). Left to
+right: step 3000, the end, the end from behind, the end from above.
+
+What it does: nothing fails until the body has swollen about 20%, then
+rips open along the weak streaks and run on past them, top to ground, and
+join over the top. The sheet ends as thick separate slabs lying on the
+body, with the body showing in the channels between. 8,215 of 56,012 sheet
+particles failed.
+
+What is there that the hand-made builds never had: the slabs have real
+thickness and rounded edges; the edges follow no grid; the sheet is
+visibly deformed, its slabs curved and lifting at the rims; at step 3000
+one rip is still a slit, pinched at the middle with the sheet puckered
+round it.
+
+What is not there: nothing spills. The body sits lower than the slabs. Once
+the sheet has split all the way round there is nothing left holding the
+body in, so it has no reason to come out. Rips would have to stop for a
+spill to happen.
+
+Not from the material: the surfaces are made by blurring particle counts,
+which rounds everything by about a cell and a half and would hide a sharp
+edge if there were one.

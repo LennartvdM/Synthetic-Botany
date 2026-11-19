@@ -14,7 +14,12 @@
   function tree(recipe) {
     const t = Trees.grow(recipe), r = rng((recipe.seed || 1) + 50), all = [], count = { bands: 0, slivers: 0, plates: 0, cut: 0, dropped: 0 };
     const at = (s, k) => [s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]], tan = (s, k) => unit([0, 1, 2].map((q) => s.X[Math.min(s.K - 1, k + 1) * 3 + q] - s.X[Math.max(0, k - 1) * 3 + q]));
-    for (const s of t.strands) {   // bands
+    for (const s of t.strands.filter((q) => q.vine)) {   // the thin roots over an orb: as deep as they are wide, the same flat-faced wood
+      const C = [], W = [], Hh = [], D = [], wide = 0.9 + 0.2 * r(), sd = 1 + Math.floor(r() * 1e6), rd = 0.8 * (r() - 0.5), eL = 0.15 + 0.4 * r(), eR = 0.15 + 0.4 * r();
+      for (let k = 0; k < s.K; k++) { C.push(at(s, k)); W.push(Math.max(0.006, s.rho[k] * wide)); Hh.push(s.rho[k] * 0.9); D.push(s.rho[k] * 0.9); }
+      all.push(shard({ C, O: s.O, W, Hh, D, deep: Math.max(...D), seed: sd, wiggle: 1, ridge: rd, eL, eR, skew: 0 })); count.vines = (count.vines || 0) + 1;
+    }
+    for (const s of t.strands.filter((q) => !q.vine)) {   // bands
       const K = s.K, wide = 1.4 + 0.3 * r(), high = 0.3 + 0.25 * r(), draw = 0.25 * (r() < 0.5 ? -1 : 1) * (0.5 + 0.5 * r()), waves = 1 + Math.floor(2 * r()), C = [], W = [], Hh = [], D = [];
       for (let k = 0; k < K; k++) { const q = k / (K - 1), bow = Math.sin(PI * waves * q) * Math.sqrt(Math.sin(PI * q)); const alone = 1 - sstep(0.9, 2.0, s.far[k] / s.rho[k]);   // in a bundle a strand shows one broad face; by itself it is a whole limb, and as deep as it is wide
         C.push(at(s, k)); W.push(Math.max(0.004, s.rho[k] * (wide + (1.05 - wide) * alone) * (1 + draw * bow))); Hh.push(s.rho[k] * (high + (0.85 - high) * alone)); D.push(s.rho[k] * 0.95); }
@@ -24,7 +29,8 @@
     // where a strand is on the outside of the wood, and off the ground
     const outer = (s, k) => k > s.root + 4 && k < s.K - 3 && s.far[k] > 1.1 * s.rho[k] && s.rho[k] > 0.03;
     const stretch = (s, len) => { for (let go = 0; go < 6; go++) { const k0 = s.root + 4 + Math.floor(r() * Math.max(1, s.K - s.root - len - 8)), k1 = k0 + len; if (k1 < s.K - 2 && outer(s, k0) && outer(s, k1) && outer(s, (k0 + k1) >> 1)) return [k0, k1]; } return null; };
-    if (!recipe.bare) for (const s of t.strands) for (let j = 0; j < 2; j++) {   // slivers
+    const thick = t.strands.filter((q) => !q.vine);
+    if (!recipe.bare) for (const s of thick) for (let j = 0; j < 2; j++) {   // slivers
       const u = r(), len = 10 + Math.floor(18 * r()), side = (r() < 0.5 ? -1 : 1) * (0.25 + 0.5 * r()), lift = 0.3 + 0.7 * r(), wide = 0.3 + 0.25 * r(), high = 0.3 + 0.2 * r(), sd = 1 + Math.floor(r() * 1e6), rd = 0.8 * (r() - 0.5), eL = 0.1 + 0.6 * r(), eR = 0.1 + 0.6 * r(), st = u < 0.6 ? stretch(s, len) : null; if (!st) continue;
       const C = [], O = [], W = [], Hh = [], D = [];
       for (let k = st[0]; k <= st[1]; k++) { const q = (k - st[0]) / len, o = s.O[k], sv = unit(cross(tan(s, k), o)), rho = s.rho[k], fine = Math.min(1, q / 0.3, (1 - q) / 0.5), p = at(s, k);
@@ -61,7 +67,7 @@
     };
     const want = recipe.bare ? 0 : recipe.plates === undefined ? 14 : recipe.plates, splitAt = [Math.floor(want * r()), Math.floor(want * r())];
     for (let j = 0; j < want; j++) {
-      const s = t.strands[Math.floor(r() * t.strands.length)], len = 12 + Math.floor(18 * r()), forward = r() < 0.9, side = 0.7 * (r() - 0.5), wide = 0.5 + 0.4 * r(), high = 0.26 + 0.12 * r(), e = r(), rd = 0.6 * (r() - 0.5), eL = 0.5 + 0.4 * r(), eR = 0.5 + 0.4 * r(), sd = 1 + Math.floor(r() * 1e6), u1 = r(), u2 = r(), u3 = r(), u4 = r(), st = stretch(s, len), split = splitAt.includes(j);
+      const s = thick[Math.floor(r() * thick.length)], len = 12 + Math.floor(18 * r()), forward = r() < 0.9, side = 0.7 * (r() - 0.5), wide = 0.5 + 0.4 * r(), high = 0.26 + 0.12 * r(), e = r(), rd = 0.6 * (r() - 0.5), eL = 0.5 + 0.4 * r(), eR = 0.5 + 0.4 * r(), sd = 1 + Math.floor(r() * 1e6), u1 = r(), u2 = r(), u3 = r(), u4 = r(), st = stretch(s, len), split = splitAt.includes(j);
       if (!st) { count.dropped++; continue; }
       plate(s, st[0], st[1], forward, side, wide, high, split ? 'blunt' : e < 0.5 ? 'point' : e < 0.75 ? 'blunt' : 'step', { ridge: rd, eL, eR, split: split ? { fromEnd: true, s0: 0.42 + 0.2 * u1, s1: 1.001, u: 0.4 * (u2 - 0.5), wide: 0.2 + 0.12 * u3, lift: 0.5 + 0.5 * u4, depth: 9 } : null }, sd);
     }
@@ -76,8 +82,8 @@
   const bare = false, S = [
     ['one limb', tree({ bare, seed: 1, trunk: [[0, 0.22, 0, 0.27], [0.08, 0.7, 0.02, 0.25], [-0.1, 1.1, 0.05, 0.22], [-0.32, 1.45, 0, 0.18], [-0.3, 1.8, -0.05, 0.14]], limbs: [{ at: 0.5, share: 0.38, path: [[0.35, 1.25, 0.15], [0.62, 1.3, 0.2], [0.8, 1.1, 0.15]] }] })],
     ['a loop', tree({ bare, seed: 2, twist: 0.9, trunk: [[0, 0.22, 0, 0.28], [0.1, 0.7, 0, 0.26], [0.42, 1.05, 0.08, 0.23], [0.3, 1.5, 0.16, 0.2], [-0.26, 1.52, 0.08, 0.18], [-0.54, 1.08, -0.08, 0.16], [-0.2, 0.82, -0.22, 0.14], [0.2, 1.0, -0.34, 0.11]], limbs: [{ at: 0.42, share: 0.25, path: [[0.6, 1.8, 0.3], [0.82, 1.72, 0.36]] }] })],
-    ['holding an orb', tree({ bare, seed: 3, strands: 10, trunk: [[0, 0.22, 0, 0.3], [0, 0.6, 0, 0.28], [0.1, 1.0, 0, 0.23], [0.3, 1.4, 0.1, 0.18], [0.55, 1.7, 0.2, 0.13]], limbs: [{ at: 0.6, share: 0.3, path: [[-0.3, 1.3, -0.1], [-0.6, 1.5, -0.1], [-0.8, 1.35, 0]] }], orb: { at: 0.27, r: 0.15, room: 0.6, off: 0.45 } })],
+    ['holding an orb', tree({ bare, seed: 3, strands: 12, uneven: 0.9, trunk: [[0, 0.22, 0, 0.3], [0, 0.6, 0, 0.28], [0.1, 1.0, 0, 0.23], [0.3, 1.4, 0.1, 0.18], [0.55, 1.7, 0.2, 0.13]], limbs: [{ at: 0.6, share: 0.3, path: [[-0.3, 1.3, -0.1], [-0.6, 1.5, -0.1], [-0.8, 1.35, 0]] }], orb: { at: 0.27, r: 0.16, room: 0.7, off: 0.45, vines: 11 } }), 0.0072],
     ['forked low', tree({ bare, seed: 4, strands: 10, twist: 0.3, trunk: [[0, 0.22, 0, 0.3], [-0.05, 0.6, 0, 0.28], [-0.2, 0.98, -0.05, 0.22], [-0.45, 1.35, -0.1, 0.17], [-0.5, 1.72, 0, 0.13]], limbs: [{ at: 0.3, share: 0.4, path: [[0.35, 0.9, 0.1], [0.55, 1.25, 0.2], [0.5, 1.6, 0.1]] }, { at: 0.62, share: 0.25, path: [[-0.6, 1.1, 0.25], [-0.85, 1.2, 0.35]] }] })],
   ];
-  window.Fantastic = { names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), measures: S.map((s) => s[1].measure), counts: S.map((s) => s[1].count), build: (i) => mesh(S[i][1], S[i][0], 0.0095, 2.05), mesh, kit: Fantastic.kit };
+  window.Fantastic = { names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), measures: S.map((s) => s[1].measure), counts: S.map((s) => s[1].count), build: (i) => mesh(S[i][1], S[i][0], S[i][2] || 0.0095, 2.05), mesh, kit: Fantastic.kit };
 })();

@@ -32,6 +32,8 @@
     const r = rng(P.seed), n = P.strands, ds = P.ds, trunk = line(P.trunk, ds), nT = trunk.length, R0 = trunk[0][3], rho0 = R0 * Math.sqrt(P.fill / n), turn = (i) => P.twist * TAU * i / nT;
     // every strand has a place in the bundle's section, and a girth of its own
     const S = Array.from({ length: n }, (_, j) => { const d = Math.sqrt((j + 0.5) / n), a = j * GA + 0.5 * (r() - 0.5); return { a: d * Math.cos(a), b: d * Math.sin(a), fat: 1 + P.uneven * (r() - 0.5), limb: -1, give: r() < P.giving ? 1 : 0.25 * r() }; });
+    // round an orb a strand's place follows from its girth: the heavier it is, the further off it passes
+    if (P.orb) for (const q of S) q.give = 0.25 + 0.75 * Math.max(0, Math.min(1, (q.fat - (1 - P.uneven / 2)) / (P.uneven || 1)));
     // limbs take their strands from the side of the bundle they leave on
     const tf = frames(trunk), limbs = P.limbs.map((L) => ({ L, fi: Math.round(L.at * (nT - 1)) })).sort((x, y) => x.fi - y.fi);
     for (const [li, lb] of limbs.entries()) {
@@ -112,8 +114,45 @@
         let o = [-cx / w, -cy / w, -cz / w]; s.F.push(H(o[0], o[1], o[2])); if (H(o[0], o[1], o[2]) < 0.25 * s.rho[k]) o = last; o = unit(o); if (k < s.root) { const t = sstep(0, 0.7, 1 - k / s.root); o = unit([o[0] * (1 - t), o[1] * (1 - t) + t, o[2] * (1 - t)]); } s.O.push(o); last = o; }
       for (let pass = 0; pass < 8; pass++) s.O = s.O.map((o, k) => (k === 0 || k === s.K - 1 ? o : unit([0, 1, 2].map((q) => 0.5 * o[q] + 0.25 * (s.O[k - 1][q] + s.O[k + 1][q])))));
     }
+    // the roots nearest an orb. The tree's strands are graded by how near the orb they pass: the heavy ones
+    // furthest off, and inside them, within the orb's room, finer and finer ones down to the finest lying almost
+    // on it. These leave the wood below the orb and go back into it above. The nearer one lies, the more it
+    // wanders, and the likelier it forks. They give way to each other, to the big strands and to the orb, so
+    // where two cross one goes over the other.
+    const vines = [];
+    if (orb && P.orb.vines) {
+      const rv = rng(P.seed + 77), c = orb.c, Kv = 40, to = P.orb.toward || [0.43, 0.9], phiW = Math.atan2(to[1], to[0]), big = [];
+      S.forEach((q) => { for (let k = 0; k < q.K; k += 2) big.push([q.X[k * 3], q.X[k * 3 + 1], q.X[k * 3 + 2], q.rho[k]]); });
+      const nearest = (p) => { let b = big[0], bd = 1e9; for (const q of big) { const d = H(p[0] - q[0], p[1] - q[1], p[2] - q[2]); if (d < bd) { bd = d; b = q; } } return b.slice(0, 3); };
+      const make = (phi0, slope, lv, rho, t0, parent) => {
+        const Rv = orb.r + (orb.room - orb.r) * lv + rho, wob = 0.35 * (rv() - 0.5), wf = 1 + 2 * rv(), X = [], R = [];
+        for (let k = 0; k < Kv; k++) { const t = t0 + (1 - t0) * k / (Kv - 1), th = PI * (0.06 + 0.88 * t), ph = phi0 + slope * (t - 0.5) + wob * Math.sin(PI * wf * t);
+          X.push([c[0] + Rv * Math.sin(th) * Math.cos(ph), c[1] - Rv * Math.cos(th), c[2] + Rv * Math.sin(th) * Math.sin(ph)]); R.push(rho * (parent ? 1 - 0.45 * k / Kv : 0.8 + 0.2 * Math.sin(PI * k / (Kv - 1)))); }
+        const ends = parent ? [[Kv - 1, -1]] : [[0, 1], [Kv - 1, -1]];   // its ends go into the nearest wood
+        for (const [e, dir] of ends) { const out = [0, 1, 2].map((i) => c[i] + (X[e][i] - c[i]) * 1.35), A = nearest(out); for (let j = 0; j < 7; j++) { const k = e + dir * j, w = sstep(0, 1, j / 7); X[k] = [0, 1, 2].map((i) => A[i] + (X[k][i] - A[i]) * w); } }
+        const v = { X, R, floor: Rv * 0.93, parent, phi0, slope, t0 }; vines.push(v); return v;
+      };
+      // a root's girth follows from how near the orb it lies: the nearest are the finest, and most are near
+      const girth = (lv) => (0.012 + 0.034 * Math.pow(lv / 0.9, 1.4)) * (0.85 + 0.3 * rv());
+      for (let j = 0; j < P.orb.vines; j++) {
+        // the nearer it lies, the more it wanders across the orb and the likelier it is to fork; further out they run straighter
+        const lv = 0.04 + 0.86 * Math.pow(rv(), 1.5), phi0 = phiW + 3.0 * ((j + 0.5) / P.orb.vines - 0.5) + 0.3 * (rv() - 0.5), slope = (j % 2 ? 1 : -1) * (0.5 + 1.9 * rv()) * (1.15 - lv), v = make(phi0, slope, lv, girth(lv), 0, null);
+        if (rv() < 0.75 - 0.6 * lv) { const t0 = 0.25 + 0.3 * rv(), sl = -slope * (0.4 + 0.8 * rv()), k0 = Math.round(t0 * (Kv - 1)), lc = lv * (0.4 + 0.5 * rv()), ch = make(phi0 + slope * (t0 - 0.5) - sl * (t0 - 0.5), sl, lc, Math.min(v.R[k0] * 0.8, girth(lc)), t0, v); ch.X[0] = v.X[k0].slice(); ch.fork = k0; }
+      }
+      for (let pass = 0; pass < 140; pass++) {
+        for (const v of vines) for (let k = v.parent ? 1 : 2; k < Kv - 2; k++) for (let i = 0; i < 3; i++) v.X[k][i] += 0.12 * ((v.X[k - 1][i] + v.X[k + 1][i]) / 2 - v.X[k][i]);
+        for (let a = 0; a < vines.length; a++) for (let b = a + 1; b < vines.length; b++) { const A = vines[a], B = vines[b];
+          for (let k = 2; k < Kv - 2; k++) for (let l = 2; l < Kv - 2; l++) { if ((B.parent === A && l < 7) || (A.parent === B && k < 7)) continue;   // a fork is let out of its parent
+            const dx = A.X[k][0] - B.X[l][0], dy = A.X[k][1] - B.X[l][1], dz = A.X[k][2] - B.X[l][2], d = H(dx, dy, dz) || 1e-9, want = (A.R[k] + B.R[l]) * 1.15; if (d >= want) continue; const f = 0.25 * (want - d) / d;
+            A.X[k][0] += dx * f; A.X[k][1] += dy * f; A.X[k][2] += dz * f; B.X[l][0] -= dx * f; B.X[l][1] -= dy * f; B.X[l][2] -= dz * f; } }
+        for (const v of vines) for (let k = 4; k < Kv - 4; k++) { const p = v.X[k];
+          for (const q of big) { const dx = p[0] - q[0], dy = p[1] - q[1], dz = p[2] - q[2], d2 = dx * dx + dy * dy + dz * dz, want = v.R[k] + q[3]; if (d2 < want * want) { const d = Math.sqrt(d2) || 1e-9, f = 0.5 * (want - d) / d; p[0] += dx * f; p[1] += dy * f; p[2] += dz * f; } }
+          const dx = p[0] - c[0], dy = p[1] - c[1], dz = p[2] - c[2], d = H(dx, dy, dz) || 1e-9, floor = Math.max(v.floor, orb.r + v.R[k] * 1.3); if (d < floor) { const f = floor / d; p[0] = c[0] + dx * f; p[1] = c[1] + dy * f; p[2] = c[2] + dz * f; } }
+      }
+    }
     let worst = 0, over = 0, pairs = 0; each((i, k, j, l, dx, dy, dz, d, want) => { const v = (want - d) / want; worst = Math.max(worst, v); pairs++; if (v > 0.15) over++; });
-    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped })), orb, measure: { worstOverlap: worst, touching: pairs, overlapping: over }, recipe: P };
+    const thin = vines.map((v) => ({ X: Float64Array.from(v.X.flat()), rho: Float64Array.from(v.R), O: v.X.map((p) => unit([p[0] - orb.c[0], p[1] - orb.c[1], p[2] - orb.c[2]])), far: new Array(v.X.length).fill(0), K: v.X.length, root: 0, limb: -1, give: 0, snapped: false, vine: true, fork: !!v.parent }));
+    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped })).concat(thin), orb, measure: { worstOverlap: worst, touching: pairs, overlapping: over }, recipe: P };
   }
 
   const api = { grow };

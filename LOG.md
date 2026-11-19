@@ -1266,3 +1266,38 @@ Still wrong: the orb tree's side limb is thin and ragged where it leaves;
 a thin strand hangs loose down the back of the one-limb tree; the top of
 the loop is a jumble of ends; shell plates are few on the forked trees,
 since most of their length is now forks, which plates keep off.
+
+**Back to the orb tree**: "a lot in there that I don't trust." Given, with
+the references again and one redrawn with its roots exaggerated: over the
+orb the roots "cross each other and also fork. And they're mostly thin but
+also varied in girth."
+
+First answer (`sketch/page7-orb-roots-tacked-on.png`): a second kind of
+strand, nine thin roots laid over the orb's opening at random girths.
+Corrected while it was being made: "imagine why those roots are thin. It
+seems like there's a gradient of roots each with their own role and place
+and distance from the center."
+
+Second answer, as read here: one family, graded by distance from the orb.
+
+- For the tree's own strands, how far off the orb each passes now follows
+  from its girth: the heaviest furthest, the lightest nearest.
+- Inside them, in the orb's room, are finer roots (11, plus forks), and
+  their girth follows from their place too: the nearest are the finest.
+  Most are near. The nearer one lies the more it wanders across the orb
+  and the likelier it forks; further out they run straighter.
+- They leave the wood below the orb and go back in above, and give way to
+  each other, to the heavy strands and to the orb. Worst overlap between
+  two of them: 1% of their girths.
+
+Measured on the tree, nearest approach to the orb's surface against girth
+there, all 28 strands in order: 0.01 to 0.05 off, girth 0.008 to 0.024 (10
+fine roots and forks); 0.07 to 0.13 off, girth 0.028 to 0.060 (fine and
+heavy mixed); 0.16 to 0.20 off, girth 0.072 to 0.093 (heavy only).
+
+`sketch/page7-orb-graded.png`. What it does: the orb is seen through a
+lattice of fine roots that cross over and under each other, behind a cage
+of middling bands, inside the heavy ones. What is wrong: the cage is now
+many bands of similar width side by side, striped like a gourd; the orb
+shows only as glow in the gaps; the fine roots are all inside the cage and
+none comes out over the heavy wood; the side limb is still ragged.

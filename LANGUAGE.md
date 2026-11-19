@@ -104,3 +104,14 @@ My reading of the difference, to be corrected if wrong:
   one family of part repeated with small differences.
 - Breaks it: a perfect ball; flat round discs; crisp even gaps; anything
   that reads as a clean primitive placed on another clean primitive; a toy.
+
+### Where the grit comes from (said of the bulb sketch)
+
+The bodies are surrounded by a thick sheet. The bulges that flop out of it
+have torn it half-way. So there is a fight between the torn fascia and the
+thinner membrane of the bulge, which makes more expanse. That is a conflict
+captured in a sculpt, and it is the outrageous grit, the double chin and
+the pout that the earlier sketches were reaching for.
+
+In short: something thick that binds, something softer that swells, and the
+form shows the moment the first gave way to the second.

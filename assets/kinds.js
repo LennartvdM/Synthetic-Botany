@@ -106,26 +106,32 @@
           const [tx, tz] = fold(x - cx, z, 3, ph), ty = cy + ry * 0.9;
           d = smin(d, cone(tx, y, tz, 0.05, ty, 0, 0.15, ty + tuft, 0, 0.085, 0.07), 0.04); return smin(d, egg(tx, y, tz, 0.16, ty + tuft + 0.04, 0, 0.11, 0.085, 0.11), 0.02); } };
     } },
-    { name: 'clenched bulb', flourish: 'warts', specimens: 5, make(r) {
-      const u = (a, b) => lerp(a, b, r()), n = 5 + Math.floor(r() * 3), ry = u(0.42, 0.56), lean = u(-0.1, 0.1), big = Math.floor(r() * n), side = u(0, TAU), nb = 4 + Math.floor(r() * 4), wrap = (a) => a - TAU * Math.round(a / TAU);
-      // one skin, not separate lumps. Creases are pressed into it: each has its own depth, width, wander and length.
-      const gaps = []; let tot = 0; for (let i = 0; i < n; i++) { const g = u(0.7, 1.3) * (i === big ? 1.8 : 1); gaps.push(g); tot += g; }
-      const seams = [], lobes = []; let a0 = u(0, TAU);
-      for (let i = 0; i < n; i++) { const g = (gaps[i] / tot) * TAU; seams.push({ a: a0, wig: u(0.05, 0.16), k: u(2, 4.5), ph: u(0, TAU), y0: u(0.1, 0.28), y1: u(0.82, 1.02), depth: u(0.2, 0.34), w: u(0.085, 0.14) });
-        lobes.push({ c: a0 + g / 2, half: g / 2, hf: u(0.72, 1.14) * (i === big ? 1.1 : 1), b: u(0.08, 0.2) + (i === big ? 0.1 : 0) }); a0 += g; }
-      const Bd = []; for (let i = 0; i < nb; i++) Bd.push([side + u(-1.1, 1.1), u(0.2, 0.42), u(0.13, 0.22), u(-0.22, 0.04)]);
+    { name: 'burst bulb', flourish: 'warts', specimens: 5, make(r) {
+      // A conflict held in a form: a thick sheet binds a softer body; the body swells; the sheet has torn part-way,
+      // and the body spills through each tear as a smooth taut bulge that sags over the torn lower edge.
+      const u = (a, b) => lerp(a, b, r()), R = 0.46, ry = u(0.46, 0.6), cy = 0.16 + ry, lean = u(-0.08, 0.08), th = u(0.03, 0.042), a0 = u(0, TAU), nt = 3 + Math.floor(r() * 2), ns = 2 + Math.floor(r() * 3);
+      const mk = (pol, az, hh, ww, bulge, sag) => { const d = [Math.sin(pol) * Math.cos(az), Math.cos(pol), Math.sin(pol) * Math.sin(az)]; let e1 = [d[0] * d[1], d[1] * d[1] - 1, d[2] * d[1]]; const el = H(e1[0], e1[1], e1[2]); e1 = e1.map((v) => v / el);
+        return { d, e1, e2: [d[1] * e1[2] - d[2] * e1[1], d[2] * e1[0] - d[0] * e1[2], d[0] * e1[1] - d[1] * e1[0]], hh, ww, bulge, sag, ph: u(0, TAU) }; };
+      const tears = [];
+      for (let i = 0; i < nt; i++) { const g = i === 0 ? 1.3 : 1; tears.push(mk(u(0.8, 1.35), a0 + (TAU * i) / nt + u(-0.3, 0.3), u(0.42, 0.66) * g, u(0.24, 0.36) * g, u(0.2, 0.3) * g, u(0.12, 0.26))); }
+      for (let i = 0; i < ns; i++) tears.push(mk(u(0.35, 0.75), a0 + u(0.5, 1.5) * (i % 2 ? -1 : 1), u(0.14, 0.2), u(0.13, 0.18), u(0.15, 0.2), 0.05));
       return { top: 1.8, base: { cx: 0, R: u(0.5, 0.6), seat: 0.36, lumps: lumps(r, 5) }, roots: { cx: 0, curl: true, roots: roots(r, 4 + Math.floor(r() * 3), 0.5, 0.85, 0.08) },
-        body: (x0, y, z) => { const x = x0 - lean * y * y, f = Math.atan2(z, x), rho = Math.max(H(x, z), 0.05), top = 0.14 + 2 * ry;
-          let G = 0;
-          for (const S of seams) { const sd = Math.abs(wrap(f - S.a - S.wig * Math.sin(S.k * y + S.ph))) * rho, env = Math.pow(sstep(S.y0, S.y0 + 0.22, y) * sstep(S.y1 * top, S.y1 * top - 0.3, y), 0.8); G = Math.max(G, env * S.depth * Math.exp(-Math.sqrt(sd * sd + 2e-4) / S.w)); }
-          let hw = 0, hf = 0, bb = 0;
-          for (const Lb of lobes) { const q = wrap(f - Lb.c) / Lb.half, w = Math.exp(-2.2 * q * q); hw += w; hf += w * Lb.hf; bb += w * Lb.b; }
-          hf /= hw; bb /= hw;
-          const k = 1 + bb - G;
-          let d = smin(egg(x / k, y, z / k, 0, 0.14 + ry * hf, 0, 0.5, ry * hf, 0.5) * k, egg(x, y, z, 0, 0.14, 0, 0.34, 0.15, 0.34), 0.1);
-          // buds swelling out of the same skin, high on one side
-          for (const [a, rr, sz, up] of Bd) d = smin(d, egg(x, y, z, rr * Math.cos(a) + 0.12 * Math.cos(side), top * 0.84 + up, rr * Math.sin(a) + 0.12 * Math.sin(side), sz, sz * 1.15, sz), 0.06);
-          return d; } };
+        body: (x0, y, z) => { const x = x0 - lean * y * y, px = x, py = (y - cy) * (R / ry), l = H(px, py, z) || 1e-9, nx = px / l, ny = py / l, nz = z / l;
+          let tf = 1e9, swell = 0;
+          for (const T of tears) {
+            const ang = Math.acos(clamp(nx * T.d[0] + ny * T.d[1] + nz * T.d[2], -1, 1)), az = Math.atan2(nx * T.e2[0] + ny * T.e2[1] + nz * T.e2[2], nx * T.e1[0] + ny * T.e1[1] + nz * T.e1[2]), a1 = ang * Math.cos(az), a2 = ang * Math.sin(az);
+            tf = Math.min(tf, (H(a1 / T.hh, a2 / T.ww) / (1 + 0.16 * Math.sin(3 * az + T.ph)) - 1) * Math.min(T.hh, T.ww));
+            // the bulge sits lower than the tear and spreads wider, so it laps over the torn edge below it
+            const eb = H((a1 - T.sag) / (T.hh * 1.2), a2 / (T.ww * 1.25)); if (eb < 1) swell = Math.max(swell, T.bulge * (1 - Math.pow(eb, 4)) * (0.75 + 0.25 * Math.cos(eb * PI / 2)));
+          }
+          // the sheet: lifted and thickened at its torn edges, fibrous elsewhere
+          const edge = Math.exp(-Math.max(0, tf) / 0.07), Rh = R + 0.018 * edge;
+          let hd = smax(Math.abs(l - Rh) - th * (1 + 0.4 * edge), -tf * l, 0.02);
+          hd = smin(hd, H(l - Rh, tf * l) - th * 1.25, 0.035);   // the torn edge rolls into a fat lip
+          const q = (Math.atan2(z, px) * 10) / TAU + 0.3 * Math.sin(5 * y), tv = Math.abs(q - Math.round(q));
+          hd -= 0.012 * Math.exp(-((tv / 0.15) ** 2)) * sstep(-0.01, 0.02, l - Rh) * (1 - 0.6 * edge);
+          // the body inside: smooth, and swollen wherever the sheet has given way
+          return smin(Math.min(l - (R - th - 0.012 + swell), hd), egg(x, y, z, 0, 0.14, 0, 0.34, 0.15, 0.34), 0.08); } };
     } },
   ];
 

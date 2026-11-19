@@ -59,8 +59,12 @@ more specific than the scheme; any flora could fill the roles.
 
 Seen in the example sheet:
 
-- The body is shown in five states of opening: one form with a range, not
-  five forms.
+- The body is shown five times: five specimens of one species. (First read
+  as one form in five states of opening. That was wrong.)
+- Across the five, the build stays the same and the individual changes:
+  how fat it is, how far the halves stand apart, how unequal the two halves
+  are, which way it leans. A kind is recognised across specimens that
+  differ.
 - Two thick valves, streaked along their length, a different lining inside,
   a row of curved teeth down each edge, lumps where it seats.
 - The base is a low mound with one or more seats, each a pad with raised

@@ -562,3 +562,60 @@ spill to happen.
 Not from the material: the surfaces are made by blurring particle counts,
 which rounds everything by about a cell and a half and would hide a sharp
 edge if there were one.
+
+**Second run: nothing ripped** (body 60, sheet 1500, limit 0.7, weak 0.88,
+swell 1.35, 8000 steps, about 10 minutes). Meant to make rips stop short so
+the body would have to squeeze out. The sheet was strong enough to hold the
+body in entirely: no particle failed. No picture kept; it is a ball. So
+between this and the first run there is a band where rips start and stop,
+and it has not been found. Each try costs 6 to 10 minutes.
+
+## Wood (`wood.js`, `wood.html`, `runs/007-wood/`)
+
+A second material, given by pictures of old, winding, bundled trunks and a
+sheet of their loose pieces. Leaves set aside. Sculpted, not grown.
+
+What was read off the pictures, as geometry: a trunk is a bundle of strands
+winding round a shared line; each strand is a flattened ribbon with a crest
+on its outer face and grooves along its length; strands part and rejoin,
+leaving almond-shaped hollows; every limb ends in a point; at the ground
+the same strands splay and lie flat.
+
+The rule built from that: **every tip is the far end of a strand that
+began as a root.** A piece of wood is a fixed number of strands. Where they
+share a path they lie round it and wind round it. A fork is the bundle
+parting in two, each part taking some of the strands. A strand left alone
+runs out to a point. Girth is never set: it is how many strands are
+passing. Strands give way to each other where they would overlap.
+
+Traits: strands, girth, uneven (strands differ in girth), twist (winding of
+strands round the path), curl and sway (bending of the path itself, one way
+or one way then the other), spread (how far a fork opens), gap (how far
+strands stand apart mid-stretch), flat, ridge, grain (the ribbon's
+section), taper, roots, lift.
+
+- `first-try-seeds.png` The rule worked first time as structure, and read
+  as twisted rope: equal strands, even winding, straight trunks.
+- `seeds-and-gap.png`, `strands-and-curl.png`, `close.png` After: strands
+  of uneven girth, paths that bend, a bolder ribbon section.
+- Gap is the trait that changes most. Low, a solid fluted trunk. High, an
+  open cage of ribbons that can be seen through.
+- Strand count sets the whole character without any other change: two
+  strands make a forked whip, fourteen a heavy trunk with many limbs.
+
+Surprised by: how much comes from the one rule. Forks, taper, the heavier
+base and the thin top were none of them written; they follow from strands
+leaving.
+
+Broke, or not there yet:
+
+- Tips are long thin whips. The pictures' limbs stay heavy much further
+  out and end in short hooks.
+- A crease shows where a root meets the trunk, and forks pinch.
+- Strands pass through each other in tight places; giving way is only
+  eight light passes.
+- The ribbon section is the same along a strand's whole length. Nothing
+  splits, flakes or breaks off, and there are no separate loose pieces.
+- Surfaces are smooth between crest and grooves. No bark.
+- Lone strands bend one way then the other like the rest, so nothing
+  loops.

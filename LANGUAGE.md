@@ -132,3 +132,8 @@ clench, thickness, expanse, tension, sag. What the pictures have that it
 does not have yet, in the words already used on this page: a rolled lip on
 the torn edge; weight, so that what comes out lies on what it came out of;
 the cover itself doubling under the load.
+
+Second material, wood (`wood.js`). One rule: every tip is the far end of a
+strand that began as a root. Read off the pictures given for it: bundled,
+winding, ribboned, crested, grooved, hollowed between strands, pointed at
+every end, splayed at the ground. "Ancient." Leaves are not part of it.

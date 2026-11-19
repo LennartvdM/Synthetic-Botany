@@ -413,3 +413,77 @@ on a heavier, veined body, topped with capped fingers of the same family as
 the knuckle bundle. The rule it broke is written in `LANGUAGE.md` under
 "Held rigid: the grit". `assets/kinds.png` still shows the withdrawn
 version; `assets/tongue-dome.png` shows the replacement.
+
+**Clenched bulb, then burst bulb.** A fourth kind went through three
+passes: lobes pulled apart (read as a ribbed onion), one skin with creases
+(seams too discrete), then a thick sheet with drawn tears and a swelling
+body behind them, after the source of the grit was named (`LANGUAGE.md`,
+"Where the grit comes from"). The burst bulb still falls short: its tears
+read as collars, sheet and bulge are not different in thickness, and the
+bulges are tidy. `assets/burst-bulb.png`.
+
+## A material, not a form (`tear.js`, `tear.html`, `runs/005-tear/`)
+
+Asked: can a tear be found instead of drawn? Then the aim was restated:
+this is fictional material design. A material does not have to be real. It
+has to do what the style needs, past what a real stuff would do, and then be
+boiled down to something that can be applied to any form.
+
+Prediction, written before the first run: a stiff sheet round a soft
+membrane, inflated, with links that snap past a strain limit, would tear at
+its weak places and the membrane would come out through the tears.
+
+**First two builds: wrong.** Two skins, the inside pushed outward the same
+amount everywhere, then the same with a held volume. Both gave a shell
+cracking into plates that float on a swelling ball
+(`first-shell-cracks.png`). Nothing came out, because nothing held the
+sheet back: once cracked, the plates rode outward with what was under them.
+
+**Third build: one skin, two states.** Covered skin is thick, clenches back
+toward the shape it started with, and its links rip when stretched past a
+limit. Bare skin is what is left where a link ripped: it grows wherever it
+is stretched, its cells dividing to keep up, it pulls itself round, it
+hangs, and it rides over covered skin it meets. The inside holds a growing
+volume and presses on every cell alike. The only thing put in is where the
+cover is weak: a few faint streaks.
+
+What it does (`stages.png`): the cover stays whole and keeps its shape, a
+slit opens along each weak streak, and bare skin comes out through the slit
+as a stack of lobes.
+
+One trait varied at a time, same body, same view, step 90:
+
+- `strength.png` Low: long slits, many lobes. High: nothing rips.
+- `clench.png` Low: the cover gives, the slit stands open and nothing is
+  forced out. Middle: a pad filling the slit. Higher: a large round mass on
+  a slit it hides. Higher still: nothing rips. The useful band is narrow.
+- `expanse.png` (how fast bare skin grows) Low: the cover rips further and
+  a low wide pad fills a wide hole. High: a small slit carrying a large
+  lobed mass. This one trait sets who wins.
+- `tension.png` None: a froth of small bubbles. A little: a few large
+  smooth lobes. More: the bare skin stays down in the slit. Most: an open
+  slit and no bulge.
+- `thick.png` Thin: the bulge sits on a smooth surface. Thick: the torn
+  edge stands up as ragged shards.
+- `sag.png` Almost no difference across its whole range.
+
+Surprised by: the lobes. Nothing asks for them. A long narrow slit lets
+bare skin out at several places along it and the swellings crowd each other
+into a stack.
+
+Broke, or not there yet:
+
+- The torn edge follows the cells in zigzags, and when the cover is drawn
+  thick it shows as shards. There is no rolled lip.
+- The bulges are taut bubbles. They do not lie on the cover with any
+  weight; hanging barely registers against the push from inside.
+- The cover is not changed by what comes out of it. The slit does not gape
+  into a lens and the cover does not fold or double under the bulge.
+- Bare skin runs away. Past about step 130 it has divided to several times
+  the starting cell count and reaches the ceiling set for it.
+- At strength 0.1 a stray strip of cover hangs below one slit.
+- Slow: about 6 seconds to step 90 at 10,242 cells.
+- Only ever run on a ball.
+
+Open: what the traits are that the style needs (a first list is in
+`LANGUAGE.md`), and what form the boiled-down version takes.

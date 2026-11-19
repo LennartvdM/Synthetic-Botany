@@ -115,3 +115,20 @@ the pout that the earlier sketches were reaching for.
 
 In short: something thick that binds, something softer that swells, and the
 form shows the moment the first gave way to the second.
+
+## Materials (given)
+
+The work is fictional material design. "We don't have to build realistic
+materials, we only have to build 'outrageous' materials that do only what
+the artstyle needs them to do and then we can collapse the logic into a
+distilate and apply it across all kinds of forms."
+
+So a material here is a short list of behaviours, each turned up past what
+a real stuff would do, and it is separate from the form it is put on.
+
+First material tried (`tear.js`): a cover that clenches and rips, over a
+bare skin that grows where stretched. Traits it has, as knobs: strength,
+clench, thickness, expanse, tension, sag. What the pictures have that it
+does not have yet, in the words already used on this page: a rolled lip on
+the torn edge; weight, so that what comes out lies on what it came out of;
+the cover itself doubling under the load.

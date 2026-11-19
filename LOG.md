@@ -683,3 +683,20 @@ Broke, or not there yet:
   loses a limb grows on exactly as it would have.
 - Paths are still laid out whole and then revealed by age. A strand's path
   at year 30 does not depend on what happened at year 10.
+
+**Wood as a tree: withdrawn.** "Yeah this isn't it." Then: "the tree itself
+is less important, it could grow in any direction any shape, it just needs
+something that tests the twists, the turns and the winding."
+
+What went wrong, as read here: a tree was built where a material was asked
+for. Years, bark and dying strands are botany, which this project ruled out
+at the start. The results were thin and fiddly, against the rule held rigid
+in `LANGUAGE.md`. And a section swept along a line can only make
+extrusions. `wood.js` and `wood.html` stay as a record of that.
+
+Picked up on sketchbook page 4 (`sketch/page4.js`, `sketchbook4.html`,
+`sketch/page4.png`), back in the heavy clay of the earlier pages: wood as
+two to four fat crested planks laid round a line, on four plain test
+pieces, one each for a twist, a turn, a winding, and all three. On the turn
+the plank on the outside does not take it, runs straight on and snaps, as
+in the drawing given earlier. Not yet judged by anyone but me.

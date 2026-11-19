@@ -1683,3 +1683,49 @@ Predictions, before running:
    forking, thin nearest) needs at least T and X. Unsure whether R is
    needed too, or works against it by carrying the ball away from the
    cables that would split.
+
+Runs: `seed-1.png`, `seed-2.png`, all 32 combinations twice, with the
+tables beside them (`seed-1.txt`, `seed-2.txt`). Each cell: the ball's
+outer face seen from outside, the post cut across at the ball, measures.
+Rows: neither, twist, split, both. Columns: stiffness, resist, grip.
+
+Against the predictions, over both seeds:
+
+1. Crossings only with twist: wrong. Without split, crossings are 0 or 1
+   in every cell of both seeds, twist or not. With split, 6 to 547, twist
+   or not. Crossing comes from splitting: the two halves part sideways
+   over the ball and pass over and under their neighbours. What twist does
+   add is the slant: with it the thin strands run diagonally across the
+   face, without it straight up in a tight mat.
+2. Thin over the face and a gradient only with split: holds. Thin over
+   the face without split 0 to 7, with it 18 to 121. Rank correlation of
+   girth with distance from the ball (positive = thin nearest) without
+   split -0.49 to 0.09, with it 0.13 to 0.65. Mean effect of split on it
+   +0.46 and +0.65; no other switch moves it by more than 0.15.
+3. Resist puts the ball half out with grip: wrong, now that the ends are
+   anchored. Without twist, resist barely moves it (0.25 to 0.48 of the
+   post's radius). With twist and no split it is thrown clear (1.0 to
+   1.25), face bare. With twist and split: half out (0.66 to 0.75) without
+   stiffness, face bare; held in (0.30 to 0.37) with stiffness.
+4. Stiffness and grip alone change little: holds without split. With split
+   each halves it or more (forks fall by 39 to 56 on average). Why is not
+   understood.
+5. The target needs twist and split: half right. The cells nearest the
+   pictures given, by eye, are stiffness, twist and split, with or without
+   resist and grip: the ball seen through thin strands crossing on the
+   slant, thinnest nearest, thick ones standing off. But there the ball
+   has hardly moved (0.30 to 0.37). In every one of the 64 runs where the
+   ball comes half out or further, its face is bare.
+
+So one rule, split, gives four of the things in the pictures at once:
+thin strands over the body, forks, crossing, and thinnest nearest. It is
+the proxy for "girth is how many pass", and the gradient was not put in:
+the most pressed are divided most. Twist adds the slant; stiffness keeps
+the thick standing off.
+
+What none of the five gives: a body that comes partly out of the wood and
+is still covered. Every mechanism tried so far either holds the body in
+or lets it leave bare. Grip, meant to carry thin strands out with it,
+does not.
+
+Each manifold took about ten minutes on four cores.

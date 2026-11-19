@@ -638,3 +638,48 @@ The bark, hollows and notches are not: they were placed at random on a
 finished form, and nothing in the tree has an age. Called an anachronism,
 rightly. It shows: the marks sit on the wood like damage to a carving.
 This commit keeps that version as a record.
+
+**Marks, second way: from age** (`age-and-seeds.png`,
+`age-45-and-120-close.png`). The stamped marks are withdrawn. Nothing is put
+on the finished thing now; it is shown at a number of years and everything
+on its surface follows from that.
+
+- A strand's tip moves outward year by year. What it has not reached is not
+  there.
+- A point on a strand is as thick as it is old. The taper formula is gone:
+  the base is heavy because it is old, a tip fine because it is new.
+- Bark is laid young, thin and whole, and cannot keep up with the wood
+  thickening under it. It splits along the grain, and the furrows are
+  widest where the wood is oldest. The grooves of the first version and the
+  bark of the second are now one thing. Old bark is thicker, cracks across
+  the grain at places fixed from the start, each opening in its own year,
+  and lifts toward a crack.
+- A strand can die: its stretch fails young, it refuses a turn and snaps,
+  or it dies late. It then stops thickening while its neighbours go on, so
+  it is left as a thin sunken strip the whole way down. It sheds its bark
+  and its furrows wear deeper. Its dead end is a crown of slivers that
+  wears back year by year and in the end is gone, leaving an open hollow.
+
+What the age row shows: at 6 years a tuft of fine whole ribbons; at 18 a
+winding sapling; at 40 a tree, bark split, some ends broken; at 80 and 150
+heavy, plated, furrowed, darker where bark has gone.
+
+Fixed on the way: thickening had no limit, so old trees bloated into slabs
+(it now slows with age); living tips and root ends were as thick as their
+years, so they ended like cut pipe (a living end is always new wood); more
+than half the strands died (lowered).
+
+Broke, or not there yet:
+
+- Close up, old bark is coarse. A lifting plate is a few large facets and a
+  crack is a step one ring wide, because marks along a strand can be no
+  finer than its rings.
+- Dead strips are hard to pick out. They are sunken and bare but the same
+  colour as everything else.
+- Hollows have not been seen. They should appear where a dead end has worn
+  away completely; none has been found in a picture yet.
+- A dead thing changes nothing after it. Living strands do not roll over a
+  dead strip's edges, nothing regrows from behind a break, and a tree that
+  loses a limb grows on exactly as it would have.
+- Paths are still laid out whole and then revealed by age. A strand's path
+  at year 30 does not depend on what happened at year 10.

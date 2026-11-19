@@ -1643,3 +1643,43 @@ So in this model girth decides who is left behind, and nothing decides
 who comes over. The spread of fine roots over a body in the pictures has
 to come from somewhere else: cables drawn over it from the sides, or
 wood that grows over it after it is there. Neither is in any test so far.
+
+## A manifold (`runs/012-manifold/`)
+
+"Time to run a manifold, no need to test each hypothesis in sequence."
+One experiment with every mechanism so far as a switch, all 32
+combinations run at once and shown side by side.
+
+The lengthwise test of runs 010 and 011, a ball growing 0.3 of the way
+from the post's line to its edge, with five switches:
+
+- S, stiffness by girth (stiff length as girth squared). Off: one for all.
+- R, resist: thick cables push the ball, held to its start at 0.03 (the
+  half-out setting of run 011).
+- G, grip: a thin cable on the ball holds its place.
+- T, twist: the cables start wound half a turn round the post over its
+  height. New. Without it cables start parallel and nothing can cross.
+- X, split: a cable pressed against the ball long enough divides
+  lengthwise over the stretch where it is pressed, into two of half its
+  area, which part over the ball and rejoin beyond it. Either may split
+  again. New. A proxy for "girth is how many pass": a thin cable is what
+  is left when a thick one has been divided.
+
+Cable ends are anchored (roots), which runs 010 and 011 did not have.
+Measured beside the pictures: cables over the ball's outer face by girth;
+crossings over the face (pairs whose order round the ball differs above
+and below it); forks; whether thin lie nearest the ball (rank correlation
+of girth with distance from it, near the ball); where the ball ends.
+
+Predictions, before running:
+
+1. Crossings over the face only with T.
+2. Forks only with X (by construction). Thin cables over the face many
+   more with X than without; and a gradient, thin nearest, only with X.
+3. R moves the ball half out in every combination with G, as in run 011,
+   and does not change the thin count.
+4. S and G alone change little.
+5. The pictured target (half out, many thin over the face, crossing and
+   forking, thin nearest) needs at least T and X. Unsure whether R is
+   needed too, or works against it by carrying the ball away from the
+   cables that would split.

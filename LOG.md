@@ -384,3 +384,24 @@ round an axis at more than one count in the same form.
 Known flaw: a faint beaded line along some sharp edges (plate rims on the
 dome, slit edges on the pod). A small blend at the joins did not visibly
 remove it. It comes from meshing a sharp crease on a grid.
+
+## Assets (`assets/`)
+
+First assets built in the sculpted, exaggerated register, following the
+five-role scheme in `LANGUAGE.md`. Sculpted, not grown.
+
+- `assets/kinds.js` defines kinds. A kind is a build plus the ways its
+  specimens differ; each specimen draws its own numbers, so it is
+  repeatable. Three kinds so far: pout bell, knuckle bundle, plated dome,
+  five specimens each.
+- Every specimen comes as separate parts sharing one origin: body, base,
+  rooting, flourish. No kind has a moving part yet.
+- Flourishes are placed by a rule: low on the body and base, in sheltered
+  spots, never out in the open and never underneath.
+- `assets.html` shows one kind at a time and can colour parts by role.
+- `node assets/make.js` writes dense masters as OBJ, one file per role, to
+  `assets/out/` (not kept in git). One specimen is about 190k triangles and
+  12 MB. A low-poly pass is expected later.
+
+Open: flourishes are still ragged at the viewer's density; specimens of a
+kind may differ too little; nothing sags or gives way to its neighbour.

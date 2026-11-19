@@ -57,7 +57,8 @@
     let d = egg(x, y, z, 0, 0.05, 0, 0.2, 0.06, 0.2);
     for (const [a, L, t] of o.roots) {
       const rx = x * Math.cos(a) + z * Math.sin(a), rz = z * Math.cos(a) - x * Math.sin(a), e = 0.15 + 0.62 * L;
-      d = smin(d, smin(limb(rx, y, rz, [[0.12, 0.09, t], [0.15 + 0.3 * L, 0.11, t * 0.85], [e, 0.035, t * 0.6]]), egg(rx, y, rz, e + 0.04, 0.025, 0, t * 1.9, 0.03, t * 1.9), 0.02), 0.03);
+      if (o.curl) d = smin(d, limb(rx, y, rz, [[0.12, 0.09, t], [0.15 + 0.3 * L, 0.1, t * 0.85], [e, 0.04, t * 0.65], [e + 0.1, 0.07, t * 0.5], [e + 0.13, 0.17, t * 0.42], [e + 0.06, 0.24, t * 0.36], [e - 0.02, 0.19, t * 0.3], [e + 0.01, 0.13, t * 0.26]]), 0.03);
+      else d = smin(d, smin(limb(rx, y, rz, [[0.12, 0.09, t], [0.15 + 0.3 * L, 0.11, t * 0.85], [e, 0.035, t * 0.6]]), egg(rx, y, rz, e + 0.04, 0.025, 0, t * 1.9, 0.03, t * 1.9), 0.02), 0.03);
     }
     return d;
   };
@@ -104,6 +105,21 @@
           // a few fat capped fingers on top, of the same family as the knuckle bundle
           const [tx, tz] = fold(x - cx, z, 3, ph), ty = cy + ry * 0.9;
           d = smin(d, cone(tx, y, tz, 0.05, ty, 0, 0.15, ty + tuft, 0, 0.085, 0.07), 0.04); return smin(d, egg(tx, y, tz, 0.16, ty + tuft + 0.04, 0, 0.11, 0.085, 0.11), 0.02); } };
+    } },
+    { name: 'clenched bulb', flourish: 'warts', specimens: 5, make(r) {
+      const u = (a, b) => lerp(a, b, r()), n = 5 + Math.floor(r() * 3), ph = u(0, TAU), tall = u(0.85, 1.15), lean = u(-0.1, 0.1), big = Math.floor(r() * n), side = u(0, TAU), nb = 4 + Math.floor(r() * 4);
+      const Lb = [], Bd = [];
+      for (let i = 0; i < n; i++) Lb.push([(TAU * i) / n + ph + u(-0.22, 0.22), u(0.82, 1.12) * (i === big ? 1.4 : 1), u(0.68, 1.12)]);
+      for (let i = 0; i < nb; i++) Bd.push([side + u(-1.1, 1.1), u(0.06, 0.3), u(0.1, 0.18), u(-0.16, 0.08)]);
+      return { top: 1.75, base: { cx: 0, R: u(0.5, 0.6), seat: 0.36, lumps: lumps(r, 5) }, roots: { cx: 0, curl: true, roots: roots(r, 4 + Math.floor(r() * 3), 0.5, 0.85, 0.08) },
+        body: (x0, y, z) => { const x = x0 - lean * y * y;
+          // swollen lobes round one axis, leaning in toward the top and pressed together so creases form between them
+          let d = smin(egg(x, y, z, 0, 0.46 * tall, 0, 0.24, 0.42 * tall, 0.24), egg(x, y, z, 0, 0.16, 0, 0.36, 0.16, 0.36), 0.08);
+          for (const [a, sz, hf] of Lb) { const c = Math.cos(a), sn = Math.sin(a), tilt = (y - 0.2) * 0.14, cx = (0.3 - tilt) * c, cz = (0.3 - tilt) * sn;
+            d = smin(d, egg(x, y, z, cx, 0.5 * tall * hf, cz, 0.3 * sz, 0.5 * tall * hf * (0.85 + 0.15 * sz), 0.3 * sz), 0.012); }
+          // a clutch of buds breaking out high on one side
+          for (const [a, rr, sz, up] of Bd) d = smin(d, egg(x, y, z, rr * Math.cos(a) + 0.12 * Math.cos(side), 0.86 * tall + up, rr * Math.sin(a) + 0.12 * Math.sin(side), sz, sz * 1.15, sz), 0.015);
+          return d; } };
     } },
   ];
 

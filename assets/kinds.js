@@ -30,6 +30,19 @@
       return smin(b, cone(x, y, z, -0.12, 0.05, 0, 0, 0, 0, 0.085, 0.075), 0.03);
     };
   }
+  // a fleshy tongue lying on a rounded body: longer on its downhill side, fat rolled edge, cords along it,
+  // tip lifting away. Used instead of a flat round plate, which reads as geometry and not as flesh.
+  function tongue(x, y, z, cx, cy, cz, R, th, dx, dy, dz, wid, stretch, lift, va) {
+    const px = x - cx, py = y - cy, pz = z - cz, l = H(px, py, pz) || 1e-9, nx = px / l, ny = py / l, nz = pz / l;
+    let e1 = [dx * dy, dy * dy - 1, dz * dy]; const el = H(e1[0], e1[1], e1[2]); e1 = el > 0.05 ? e1.map((v) => v / el) : [1, 0, 0];
+    const e2 = [dy * e1[2] - dz * e1[1], dz * e1[0] - dx * e1[2], dx * e1[1] - dy * e1[0]];
+    const ang = Math.acos(clamp(nx * dx + ny * dy + nz * dz, -1, 1)), az = Math.atan2(nx * e2[0] + ny * e2[1] + nz * e2[2], nx * e1[0] + ny * e1[1] + nz * e1[2]);
+    const down = Math.pow(Math.max(0, Math.cos(az)), 1.5), A = wid * (1 + stretch * down), q = ang / A, Rs = R + lift * Math.pow(clamp(q, 0, 1.2), 3) * down;
+    let b = smax(Math.abs(l - Rs) - th * (1 - 0.35 * q * q), (ang - A) * l, 0.05);
+    const t = Math.abs(az / 0.45 - Math.round(az / 0.45));
+    b -= va * Math.exp(-((t / 0.2) ** 2)) * sstep(0.15, 0.55, q) * sstep(-0.01, 0.02, l - Rs);
+    return smin(b, H(l - Rs, (ang - A) * l) - th * (0.75 + 0.5 * down), 0.035);
+  }
   // base: a meaty mound with a lipped seat and a few lumps round its edge
   const baseSDF = (o) => (x0, y, z) => {
     const x = x0 - o.cx;
@@ -77,14 +90,20 @@
           const [sx, sz] = fold(x, z, 9, ld + 0.2);
           d = smin(d, limb(sx, y, sz, [[0.22, 0.22, fr], [sk * 0.75, 0.22, fr * 0.9], [sk, 0.11, fr * 0.75]]), 0.03); return smin(d, egg(sx, y, sz, sk + 0.03, 0.09, 0, fr * pad * 0.85, fr * pad * 0.6, fr * pad * 0.85), 0.015); } };
     } },
-    { name: 'plated dome', flourish: 'beads', specimens: 5, make(r) {
-      const u = (a, b) => lerp(a, b, r()), n = 7 + Math.floor(r() * 5), ry = u(0.36, 0.5), off = u(0.05, 0.1), cov = u(0.6, 0.78), droop = u(1.0, 1.2), cx = u(-0.06, 0.06), ph = u(0, TAU), fat = u(0.03, 0.045), cy = 0.18 + ry, tuft = u(0.2, 0.36);
-      return { top: 1.75, base: { cx, R: u(0.5, 0.6), seat: 0.36, lumps: lumps(r, 4) }, roots: { cx, roots: roots(r, 6 + Math.floor(r() * 4), 0.55, 0.95, 0.045) },
-        body: (x, y, z) => { let d = smin(egg(x, y, z, cx, cy, 0, 0.47, ry, 0.47), egg(x, y, z, cx, 0.12, 0, 0.32, 0.13, 0.32), 0.08);
-          for (let k = 0; k < n; k++) { const th = Math.min(1.7, 1.5 * Math.pow(k / (n - 1), 0.75) * droop), f = k * GA + ph, dx = Math.sin(th) * Math.cos(f), dy = Math.cos(th), dz = Math.sin(th) * Math.sin(f);
-            d = smin(d, plate(x, y, z, cx + dx * off, cy + dy * off, dz * off, lerp(0.47, ry, dy * dy) + 0.09 - 0.008 * k, fat, dx, dy, dz, cov - 0.02 * k), 0.015); }
-          const [tx, tz] = fold(x - cx, z, 3, ph), ty = cy + ry + off;
-          d = smin(d, cone(tx, y, tz, 0.04, ty, 0, 0.13, ty + tuft, 0, 0.065, 0.04), 0.03); return smin(d, ball(tx, y, tz, 0.14, ty + tuft + 0.03, 0, 0.06), 0.02); } };
+    { name: 'tongue dome', flourish: 'warts', specimens: 5, make(r) {
+      const u = (a, b) => lerp(a, b, r()), n = 7 + Math.floor(r() * 4), ry = u(0.4, 0.52), cx = u(-0.06, 0.06), ph = u(0, TAU), cy = 0.2 + ry, sag = u(0.06, 0.14), lean = u(-0.1, 0.1), tuft = u(0.22, 0.36);
+      const T = []; for (let k = 0; k < n; k++) T.push([u(0.46, 0.66), u(0.45, 0.95), u(0.04, 0.12), u(0.045, 0.06)]);
+      return { top: 1.8, base: { cx, R: u(0.5, 0.6), seat: 0.36, lumps: lumps(r, 4) }, roots: { cx, roots: roots(r, 6 + Math.floor(r() * 3), 0.6, 0.95, 0.055) },
+        body: (x0, y, z) => { const x = x0 - lean * y * y;
+          // a heavy body: wider low down, with a neck where it meets the seat and cords under the tongues
+          let d = smin(egg(x, y, z, cx, cy, 0, 0.45, ry, 0.45), egg(x, y, z, cx, cy - ry * 0.45, 0, 0.5, ry * 0.55, 0.5), 0.12);
+          d = smin(d, egg(x, y, z, cx, 0.13, 0, 0.3, 0.14, 0.3), 0.07);
+          const f0 = Math.atan2(z, x - cx), a = (f0 * 6) / TAU + 0.3 * Math.sin(6 * y), tv = Math.abs(a - Math.round(a)); d -= 0.022 * Math.exp(-((tv / 0.12) ** 2)) * sstep(0.2, 0.5, y);
+          for (let k = 0; k < n; k++) { const th = Math.min(1.75, 0.2 + 1.5 * Math.pow(k / (n - 1), 0.8)), f = k * GA + ph, dx = Math.sin(th) * Math.cos(f), dy = Math.cos(th), dz = Math.sin(th) * Math.sin(f), [wid, st, lf, tk] = T[k];
+            d = smin(d, tongue(x, y, z, cx + dx * 0.05, cy + dy * 0.05 - sag * Math.sin(th), dz * 0.05, lerp(0.47, ry, dy * dy) + 0.075 - 0.006 * k, tk, dx, dy, dz, wid, st, lf, 0.018), 0.018); }
+          // a few fat capped fingers on top, of the same family as the knuckle bundle
+          const [tx, tz] = fold(x - cx, z, 3, ph), ty = cy + ry * 0.9;
+          d = smin(d, cone(tx, y, tz, 0.05, ty, 0, 0.15, ty + tuft, 0, 0.085, 0.07), 0.04); return smin(d, egg(tx, y, tz, 0.16, ty + tuft + 0.04, 0, 0.11, 0.085, 0.11), 0.02); } };
     } },
   ];
 

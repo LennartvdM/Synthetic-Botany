@@ -87,3 +87,20 @@ French graphic novels. Not realistic.
   renders; the packed columns).
 - Parts that stand off each other so the gap between them reads.
 - A different treatment at the tip or rim than along the length.
+
+## Held rigid: the grit
+
+Said after the first three asset kinds. The pout bell and the knuckle
+bundle had it. The plated dome did not, and was called a regression: the
+concept was fine, the style was broken. This is the one thing to be strict
+about, so the work does not drift away from it.
+
+What was said: it loses the grit.
+
+My reading of the difference, to be corrected if wrong:
+
+- Has it: parts that taper and swell; pads, lips and rolled edges; things
+  that bulge where they meet; weight; cords standing proud of a surface;
+  one family of part repeated with small differences.
+- Breaks it: a perfect ball; flat round discs; crisp even gaps; anything
+  that reads as a clean primitive placed on another clean primitive; a toy.

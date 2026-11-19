@@ -405,3 +405,11 @@ five-role scheme in `LANGUAGE.md`. Sculpted, not grown.
 
 Open: flourishes are still ragged at the viewer's density; specimens of a
 kind may differ too little; nothing sags or gives way to its neighbour.
+
+**Plated dome withdrawn, replaced by tongue dome.** The plated dome (a ball
+under flat round discs) was called a regression: it lost the grit. The
+concept was kept and rebuilt as fleshy tongues with rolled edges and cords
+on a heavier, veined body, topped with capped fingers of the same family as
+the knuckle bundle. The rule it broke is written in `LANGUAGE.md` under
+"Held rigid: the grit". `assets/kinds.png` still shows the withdrawn
+version; `assets/tongue-dome.png` shows the replacement.

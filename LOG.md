@@ -1512,3 +1512,86 @@ because the test is wrong in ways that bear on exactly those two points:
   was small. Not modelled.
 
 Each run takes about 20 seconds.
+
+**A proxy is allowed.** "It doesn't need to be realistically derived, if
+you've got an abstract proxy that achieves the same that's good." Read
+here as: the reason may be put in as a behaviour by girth; the result may
+not be. What was withdrawn above put in the result (thin roots on the
+orb).
+
+## Resist and grip (`runs/011-resist-and-grip/`)
+
+Run 010 with the two behaviours it had no way to show, as proxies by
+girth, and its faults mended.
+
+- Resist (thick). Where a thick cable and the body overlap, the body gives
+  way, not the cable. The body is pushed off by what resists it, and is
+  held to where it began only weakly. Stands in for "stop the object from
+  expanding".
+- Grip (thin). A thin cable lying on the body holds its place there: in a
+  collision it does not give way to another cable. Stands in for "hold
+  on".
+- Sliding round is given no proxy. Cable ends are no longer each kept in
+  place; only the bundle as a whole is. So a stiff cable can be moved
+  aside whole if that is what happens.
+
+Stiff length by girth squared as before. Girths as before: given, most of
+them thin, placed at random. The ball starts 0.3 of the way from the
+post's line to its edge and grows to 0.2.
+
+Predictions, before running:
+
+1. The ball moves, and away from where the thick cables near it are.
+2. Over the ball's outer face the cables are mostly thin: at least two in
+   three, and at most one thick, in each run.
+3. Thick cables in the ball's way bow least and are shifted most.
+4. Without grip, thin cables are pushed off the face as in run 010.
+   Without resist, the ball stays where it is and thick cables are on the
+   face as often as thin. Without both, run 010 again.
+
+Runs. `which-proxy.png`: both proxies, resist only, grip only, neither
+(seed 1). `seeds.png`: both, seeds 2 to 5. Columns as in run 010.
+`cables.js` is the whole experiment.
+
+Against the predictions:
+
+1. The ball moves away from the thick cables: holds in four runs of five.
+   Moved 0.22, 0.29, 0.20, 0.28 (the ball's radius is 0.2), and 1.00, 0.99,
+   0.94, 0.99 of that straight away from the thick cables near it. In
+   seed 5 it moved 0.05 and not in any one direction: there the thick
+   cables lay all round it.
+2. Mostly thin over the outer face: holds in those four, on very few
+   cables. One or two cables over the face each time (thin and middling;
+   no thick). In seed 5: 6 thin, 6 middling, 4 thick, as in run 010.
+3. Thick bow least: holds (0.07 to 0.10, against 0.13 to 0.21 for thin).
+   Thick shifted most: fails again. Nothing is shifted (ends move 0.00 to
+   0.02). No cable slides aside.
+4. One at a time: grip alone does nothing (same as neither). Resist alone
+   moves the ball only 0.05 and leaves 11 cables over the face, 4 of them
+   thick. Not predicted: it takes both. A guess at why: without grip the
+   thick cables are pushed round to the ball's outer side as well, and
+   then resist from every side at once.
+
+What it looks like, in the four: the ball is pushed to the post's edge or
+just outside it. The thick cables stand straight beside it. One or two
+thin ones are carried out over its face in a long shallow bow, from well
+above to well below.
+
+So the two proxies give the two halves of the account given: thick cables
+stop the body, which goes where they are not; thin ones hold on and are
+carried out on it. And two outcomes follow from where the thick cables
+happen to lie: on one side, and the body comes out the other; all round,
+and it is held in.
+
+Wrong, or not there:
+
+- Too much. The ball all but leaves the post, and takes only one or two
+  cables with it. In the pictures given a body is still in the wood with
+  many roots over it. How far it goes is the weak hold on the ball against
+  the strength of resist; neither was varied.
+- Sliding round is still not seen, with ends now free. In this model the
+  thick cables never move; the ball does.
+- The outcome is all or nothing across seeds (out in four, held in one).
+- No crossing and no forking. Cables here are straight and parallel to
+  begin with, so there is nothing to cross.
+- Run with one girth distribution, one ball size, one starting place.

@@ -759,3 +759,26 @@ width by up to 30%, drift by up to 32% of width, thickness by up to 28%.
 
 Not there: thin tips are still jagged at the mesh's size; no hollows or
 knots.
+
+Called better. Asked for next, before knots, with a traced picture: the
+spines and ridges of the strands should wiggle. Red was the smooth trace,
+green the intent: a line that mostly follows, with small jogs to one side
+at uneven intervals.
+
+Added: along each shard two lines wander. One moves the whole shard side
+to side (up to 16% of its width), so both edges go with it; the other
+moves its ridge across it (up to 30% of its width). Each holds for a
+stretch, leans a little, then jogs over a short length and holds again.
+Stretches are of uneven length. Not a wave and not grain-fine: a few jogs
+along a shard.
+
+- `sketch/page5-jogs-too-abrupt.png` First try, stretches the same length
+  on every shard. On the widest bands a jog was then steeper than it was
+  long and showed as a ledge across the grain, the thing ruled out in the
+  entry above.
+- `sketch/page5.png`, `sketch/page5-close.png` Stretch length tied to the
+  shard's width (0.8 to 2.7 widths), so a jog is always a slant along the
+  grain. Tried longer first (1.3 to 4.5 widths): wide bands went nearly
+  smooth again.
+
+Not there: thin tips still jagged at the mesh's size; no hollows or knots.

@@ -2,7 +2,8 @@
 // Nothing here is swept or blended. A piece is a heap of shards laid along the grain: each shard has flat
 // faces meeting at a ridge, starts somewhere and ends somewhere, and is a little too stiff for the line
 // it follows, so on the outside of a bend or a twist its far end stands off. Between its ends a shard has a
-// little give: it draws in or spreads, drifts and sinks, very slightly.
+// little give: it draws in or spreads, drifts and sinks. And its ridge and edges do not run true: they hold,
+// lean, and jog to one side, at uneven intervals.
 // The same four test pieces: a twist, a turn, a winding, and all three.
 // Throwaway like the other pages. Built with the clay kit from cheats/fantastic.js.
 (function () {
@@ -16,6 +17,14 @@
       out.push(p1.map((_, k) => 0.5 * (2 * p1[k] + (p2[k] - p0[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t * t + (3 * p1[k] - p0[k] - 3 * p2[k] + p3[k]) * t * t * t))); }
     return out;
   }
+  // a line that wanders as it goes: it holds for a stretch, leans a little, then jogs to one side over a
+  // short length and holds again. Stretches are of uneven length, longer on a wider band, so that a jog is
+  // always a slant along the grain and never a step across it. Values lie between -1 and 1.
+  function wander(len, r, wide) {
+    const ks = [0], vs = [r() - 0.5]; let at = 0, v = vs[0];
+    while (at < len) { at += wide * (0.8 + 1.9 * r()); v = clamp(v * 0.5 + (r() * 2 - 1), -1, 1); ks.push(at); vs.push(v); }
+    return (x) => { let i = 0; while (i < ks.length - 2 && ks[i + 1] < x) i++; const t = clamp((x - ks[i]) / (ks[i + 1] - ks[i]), 0, 1); return lerp(vs[i], vs[i + 1], 0.25 * t + 0.75 * sstep(0.5, 1, t)); };
+  }
   // one shard: a long piece with two flat faces meeting at a ridge, and a flat wall down each side.
   // C its line, O which way its ridge looks, W half-width, Hh ridge height. ridge: where across it the ridge runs;
   // eL, eR: how high its two edges stand; skew: how slanted its far end is cut.
@@ -23,6 +32,7 @@
     const n = K.C.length, L = [0], Tv = K.C.map((c, i) => unit([0, 1, 2].map((k) => K.C[Math.min(n - 1, i + 1)][k] - K.C[Math.max(0, i - 1)][k])));
     for (let i = 1; i < n; i++) L.push(L[i - 1] + H(K.C[i][0] - K.C[i - 1][0], K.C[i][1] - K.C[i - 1][1], K.C[i][2] - K.C[i - 1][2]));
     const lo = [9, 9, 9], hi = [-9, -9, -9]; K.C.forEach((c, i) => { const m = K.W[i] + K.Hh[i] + K.deep; for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], c[k] - m); hi[k] = Math.max(hi[k], c[k] + m); } });
+    const rw = rng(K.seed), wmax = Math.max(0.05, ...K.W), jog = wander(L[n - 1], rw, wmax), rjog = wander(L[n - 1], rw, wmax);   // its whole run wanders a little side to side, and its ridge wanders more
     const f = (x, y, z) => {
       // the nearest stretch of its line: found roughly first, then exactly near there
       let near = 0, nd = 1e9; for (let i = 0; i < n; i += 6) { const c = K.C[i], q = (x - c[0]) ** 2 + (y - c[1]) ** 2 + (z - c[2]) ** 2; if (q < nd) { nd = q; near = i; } }
@@ -37,8 +47,8 @@
       if ((x - c[0]) ** 2 + (y - c[1]) ** 2 + (z - c[2]) ** 2 > (Math.sqrt(bd) + 0.03) ** 2) { at = bi + bt; c = mix(K.C[bi], K.C[bi + 1], bt); T = unit(mix(Tv[bi], Tv[bi + 1], bt)); }
       bi = clamp(Math.floor(at), 0, n - 2); bt = at - bi;
       const side = unit(cross(T, mix(K.O[bi], K.O[bi + 1], bt))), o = cross(side, T), d3 = [x - c[0], y - c[1], z - c[2]];
-      const pre = at <= 0 || at >= n - 1 ? dot(d3, T) : 0, u = dot(d3, side), v = dot(d3, o), w = lerp(K.W[bi], K.W[bi + 1], bt), h = lerp(K.Hh[bi], K.Hh[bi + 1], bt), s = lerp(L[bi], L[bi + 1], bt) + pre;
-      const xm = K.ridge * w, yl = h * K.eL, yr = h * K.eR, lx = -(h - yl), ly = xm + w, rx = h - yr, ry = w - xm;
+      const pre = at <= 0 || at >= n - 1 ? dot(d3, T) : 0, v = dot(d3, o), w = lerp(K.W[bi], K.W[bi + 1], bt), h = lerp(K.Hh[bi], K.Hh[bi + 1], bt), s = lerp(L[bi], L[bi + 1], bt) + pre, u = dot(d3, side) - jog(s) * 0.16 * K.wiggle * w;
+      const xm = clamp(K.ridge + rjog(s) * 0.3 * K.wiggle, -0.85, 0.85) * w, yl = h * K.eL, yr = h * K.eR, lx = -(h - yl), ly = xm + w, rx = h - yr, ry = w - xm;
       // inside all of: the two faces of the roof, the two side walls, a floor well below, and the two ends
       return Math.max(((u + w) * lx + (v - yl) * ly) / H(lx, ly), ((u - xm) * rx + (v - h) * ry) / H(rx, ry), -u - w, u - w, -v - K.deep, -s, s - L[n - 1] + K.skew * u);
     };
@@ -47,7 +57,7 @@
   // wood round a guide line that carries a girth. Two layers of shards on a hidden core: wide ones that give
   // the piece its bulk, and narrower, shorter ones lying on them.
   function wood(guide, o) {
-    const M = 216, G = through(guide, M), frames = [], r = rng(o.seed || 1), r2 = rng((o.seed || 1) + 100), give = o.give === undefined ? 1 : o.give; let N = null;
+    const M = 216, G = through(guide, M), frames = [], r = rng(o.seed || 1), r2 = rng((o.seed || 1) + 100), r3 = rng((o.seed || 1) + 200), give = o.give === undefined ? 1 : o.give; let N = null;
     for (let i = 0; i <= M; i++) { const T = unit([0, 1, 2].map((k) => G[Math.min(M, i + 1)][k] - G[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); frames.push([T, N, cross(T, N)]); }
     const all = [];
     const lay = (i0, i1, th0, rho, wide, high, lift, point, stiff, P) => {
@@ -66,7 +76,7 @@
         const off = [0, 1, 2].map((k) => straight[k] + T0[k] * run - on[k]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff * q * q, 0.55 * R / far), p = [0, 1, 2].map((k) => on[k] + off[k] * stay);
         C.push(p); O.push(out); W.push(Math.max(0.004, R * wide * (1 + draw * b) * fine(q))); Hh.push(R * high * (1 - sink * Math.abs(b)) * (0.5 + 0.5 * fine(q)));
       }
-      if (C.length > 1) all.push(shard(Object.assign({ C, O, W, Hh, deep: G[i0][3] * 0.5 }, P)));
+      if (C.length > 1) all.push(shard(Object.assign({ C, O, W, Hh, deep: G[i0][3] * 0.5, seed: 1 + Math.floor(r3() * 1e6), wiggle: o.wiggle === undefined ? 1 : o.wiggle }, P)));
     };
     // the wide ones: side by side all the way round, most from the ground up, ending at different heights
     const nA = o.wide || 6;

@@ -107,18 +107,24 @@
           d = smin(d, cone(tx, y, tz, 0.05, ty, 0, 0.15, ty + tuft, 0, 0.085, 0.07), 0.04); return smin(d, egg(tx, y, tz, 0.16, ty + tuft + 0.04, 0, 0.11, 0.085, 0.11), 0.02); } };
     } },
     { name: 'clenched bulb', flourish: 'warts', specimens: 5, make(r) {
-      const u = (a, b) => lerp(a, b, r()), n = 5 + Math.floor(r() * 3), ph = u(0, TAU), tall = u(0.85, 1.15), lean = u(-0.1, 0.1), big = Math.floor(r() * n), side = u(0, TAU), nb = 4 + Math.floor(r() * 4);
-      const Lb = [], Bd = [];
-      for (let i = 0; i < n; i++) Lb.push([(TAU * i) / n + ph + u(-0.22, 0.22), u(0.82, 1.12) * (i === big ? 1.4 : 1), u(0.68, 1.12)]);
-      for (let i = 0; i < nb; i++) Bd.push([side + u(-1.1, 1.1), u(0.06, 0.3), u(0.1, 0.18), u(-0.16, 0.08)]);
-      return { top: 1.75, base: { cx: 0, R: u(0.5, 0.6), seat: 0.36, lumps: lumps(r, 5) }, roots: { cx: 0, curl: true, roots: roots(r, 4 + Math.floor(r() * 3), 0.5, 0.85, 0.08) },
-        body: (x0, y, z) => { const x = x0 - lean * y * y;
-          // swollen lobes round one axis, leaning in toward the top and pressed together so creases form between them
-          let d = smin(egg(x, y, z, 0, 0.46 * tall, 0, 0.24, 0.42 * tall, 0.24), egg(x, y, z, 0, 0.16, 0, 0.36, 0.16, 0.36), 0.08);
-          for (const [a, sz, hf] of Lb) { const c = Math.cos(a), sn = Math.sin(a), tilt = (y - 0.2) * 0.14, cx = (0.3 - tilt) * c, cz = (0.3 - tilt) * sn;
-            d = smin(d, egg(x, y, z, cx, 0.5 * tall * hf, cz, 0.3 * sz, 0.5 * tall * hf * (0.85 + 0.15 * sz), 0.3 * sz), 0.012); }
-          // a clutch of buds breaking out high on one side
-          for (const [a, rr, sz, up] of Bd) d = smin(d, egg(x, y, z, rr * Math.cos(a) + 0.12 * Math.cos(side), 0.86 * tall + up, rr * Math.sin(a) + 0.12 * Math.sin(side), sz, sz * 1.15, sz), 0.015);
+      const u = (a, b) => lerp(a, b, r()), n = 5 + Math.floor(r() * 3), ry = u(0.42, 0.56), lean = u(-0.1, 0.1), big = Math.floor(r() * n), side = u(0, TAU), nb = 4 + Math.floor(r() * 4), wrap = (a) => a - TAU * Math.round(a / TAU);
+      // one skin, not separate lumps. Creases are pressed into it: each has its own depth, width, wander and length.
+      const gaps = []; let tot = 0; for (let i = 0; i < n; i++) { const g = u(0.7, 1.3) * (i === big ? 1.8 : 1); gaps.push(g); tot += g; }
+      const seams = [], lobes = []; let a0 = u(0, TAU);
+      for (let i = 0; i < n; i++) { const g = (gaps[i] / tot) * TAU; seams.push({ a: a0, wig: u(0.05, 0.16), k: u(2, 4.5), ph: u(0, TAU), y0: u(0.1, 0.28), y1: u(0.82, 1.02), depth: u(0.2, 0.34), w: u(0.085, 0.14) });
+        lobes.push({ c: a0 + g / 2, half: g / 2, hf: u(0.72, 1.14) * (i === big ? 1.1 : 1), b: u(0.08, 0.2) + (i === big ? 0.1 : 0) }); a0 += g; }
+      const Bd = []; for (let i = 0; i < nb; i++) Bd.push([side + u(-1.1, 1.1), u(0.2, 0.42), u(0.13, 0.22), u(-0.22, 0.04)]);
+      return { top: 1.8, base: { cx: 0, R: u(0.5, 0.6), seat: 0.36, lumps: lumps(r, 5) }, roots: { cx: 0, curl: true, roots: roots(r, 4 + Math.floor(r() * 3), 0.5, 0.85, 0.08) },
+        body: (x0, y, z) => { const x = x0 - lean * y * y, f = Math.atan2(z, x), rho = Math.max(H(x, z), 0.05), top = 0.14 + 2 * ry;
+          let G = 0;
+          for (const S of seams) { const sd = Math.abs(wrap(f - S.a - S.wig * Math.sin(S.k * y + S.ph))) * rho, env = Math.pow(sstep(S.y0, S.y0 + 0.22, y) * sstep(S.y1 * top, S.y1 * top - 0.3, y), 0.8); G = Math.max(G, env * S.depth * Math.exp(-Math.sqrt(sd * sd + 2e-4) / S.w)); }
+          let hw = 0, hf = 0, bb = 0;
+          for (const Lb of lobes) { const q = wrap(f - Lb.c) / Lb.half, w = Math.exp(-2.2 * q * q); hw += w; hf += w * Lb.hf; bb += w * Lb.b; }
+          hf /= hw; bb /= hw;
+          const k = 1 + bb - G;
+          let d = smin(egg(x / k, y, z / k, 0, 0.14 + ry * hf, 0, 0.5, ry * hf, 0.5) * k, egg(x, y, z, 0, 0.14, 0, 0.34, 0.15, 0.34), 0.1);
+          // buds swelling out of the same skin, high on one side
+          for (const [a, rr, sz, up] of Bd) d = smin(d, egg(x, y, z, rr * Math.cos(a) + 0.12 * Math.cos(side), top * 0.84 + up, rr * Math.sin(a) + 0.12 * Math.sin(side), sz, sz * 1.15, sz), 0.06);
           return d; } };
     } },
   ];

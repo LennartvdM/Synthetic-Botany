@@ -880,3 +880,37 @@ lines. Widened again to about three cells at the mouth.
 Not there: with three a piece most land out of sight from any one side;
 from the front of the page as it opens, hardly one shows. Crack ends are
 still dotted where they close. No crack crosses from one band to the next.
+
+**Cracks withdrawn**: "more like a laser etching into plastic." The word
+wanted is splits, coarse splits. Kept as `sketch/page5-cracks-withdrawn.png`.
+
+And on the shell: its atom, an elongated diamond, is sufficient, but can be
+recognised once it is repeated, "and the art magic becomes undone." Three
+tricks given for hiding it, all taken:
+
+- The back of a plate dips into the core wood deep enough that its end
+  cannot be seen.
+- The front has more than one ending: a point, a blunt end, or a step (an
+  L, one side ending short of the other).
+- Direction. Which end is sunk (the back) and which lies on top (the
+  front) is what gives a plate direction, and the first shell had none:
+  each plate was fixed at its middle, so both ends did the same thing.
+  About nine in ten now point forward, back toward the foot of the piece
+  and front toward its tip; the rest are reversed.
+
+Also changed in the shell: a patch is one to three plates of unlike length
+and width, set off from each other along the piece. Plates thin toward the
+front, and a blunt front is always cut on the slant.
+
+Splits: a band parts along the grain, with a ragged gap between the two
+sides and one side lifted. On a plate the split opens from the front end
+and closes inward, so the front forks. On a band of the inner wood it gapes
+in the middle. Three a piece as before.
+`sketch/page5.png`, `sketch/page5-close.png`.
+
+On the way: with blunt and stepped fronts at full thickness the plates
+read as sawn planks. Thinner, tapering, and slant-cut is better.
+
+Not there: the foot of the twist is a jumble of plates; a blunt or stepped
+front still has a little of the plank about it where it is seen square on;
+the inner band's split is deep and dark, more a trench than a split.

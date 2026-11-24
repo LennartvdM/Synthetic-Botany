@@ -75,7 +75,10 @@
     const rhoMax = Math.max(...S.map((s) => Math.max(...s.rho))), cell = rhoMax * 2.1;
     // a strand that has split off another parts from it gradually: at the join the two are one, and they come
     // fully apart only some way along. (0: still one; 1: two.)
-    const kin = (i, k, j, l) => { const A = S[i], B = S[j]; let ch, m, pl; if (B.parent === i) { ch = B; m = l; pl = k; } else if (A.parent === j) { ch = A; m = k; pl = l; } else return 1; if (Math.abs(pl - (ch.po + m)) > 9) return 1; const e = Math.min(m, ch.K - 1 - m); return e <= 2 ? 0 : Math.min(1, (e - 2) / 8); };
+    // Nothing meets the grain square. A part that has split off may never stand further from the strand it split
+    // from than half the way it has run from the join: it stays inside a wedge of about 27 degrees at each end.
+    const WEDGE = P.wedge === undefined ? 0.5 : P.wedge;
+    const kin = (i, k, j, l) => { const A = S[i], B = S[j]; let ch, m, pl; if (B.parent === i) { ch = B; m = l; pl = k; } else if (A.parent === j) { ch = A; m = k; pl = l; } else return 1; if (Math.abs(pl - (ch.po + m)) > 12) return 1; const w = WEDGE * Math.min(m, ch.K - 1 - m) * ds / (A.rho[k] + B.rho[l]); return w < 0.05 ? 0 : Math.min(1, w); };
     const each = (fn) => {   // every pair of points of unlike strands that are closer than their girths allow
       const g = new Map(); S.forEach((s, i) => { for (let k = 0; k < s.K; k++) { const q = (Math.floor(s.X[k * 3] / cell) + 512) * 1048576 + (Math.floor(s.X[k * 3 + 1] / cell) + 512) * 1024 + Math.floor(s.X[k * 3 + 2] / cell) + 512, b = g.get(q); if (b) b.push(i, k); else g.set(q, [i, k]); } });
       S.forEach((s, i) => { for (let k = 0; k < s.K; k++) { const x = s.X[k * 3], y = s.X[k * 3 + 1], z = s.X[k * 3 + 2], cx = Math.floor(x / cell), cy = Math.floor(y / cell), cz = Math.floor(z / cell);
@@ -92,7 +95,10 @@
     const M = S.map((s) => new Float64Array(s.K * 3));
     S.forEach((s, i) => { s.parent = -1; s.fam = i; s.press = 0; s.on = new Uint8Array(s.K); });
     // a split strand rejoins the one it split from at both its ends
-    const joins = () => { for (const s of S) if (s.child) { const p = S[s.parent].X; for (const [e, k] of [[0, s.po], [s.K - 1, s.po + s.K - 1]]) for (let q = 0; q < 3; q++) s.X[e * 3 + q] = p[k * 3 + q]; } };
+    // a tear closes inside its wedge (see WEDGE): toward each end a part is held as near its strand as that allows
+    const joins = () => { for (const s of S) if (s.child) { const p = S[s.parent].X, K = s.K;
+      for (const dir of [1, -1]) { let run = 0; for (let e = 0; e < K >> 1; e++) { const m = dir > 0 ? e : K - 1 - e, k = s.po + m; if (e) run += H(p[k * 3] - p[(k - dir) * 3], p[k * 3 + 1] - p[(k - dir) * 3 + 1], p[k * 3 + 2] - p[(k - dir) * 3 + 2]); const lim = WEDGE * run; if (lim > 0.5) break;
+        const dx = s.X[m * 3] - p[k * 3], dy = s.X[m * 3 + 1] - p[k * 3 + 1], dz = s.X[m * 3 + 2] - p[k * 3 + 2], d = H(dx, dy, dz); if (d > lim) { const f = d > 1e-12 ? lim / d : 0; s.X[m * 3] = p[k * 3] + dx * f; s.X[m * 3 + 1] = p[k * 3 + 1] + dy * f; s.X[m * 3 + 2] = p[k * 3 + 2] + dz * f; } } } } };
     // Splitting. A strand's girth is how much passes along it. One pressed against the orb long enough divides
     // lengthwise over the stretch where it is pressed: two of half the area, which part sideways over the orb and
     // rejoin beyond it. Either may divide again. So the most pressed end up the finest, and a fine strand is
@@ -167,6 +173,8 @@
     const threads = [];
     if (SP) {
       const rt = rng(P.seed + 91), fams = new Map(), pt = (o, k) => [o.X[k * 3], o.X[k * 3 + 1], o.X[k * 3 + 2]];
+      // where a part still runs with what it split from, the two are one strand of the whole girth
+      for (const q of S) if (q.child) { const par = S[q.parent]; for (let m = 0; m < q.K; m++) { const k = q.po + m, w = Math.min(1, WEDGE * Math.min(m, q.K - 1 - m) * ds / (par.rho[k] + q.rho[m])); if (w >= 1) continue; const whole = Math.sqrt(par.rho[k] ** 2 + q.rho[m] ** 2); par.rho[k] = whole + (par.rho[k] - whole) * w; q.rho[m] = Math.max(0.004, q.rho[m] * w); } }
       S.forEach((q, i) => { const f = fams.get(q.fam); if (f) f.push(i); else fams.set(q.fam, [i]); q.inner = new Array(q.K).fill(null); q.gap = new Float64Array(q.K); });
       for (const mem of fams.values()) { if (mem.length < 2) continue;
         for (const i of mem) { const a = S[i]; for (let k = 0; k < a.K; k++) { let bd = 1e9, bj = -1, bl = 0;
@@ -176,15 +184,30 @@
         for (let pass = 0; pass < 2; pass++) { const c = Float64Array.from(q.rho); for (let k = 1; k < q.K - 1; k++) q.rho[k] = Math.min(c[k], 0.5 * c[k] + 0.25 * (c[k - 1] + c[k + 1])); } }
       S.forEach((q) => { if (!q.child) return; const par = S[q.parent];
         for (const [from, dir] of [[2, 1], [q.K - 3, -1]]) { let made = 0;
-          for (let m = from; m > 1 && m < q.K - 2 && made < SP.strings; m += dir) { const l = Math.max(1, Math.min(par.K - 2, q.po + m + dir * (1 + Math.floor(3 * rt())))), a = pt(q, m), b = pt(par, l), d = H(a[0] - b[0], a[1] - b[1], a[2] - b[2]), g = d - q.rho[m] - par.rho[l], tr = 0.009 + 0.003 * rt();
+          for (let m = from; m > 1 && m < q.K - 2 && made < SP.strings; m += dir) { const k0 = Math.max(1, Math.min(par.K - 2, q.po + m)), a = pt(q, m), b0 = pt(par, k0), across = H(a[0] - b0[0], a[1] - b0[1], a[2] - b0[2]), g = across - q.rho[m] - par.rho[k0], tr = 0.009 + 0.003 * rt();
+            // a thread runs along the grain at least twice as far as it goes across: long and shallow, or not at all
+            const l = Math.max(1, Math.min(par.K - 2, k0 + dir * Math.ceil((2.2 + 1.5 * rt()) * across / ds))), b = pt(par, l), d = H(a[0] - b[0], a[1] - b[1], a[2] - b[2]), tg = unit([q.X[(m + 1) * 3] - q.X[(m - 1) * 3], q.X[(m + 1) * 3 + 1] - q.X[(m - 1) * 3 + 1], q.X[(m + 1) * 3 + 2] - q.X[(m - 1) * 3 + 2]]);
+            if (Math.abs((b[0] - a[0]) * tg[0] + (b[1] - a[1]) * tg[1] + (b[2] - a[2]) * tg[2]) < 0.85 * d) continue;
             if (g < 0.012 || g > 0.08) continue; let clear = true;
             for (const o of S) { if (o === q || o === par || !clear) continue; for (let e = 0; e < o.K; e++) { const px = o.X[e * 3] - a[0], py = o.X[e * 3 + 1] - a[1], pz = o.X[e * 3 + 2] - a[2], t = Math.max(0, Math.min(1, (px * (b[0] - a[0]) + py * (b[1] - a[1]) + pz * (b[2] - a[2])) / (d * d))); if (H(px - (b[0] - a[0]) * t, py - (b[1] - a[1]) * t, pz - (b[2] - a[2]) * t) < tr + o.rho[e]) { clear = false; break; } } }
             if (!clear) continue; const X = [], O = [], mid = [(a[0] + b[0]) / 2 - orb.c[0], (a[1] + b[1]) / 2 - orb.c[1], (a[2] + b[2]) / 2 - orb.c[2]], ax = unit([b[0] - a[0], b[1] - a[1], b[2] - a[2]]), dm = mid[0] * ax[0] + mid[1] * ax[1] + mid[2] * ax[2], face = unit([mid[0] - ax[0] * dm, mid[1] - ax[1] * dm, mid[2] - ax[2] * dm]);
-            for (let e = 0; e < 7; e++) { X.push(a[0] + (b[0] - a[0]) * e / 6, a[1] + (b[1] - a[1]) * e / 6, a[2] + (b[2] - a[2]) * e / 6); O.push(face); }
-            threads.push({ X: Float64Array.from(X), rho: Float64Array.from([1.7, 1.15, 0.8, 0.7, 0.8, 1.15, 1.7], (v) => v * tr), O, far: new Array(7).fill(0), K: 7, root: 0, limb: -1, give: 1, snapped: false, vine: true, thread: true, inner: null }); made++; m += dir * (2 + Math.floor(3 * rt())); } } });
+            for (let e = 0; e < 9; e++) { X.push(a[0] + (b[0] - a[0]) * e / 8, a[1] + (b[1] - a[1]) * e / 8, a[2] + (b[2] - a[2]) * e / 8); O.push(face); }
+            threads.push({ X: Float64Array.from(X), rho: Float64Array.from([1.7, 1.25, 0.95, 0.78, 0.7, 0.78, 0.95, 1.25, 1.7], (v) => v * tr), O, far: new Array(9).fill(0), K: 9, root: 0, limb: -1, give: 1, snapped: false, vine: true, thread: true, inner: null }); made++; m += dir * (2 + Math.floor(3 * rt())); } } });
     }
     // (where a split strand joins the one it came from the two are one, so those places are not counted)
-    let worst = 0, over = 0, pairs = 0; each((i, k, j, l, dx, dy, dz, d, want) => { if ((S[i].child && (k < 11 || k >= S[i].K - 11)) || (S[j].child && (l < 11 || l >= S[j].K - 11))) return; const v = (want - d) / want; worst = Math.max(worst, v); pairs++; if (v > 0.15) over++; });
+    let worst = 0, over = 0, pairs = 0; each((i, k, j, l, dx, dy, dz, d, want) => { if ((S[i].child && (k < 18 || k >= S[i].K - 18)) || (S[j].child && (l < 18 || l >= S[j].K - 18))) return; const v = (want - d) / want; worst = Math.max(worst, v); pairs++; if (v > 0.15) over++; });
+    // a strand that has been drawn out has its points far apart and would be drawn as a polygon. It is stepped
+    // again at the usual spacing along the same line, and eased.
+    const fair = (q) => { const K = q.K, L = [0]; for (let k = 1; k < K; k++) L.push(L[k - 1] + H(q.X[k * 3] - q.X[k * 3 - 3], q.X[k * 3 + 1] - q.X[k * 3 - 2], q.X[k * 3 + 2] - q.X[k * 3 - 1]));
+      const n = Math.round(L[K - 1] / ds) + 1; if (n <= K * 1.15) return q;
+      const X = new Float64Array(n * 3), rho = new Float64Array(n), gap = q.gap ? new Float64Array(n) : null, O = [], F = [], inner = q.inner ? [] : null; let i = 0;
+      for (let j = 0; j < n; j++) { const at = L[K - 1] * j / (n - 1); while (i < K - 2 && L[i + 1] < at) i++; const u = Math.max(0, Math.min(1, (at - L[i]) / ((L[i + 1] - L[i]) || 1e-9))), a = Math.max(0, i - 1), d = Math.min(K - 1, i + 2);
+        for (let c = 0; c < 3; c++) X[j * 3 + c] = q.X[i * 3 + c] + (q.X[(i + 1) * 3 + c] - q.X[i * 3 + c]) * u;
+        rho[j] = q.rho[i] + (q.rho[i + 1] - q.rho[i]) * u; if (gap) gap[j] = q.gap[i] + (q.gap[i + 1] - q.gap[i]) * u; O.push(unit([0, 1, 2].map((c) => q.O[i][c] + (q.O[i + 1][c] - q.O[i][c]) * u))); F.push(q.F[i] + (q.F[i + 1] - q.F[i]) * u); if (inner) inner.push(q.inner[u < 0.5 ? i : i + 1]); }
+      for (let pass = 0; pass < 3; pass++) { const c = Float64Array.from(X); for (let j = 1; j < n - 1; j++) for (let e = 0; e < 3; e++) X[j * 3 + e] = 0.5 * c[j * 3 + e] + 0.25 * (c[(j - 1) * 3 + e] + c[(j + 1) * 3 + e]); }   // straight between the old points, then eased: this cannot loop
+      let root = 0; if (q.root) { const at = L[Math.min(K - 1, q.root)]; root = Math.round((n - 1) * at / L[K - 1]); }
+      return Object.assign({}, q, { X, rho, gap, O, F, inner, K: n, root }); };
+    if (P.fair !== false) for (let i = 0; i < S.length; i++) S[i] = fair(S[i]);
     return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
   }
 

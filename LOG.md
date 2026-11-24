@@ -1955,3 +1955,47 @@ closer to one tall cone again, and the orb sits in a deep opening in it
 rather than in a swelling of its own. Also still true: the sharpest turns
 at the joins are no gentler (161, 127, 115 degrees); longer parts did not
 ease them, as hoped.
+
+**"Perpendicular splits look ugly, they turn into crossbeams and nature
+doesn't do perpendicular."** Three things ran across the grain: threads
+(a slight slant across a narrow gap is nearly square); joins (a split-off
+part hooking back to its strand); and cut ends (a third of the chain's
+pieces ended in a square step).
+
+One rule for all three: nothing meets the grain at more than about 30
+degrees.
+
+- Cut ends are all long slants now (17 to 29 degrees to the grain).
+- A thread runs along the grain at least 2.2 times as far as it goes
+  across, or is not made.
+- Joins. Two wrong tries first. Zipping a part's last few points onto its
+  strand did nothing. Looking closer: parts that bow round the orb are
+  stretched, their points up to three times as far apart as they should
+  be, so the last points cover the whole sideways distance in two or
+  three steps. That short steep leg is the crossbeam. The rule that
+  works is about angle: a part may never stand further from the strand it
+  split from than half the way it has run from the join (a wedge of about
+  27 degrees at each end). And stretched strands are stepped again at the
+  usual spacing and eased. (A smooth curve fitted through them looped, and
+  made hairpins of 177 degrees; replaced by straight resampling.)
+
+Measured as the sharpest turn of each strand over a length of 0.14:
+split-off parts, median 83 degrees before, 40 now; worst 155 before, 121
+now.
+
+`sketch/page7-orb-no-crossbeams.png`. Everything runs along the grain;
+no crossbeams, no ladders, no square shoulders.
+
+What it cost, measured:
+
+- The orb shows less. Its outer face, at the strands' own girth, was 33%
+  open and is 19%. Held in their wedges the parts cannot stand as far
+  apart, and long shallow threads cover more than short ones. I moved the
+  orb out slightly (0.7 to 0.75) and halved how far a torn lip reaches;
+  that did not win it back.
+- Two touching pairs overlap by more than 15% (of 81). It was none. The
+  wedge pulls a part toward its strand whatever lies between.
+- Two of the twelve original strands now have hairpins of their own (141
+  and 147 degrees) that they did not have. Not understood.
+- With every part long and along the grain it is closer to a sheaf of
+  strips again, which is the look called ribbony three steps ago.

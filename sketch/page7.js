@@ -20,6 +20,7 @@
     // of stiff pieces, as page 5's wood was. Each piece is nearly as deep as it is wide, runs for some girths
     // of the strand, and is too stiff for the strand's line, so the chain bends in knees. Its back is sunk under
     // the piece before it; its front lies a little proud and ends in a point, a slant or a step. All face the tip.
+    // No end is cut square: a cut meets the grain at 30 degrees or less.
     const chain = recipe.chain === undefined ? 1 : recipe.chain;
     // Elbows. A strand does not keep one width round a bend: the inside of the bend fills in, so it is broadest
     // at the elbow and its inner edge goes round on an easier curve than its middle. The sharper the bend the
@@ -49,12 +50,12 @@
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
           const lift = first ? proud * q * q : -0.28 * (1 - sstep(0, 0.3, q)) + proud * q * q, no = nearOrb(base), front = ending === 'point' ? Math.pow(Math.min(1, (1 - q) / 0.3), 0.7) : 1, back = first ? 1 : 0.7 + 0.3 * sstep(0, 0.3, q), w = Math.min(wide, 1.05 + (wide - 1.05) * (1 - no));
           const eg = ease[si].g[i], en = ease[si].dir[i], inn = s.inner && s.gap && s.gap[i] > 0 ? s.inner[i] : null, sv = eg || inn ? unit(cross(tan(s, i), s.O[i])) : null, gu = eg ? eg * dot(en, sv) : 0, gv = eg ? eg * dot(en, s.O[i]) : 0;   // the elbow's fill, across the strand and through it
-          // a tear's lip: toward what it tore from, a part reaches a little under half way across the gap, so that
+          // a tear's lip: toward what it tore from, a part reaches a quarter of the way across the gap, so that
           // where the gap is narrow the two lips all but meet (a web with a slit), and where it is wide they stand apart
-          let lipU = 0; if (inn) { const sg = dot(inn, sv); if (Math.abs(sg) > 0.4) lipU = Math.sign(sg) * roomToward(base, sv.map((v) => v * Math.sign(sg)), Math.min(0.45 * s.gap[i], 1.3 * rho), rho, si, s.fam); }
+          let lipU = 0; if (inn) { const sg = dot(inn, sv); if (Math.abs(sg) > 0.4) lipU = Math.sign(sg) * roomToward(base, sv.map((v) => v * Math.sign(sg)), Math.min(0.25 * s.gap[i], 1.0 * rho), rho, si, s.fam); }
           C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * (gu + lipU) / 2 : 0))); O.push(s.O[i]); W.push(Math.max(0.006, rho * w * front * back + (Math.abs(gu) + Math.abs(lipU)) / 2)); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(rho * 0.95 + Math.max(0, -gv)); }
-        const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (0.6 + 1.0 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
-          : ending === 'step' ? { skew: 0.4 * (r() - 0.5), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.0 + 1.2 * r()) } : { skew: 0 };
+        const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
+          : ending === 'step' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.2 * r()), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()) } : { skew: 0 };
         // a part that has torn from another is thickest on its far side and thins to a lip toward the tear
         const mid = (k0 + k1) >> 1, inn = s.inner && s.inner[mid], sg = inn ? dot(inn, unit(cross(tan(s, mid), s.O[mid]))) : 0, torn = Math.abs(sg) > 0.4 ? Math.sign(sg) : 0, e1 = 0.2 + 0.5 * r(), e2 = 0.2 + 0.5 * r(), rd = clamp(ridge0 + 0.4 * (r() - 0.5), -0.6, 0.6);
         all.push(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? -0.4 * torn : rd, eL: torn < 0 ? 0.3 : torn > 0 ? 0.55 : e1, eR: torn > 0 ? 0.3 : torn < 0 ? 0.55 : e2, feather: torn, featherAmt: 0.78 }, s.thread ? { skew: 0 } : end)));
@@ -85,7 +86,7 @@
       for (let k = 0; k < n; k++) {   // rigid: part way to dead straight, and never more than about half a strand's girth off its line
         const off = [0, 1, 2].map((i) => on[km][i] + Tm[i] * arc[k] - on[k][i]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(rigid, 0.6 * Rs[k] / far), front = ending === 'point' ? Math.pow(Math.min(1, (1 - qs[k]) / 0.3), 0.7) : 1, back = 0.55 + 0.45 * sstep(0, 0.35, qs[k]);
         C.push([0, 1, 2].map((i) => on[k][i] + off[i] * stay)); O.push(unit([0, 1, 2].map((i) => outs[k][i] + (outs[km][i] - outs[k][i]) * rigid))); W.push(Math.max(0.004, Rs[k] * wide * front * back)); Hh.push(Rs[k] * high * (0.5 + 0.5 * front) * (1 - 0.45 * qs[k] * qs[k])); }
-      const w1 = Rs[n - 1] * wide, end = ending === 'step' ? { skew: 0.4 * (rr() - 0.5), step: { u: 0.5 * (rr() - 0.5), side: rr() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * rr()) } } : ending === 'blunt' ? { skew: (rr() < 0.5 ? -1 : 1) * (1.0 + 1.2 * rr()) } : { skew: 0 };
+      const w1 = Rs[n - 1] * wide, end = ending === 'step' ? { skew: (rr() < 0.5 ? -1 : 1) * (1.8 + 1.2 * rr()), step: { u: 0.5 * (rr() - 0.5), side: rr() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * rr()) } } : ending === 'blunt' ? { skew: (rr() < 0.5 ? -1 : 1) * (1.8 + 1.4 * rr()) } : { skew: 0 };
       return Object.assign({ C, O, W, Hh, deep: Rs[km] * 0.25, seed: 1 + Math.floor(rr() * 1e6), wiggle: 1 }, P, end);
     };
     const plate = (s, k0, k1, forward, ...rest) => {   // laid only where it is clear of every plate before it; cut back where it would meet one
@@ -117,7 +118,7 @@
   const bare = false, S = [
     ['one limb', tree({ bare, seed: 1, trunk: [[0, 0.22, 0, 0.27], [0.08, 0.7, 0.02, 0.25], [-0.1, 1.1, 0.05, 0.22], [-0.32, 1.45, 0, 0.18], [-0.3, 1.8, -0.05, 0.14]], limbs: [{ at: 0.5, share: 0.38, path: [[0.35, 1.25, 0.15], [0.62, 1.3, 0.2], [0.8, 1.1, 0.15]] }] })],
     ['a loop', tree({ bare, seed: 2, twist: 0.9, trunk: [[0, 0.22, 0, 0.28], [0.1, 0.7, 0, 0.26], [0.42, 1.05, 0.08, 0.23], [0.3, 1.5, 0.16, 0.2], [-0.26, 1.52, 0.08, 0.18], [-0.54, 1.08, -0.08, 0.16], [-0.2, 0.82, -0.22, 0.14], [0.2, 1.0, -0.34, 0.11]], limbs: [{ at: 0.42, share: 0.25, path: [[0.6, 1.8, 0.3], [0.82, 1.72, 0.36]] }] })],
-    ['holding an orb', tree({ bare, seed: 3, strands: 12, uneven: 0.9, lmax: 0.9, settle: 200, trunk: [[0, 0.22, 0, 0.3], [0, 0.6, 0, 0.28], [0.1, 1.0, 0, 0.23], [0.3, 1.4, 0.1, 0.18], [0.55, 1.7, 0.2, 0.13]], limbs: [{ at: 0.6, share: 0.3, path: [[-0.3, 1.3, -0.1], [-0.6, 1.5, -0.1], [-0.8, 1.35, 0]] }], orb: { at: 0.27, r: 0.13, room: 0.4, off: 0.7, split: { at: 1.2 } } }), 0.0065],
+    ['holding an orb', tree({ bare, seed: 3, strands: 12, uneven: 0.9, lmax: 0.9, settle: 200, trunk: [[0, 0.22, 0, 0.3], [0, 0.6, 0, 0.28], [0.1, 1.0, 0, 0.23], [0.3, 1.4, 0.1, 0.18], [0.55, 1.7, 0.2, 0.13]], limbs: [{ at: 0.6, share: 0.3, path: [[-0.3, 1.3, -0.1], [-0.6, 1.5, -0.1], [-0.8, 1.35, 0]] }], orb: { at: 0.27, r: 0.13, room: 0.4, off: 0.75, split: { at: 1.2 } } }), 0.0065],
     ['forked low', tree({ bare, seed: 4, strands: 10, twist: 0.3, trunk: [[0, 0.22, 0, 0.3], [-0.05, 0.6, 0, 0.28], [-0.2, 0.98, -0.05, 0.22], [-0.45, 1.35, -0.1, 0.17], [-0.5, 1.72, 0, 0.13]], limbs: [{ at: 0.3, share: 0.4, path: [[0.35, 0.9, 0.1], [0.55, 1.25, 0.2], [0.5, 1.6, 0.1]] }, { at: 0.62, share: 0.25, path: [[-0.6, 1.1, 0.25], [-0.85, 1.2, 0.35]] }] })],
   ];
   window.Fantastic = { names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), measures: S.map((s) => s[1].measure), counts: S.map((s) => s[1].count), build: (i) => mesh(S[i][1], S[i][0], S[i][2] || 0.0095, 2.05), mesh, kit: Fantastic.kit };

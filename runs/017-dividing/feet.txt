@@ -1,0 +1,6 @@
+a root to every strand (18): {"shoots":16,"tips":16,"deepest":3,"snapped":0,"regrown":0,"strands":18} overlap 0.11 pairs over 0/872
+8 roots: {"shoots":16,"tips":16,"deepest":3,"snapped":0,"regrown":0,"strands":18} overlap 0.25 pairs over 4/216
+5 roots: {"shoots":16,"tips":16,"deepest":3,"snapped":0,"regrown":0,"strands":18} overlap 0.12 pairs over 0/81
+snapped, made up: 27 roots: {"shoots":21,"tips":21,"deepest":3,"snapped":3,"regrown":3,"strands":27} overlap 0.34 pairs over 25/1782
+snapped, made up: 8 roots: {"shoots":21,"tips":21,"deepest":3,"snapped":3,"regrown":3,"strands":27} overlap 0.29 pairs over 1/185
+8 roots, seed 2: {"shoots":9,"tips":9,"deepest":3,"snapped":0,"regrown":0,"strands":18} overlap 0.22 pairs over 4/304

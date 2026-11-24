@@ -2655,3 +2655,69 @@ Wrong, or not there:
 - The new shoot leaves at a fixed two steps from the break. It could as
   well leave from the wound's own collar; not tried.
 - The wounds themselves still cannot be seen on a grown tree.
+
+## Run 017: dividing (a root is not owed to every shoot)
+
+Said: every branch, even the snapped ones, needs a root, and that is not
+how trees work. But let go of "every root is a branch" and each root has
+to end somewhere and each branch start somewhere; end the roots where the
+branches start and there is a point they all converge on, a narrow waist,
+which trees do not have either.
+
+Answer tried: nothing ends and nothing starts. A strand divides. A tree
+has few heavy strands at the foot (`feet`, 8 for grown trees; 0, the old
+way, for page 7's, which come out unchanged). The strands are gathered at
+the foot into that many families of neighbours. Below some height a
+member is not a strand of its own but part of its family's first, which is
+heavier by the member's section; above it, it comes out and goes its own
+way. The height is different for every member, anywhere from just above
+the foot to where the two part ways. It is the kernel's own older idea
+turned the other way up: round an orb a heavy strand divides into fine
+ones; here a fine one is what a heavy one divided into.
+
+Why there should be no waist: sections add, so there is as much wood at
+any level as there was with a root to every strand; and the divisions are
+at all heights, so there is no one level where the count changes.
+
+Predicted: fewer, heavier roots; the low trunk a few heavy strands, the
+high trunk many fine ones; the same wood at every level; and seams or
+bulges where a strand comes out of another.
+
+`runs/017-dividing/feet.png` (bare strands: 18 roots, 8, 5; a made-up tree
+with 27 and with 8; a second seed). With the wood: `sketch/page9.png`,
+`-other-side`, `-foot` (all five trees now have 8 roots);
+`sketch/page9-a-root-to-every-shoot-withdrawn.png` is how they were.
+
+- Roots: 18 become 8, and the made-up tree's 28 become 8. The skirt is
+  gone; the foot is a few heavy legs.
+- Wood at four heights (root of the sum of girths squared, one seed), a
+  root to every strand against 8 roots: 0.172, 0.157, 0.145, 0.127 against
+  0.173, 0.174, 0.148, 0.128. No level has less. (The second is a little
+  more, because the first carries a member's share to just past where it
+  comes out.)
+- No waist to be seen in any of the five.
+- The crown is the same crown.
+- Seams and bulges: not seen as such. Where a strand comes out it is drawn
+  from under its parent, as a torn part is.
+
+Broke first: on the evenly forked tree most members could not divide at
+all, because their strands part ways within eight steps of the foot and a
+division was not allowed in the first five. It kept a thin root for each.
+Divisions are now allowed from two steps up.
+
+Surprised me: the crowding from making up snapped shoots mostly went with
+it. Pairs of strands overlapping by more than 0.15 fell from 25 or 30 to 1
+or 2 on the same trees, since two strands that are one strand below their
+division are not counted against each other there. That is the measure
+being generous as much as the tree being better; the picture is the
+judge, and in the picture the low trunk is calmer.
+
+Wrong, or not there:
+- Families are neighbours at the foot, taken by angle round the bundle.
+  Nothing says that the strands of one bough share a root.
+- A member joins its family's first directly. Nothing divides twice (a
+  root into two, each into two again).
+- Snapped shoots' dead strands divide off like any others. Whether dead
+  wood should keep a root of its own, or none, is not looked at.
+- With broader wood on the trunk the bark has more room, and it is the
+  loose tiles again on the two heaviest trees.

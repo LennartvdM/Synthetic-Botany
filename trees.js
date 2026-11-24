@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     const r = rng(P.seed), n = P.strands, ds = P.ds, trunk = line(P.trunk, ds), nT = trunk.length, R0 = trunk[0][3], rho0 = R0 * Math.sqrt(P.fill / n), turn = (i) => P.twist * TAU * i / nT;
     // every strand has a place in the bundle's section, and a girth of its own (mixed: most thin, a few heavy)
     const S = Array.from({ length: n }, (_, j) => { const d = Math.sqrt((j + 0.5) / n), a = j * GA + 0.5 * (r() - 0.5); return { a: d * Math.cos(a), b: d * Math.sin(a), fat: P.mixed ? 0.35 + 1.9 * Math.pow(r(), 2.5) : 1 + P.uneven * (r() - 0.5), limb: -1, give: r() < P.giving ? 1 : 0.25 * r() }; });
@@ -84,6 +84,24 @@
       s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho)); s.hold = Float64Array.from(Array.from({ length: Kr }, (_, k) => (k < Kr * 0.45 ? 0.2 : 0)).concat(hold));   // anchored at the far end of its root, and nowhere else
       s.limbAt = fi; s.bend = P.stiff * Math.min(1.6, s.fat * s.fat);
     }
+    // Dividing. Not every shoot has a root of its own. With `feet` (fewer than the strands), the strands are gathered
+    // at the foot into that many families of neighbours, and a family has one root: below some height a member is not
+    // a strand of its own but part of its family's first, which is as much heavier for it (their sections add). The
+    // height is different for every member, anywhere between just above the foot and where the two part ways. So the
+    // wood divides all the way up and at no one level, and there is as much of it at any level as there was: no
+    // waist. A root does not end and a branch does not start. One divides into the other.
+    if (P.feet && P.feet < n) {
+      const rd = rng(P.seed + 311), order = S.map((s, i) => i).sort((x, y) => Math.atan2(S[x].b, S[x].a) - Math.atan2(S[y].b, S[y].a)), per = n / P.feet, cuts = [];
+      for (let g = 0; g < P.feet; g++) { const mem = order.slice(Math.round(g * per), Math.round((g + 1) * per)); if (mem.length < 2) continue;
+        const lead = mem.reduce((v, i) => (H(S[i].a, S[i].b) > H(S[v].a, S[v].b) ? i : v), mem[0]), L = S[lead], endL = L.K - 1 - L.root, add = new Float64Array(L.K);
+        for (const i of mem) { if (i === lead) continue; const B = S[i], endB = B.K - 1 - B.root; let dv = 0; while (dv < Math.min(endL, endB) && ownerAt(L.limb, dv + 1) === ownerAt(B.limb, dv + 1)) dv++;
+          const low = 2, top = Math.min(dv - 3, endL - 8, endB - 6); if (top <= low) continue; const m = low + Math.floor((top - low) * rd());
+          // (the first carries the member's share up to a little past where it comes out, so the step down is hidden in the join)
+          for (let k = 0; k < Math.min(L.K, L.root + m + 4); k++) { const bi = k < L.root ? B.root : B.root + (k - L.root), fade = sstep(L.root + m + 4, L.root + m, k); add[k] += (B.rho[bi] * (k < L.root ? L.rho[k] / L.rho[L.root] : 1)) ** 2 * fade; }
+          cuts.push([i, lead, m]); }
+        for (let k = 0; k < L.K; k++) L.rho[k] = Math.sqrt(L.rho[k] ** 2 + add[k]); }
+      for (const [i, lead, m] of cuts) { const B = S[i], k0 = B.root + m; B.X = B.X.slice(k0 * 3); B.goal = B.goal.slice(k0 * 3); B.rho = B.rho.slice(k0); B.hold = new Float64Array(B.K - k0); B.K -= k0; B.base = m; B.root = 0; B.stem = lead; B.po = S[lead].root + m; }
+    }
     // Where a shoot snapped off (a limb given as a `stub`). Three ages of the same event:
     //   fresh   the stub stands, its strands broken off a little apart
     //   hollow  the stub has rotted out: its strands end below, fined to points, and there is room where it was
@@ -112,7 +130,8 @@
     // Nothing meets the grain square. A part that has split off may never stand further from the strand it split
     // from than half the way it has run from the join: it stays inside a wedge of about 27 degrees at each end.
     const WEDGE = P.wedge === undefined ? 0.5 : P.wedge;
-    const kin = (i, k, j, l) => { const A = S[i], B = S[j]; let ch, m, pl; if (B.parent === i) { ch = B; m = l; pl = k; } else if (A.parent === j) { ch = A; m = k; pl = l; } else return 1; if (Math.abs(pl - (ch.po + m)) > 12) return 1; const w = WEDGE * Math.min(m, ch.K - 1 - m) * ds / (A.rho[k] + B.rho[l]); return w < 0.05 ? 0 : Math.min(1, w); };
+    const kin = (i, k, j, l) => { const A = S[i], B = S[j]; let ch, m, pl; if (B.stem === i || A.stem === j) { const c2 = B.stem === i ? B : A, m2 = c2 === B ? l : k, p2 = c2 === B ? k : l; if (Math.abs(p2 - (c2.po + m2)) > 12) return 1; const w2 = WEDGE * m2 * ds / (A.rho[k] + B.rho[l]); return w2 < 0.05 ? 0 : Math.min(1, w2); }
+      if (B.parent === i) { ch = B; m = l; pl = k; } else if (A.parent === j) { ch = A; m = k; pl = l; } else return 1; if (Math.abs(pl - (ch.po + m)) > 12) return 1; const w = WEDGE * Math.min(m, ch.K - 1 - m) * ds / (A.rho[k] + B.rho[l]); return w < 0.05 ? 0 : Math.min(1, w); };
     const each = (fn) => {   // every pair of points of unlike strands that are closer than their girths allow
       const g = new Map(); S.forEach((s, i) => { for (let k = 0; k < s.K; k++) { const q = (Math.floor(s.X[k * 3] / cell) + 512) * 1048576 + (Math.floor(s.X[k * 3 + 1] / cell) + 512) * 1024 + Math.floor(s.X[k * 3 + 2] / cell) + 512, b = g.get(q); if (b) b.push(i, k); else g.set(q, [i, k]); } });
       S.forEach((s, i) => { for (let k = 0; k < s.K; k++) { const x = s.X[k * 3], y = s.X[k * 3 + 1], z = s.X[k * 3 + 2], cx = Math.floor(x / cell), cy = Math.floor(y / cell), cz = Math.floor(z / cell);
@@ -121,7 +140,7 @@
     };
     // which strands pass each step of the trunk and of each limb together
     const stations = new Map();
-    S.forEach((s) => { for (let k = s.root; k < s.K; k++) { const i = k - s.root, ow = ownerAt(s.limb, i), key = (ow >= 0 ? 'limb' + ow : 'trunk') + ':' + i; let st = stations.get(key); if (!st) { const onL = ow >= 0, lb = onL ? limbs[ow] : null;
+    S.forEach((s) => { for (let k = s.root; k < s.K; k++) { const i = k - s.root + (s.base || 0), ow = ownerAt(s.limb, i), key = (ow >= 0 ? 'limb' + ow : 'trunk') + ':' + i; let st = stations.get(key); if (!st) { const onL = ow >= 0, lb = onL ? limbs[ow] : null;
         // a limb is held to its line only along its far part: how it gets there from the trunk is its strands' business.
         // And the trunk, or a limb, is let go where a limb leaves it, so the parting can pull it about.
         const h = limbs.reduce((v, q) => (q.parent === lb ? v * (1 - 0.9 * Math.exp(-(((i - q.fi) / 9) ** 2))) : v), onL ? sstep(P.set ? 0.05 : 0.35, P.set ? 0.3 : 0.8, (i - lb.fi) / (lb.path.length - 1 - lb.fi)) : 1);
@@ -130,8 +149,9 @@
     S.forEach((s, i) => { s.parent = -1; s.fam = i; s.press = 0; s.on = new Uint8Array(s.K); });
     // a split strand rejoins the one it split from at both its ends
     // a tear closes inside its wedge (see WEDGE): toward each end a part is held as near its strand as that allows
-    const joins = () => { for (const s of S) if (s.child) { const p = S[s.parent].X, K = s.K;
-      for (const dir of [1, -1]) { let run = 0; for (let e = 0; e < K >> 1; e++) { const m = dir > 0 ? e : K - 1 - e, k = s.po + m; if (e) run += H(p[k * 3] - p[(k - dir) * 3], p[k * 3 + 1] - p[(k - dir) * 3 + 1], p[k * 3 + 2] - p[(k - dir) * 3 + 2]); const lim = WEDGE * run; if (lim > 0.5) break;
+    // (a strand that divided off another at the foot of its own length is joined to it there in the same way, at that one end)
+    const joins = () => { for (const s of S) if (s.child || s.stem !== undefined) { const par = S[s.child ? s.parent : s.stem], p = par.X, K = s.K;
+      for (const dir of s.child ? [1, -1] : [1]) { let run = 0; for (let e = 0; e < K >> 1; e++) { const m = dir > 0 ? e : K - 1 - e, k = s.po + m; if (k >= par.K - 1) break; if (e) run += H(p[k * 3] - p[(k - dir) * 3], p[k * 3 + 1] - p[(k - dir) * 3 + 1], p[k * 3 + 2] - p[(k - dir) * 3 + 2]); const lim = WEDGE * run; if (lim > 0.5) break;
         const dx = s.X[m * 3] - p[k * 3], dy = s.X[m * 3 + 1] - p[k * 3 + 1], dz = s.X[m * 3 + 2] - p[k * 3 + 2], d = H(dx, dy, dz); if (d > lim) { const f = d > 1e-12 ? lim / d : 0; s.X[m * 3] = p[k * 3] + dx * f; s.X[m * 3 + 1] = p[k * 3 + 1] + dy * f; s.X[m * 3 + 2] = p[k * 3 + 2] + dz * f; } } } } };
     // Splitting. A strand's girth is how much passes along it. One pressed against the orb long enough divides
     // lengthwise over the stretch where it is pressed: two of half the area, which part sideways over the orb and
@@ -254,7 +274,7 @@
             threads.push({ X: Float64Array.from(X), rho: Float64Array.from([1.7, 1.25, 0.95, 0.78, 0.7, 0.78, 0.95, 1.25, 1.7], (v) => v * tr), O, far: new Array(9).fill(0), K: 9, root: 0, limb: -1, give: 1, snapped: false, vine: true, thread: true, inner: null }); made++; m += dir * (2 + Math.floor(3 * rt())); } } });
     }
     // (where a split strand joins the one it came from the two are one, so those places are not counted)
-    let worst = 0, over = 0, pairs = 0; each((i, k, j, l, dx, dy, dz, d, want) => { if ((S[i].child && (k < 18 || k >= S[i].K - 18)) || (S[j].child && (l < 18 || l >= S[j].K - 18))) return; const v = (want - d) / want; worst = Math.max(worst, v); pairs++; if (v > 0.15) over++; });
+    let worst = 0, over = 0, pairs = 0; each((i, k, j, l, dx, dy, dz, d, want) => { if ((S[i].child && (k < 18 || k >= S[i].K - 18)) || (S[j].child && (l < 18 || l >= S[j].K - 18)) || (S[i].stem !== undefined && k < 18) || (S[j].stem !== undefined && l < 18)) return; const v = (want - d) / want; worst = Math.max(worst, v); pairs++; if (v > 0.15) over++; });
     // a strand that has been drawn out has its points far apart and would be drawn as a polygon. It is stepped
     // again at the usual spacing along the same line, and eased.
     const fair = (q) => { const K = q.K, L = [0]; for (let k = 1; k < K; k++) L.push(L[k - 1] + H(q.X[k * 3] - q.X[k * 3 - 3], q.X[k * 3 + 1] - q.X[k * 3 - 2], q.X[k * 3 + 2] - q.X[k * 3 - 1]));
@@ -267,7 +287,7 @@
       let root = 0; if (q.root) { const at = L[Math.min(K - 1, q.root)]; root = Math.round((n - 1) * at / L[K - 1]); }
       return Object.assign({}, q, { X, rho, gap, O, F, inner, K: n, root }); };
     if (P.fair !== false) for (let i = 0; i < S.length; i++) S[i] = fair(S[i]);
-    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, stub: s.limb >= 0 && limbs[s.limb] ? limbs[s.limb].L.stub || null : null, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, marks: marks.map((v) => ({ c: v.c, a: v.a, e: v.e, r: v.r, d: v.d, kind: v.kind, limb: v.limb, asOrb: !!v.asOrb })), measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
+    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, stem: s.stem === undefined ? -1 : s.stem, stub: s.limb >= 0 && limbs[s.limb] ? limbs[s.limb].L.stub || null : null, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, marks: marks.map((v) => ({ c: v.c, a: v.a, e: v.e, r: v.r, d: v.d, kind: v.kind, limb: v.limb, asOrb: !!v.asOrb })), measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
   }
 
   // The tree's lines, grown and not given. A shoot carries some of the tree's strands. It grows in bouts: it runs
@@ -279,7 +299,7 @@
   // rule, and `share` is its main number (small: a leader with side shoots; a half: even forks and no leader).
   // Returns { strands, trunk, limbs } for grow(), and what it made (shoots, tips, deepest).
   function sprout(rule) {
-    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
+    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true, feet: 8 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
     const length = (c) => Q.reach * (Q.twig + Math.sqrt(c / n)), inside = (p) => Math.abs(p[0]) < 0.9 && Math.abs(p[2]) < 0.9 && p[1] < 1.9 && p[1] > 0.3, laid = [];   // every point of every shoot so far
     const open = (p) => { let d = 9; for (const q of laid) d = Math.min(d, H(p[0] - q[0], p[1] - q[1], p[2] - q[2])); return d; };
     let shoots = 0, tips = 0, deepest = 0;
@@ -330,7 +350,7 @@
       (L.par ? L.par.limbs : limbs).push(o); for (let q = L.par; q; q = q.par) q.count += k; extra += k; regrown++; }
     walk(limbs, (l) => { delete l.host; delete l.par; delete l.own; delete l.lost; });
     const Rn = R0 * Math.sqrt((n + extra) / n);   // the foot is as much broader as the tree has more strands, so that no strand is thinner for it
-    return { strands: n + extra, trunk: [[p0[0], p0[1], p0[2], Rn]].concat(top.path.map((p, i) => [p[0], p[1], p[2], Rn * (1 - 0.5 * (i + 1) / top.path.length)])), limbs, set: Q.set, made: { shoots, tips, deepest, snapped, regrown, strands: n + extra } };
+    return { strands: n + extra, trunk: [[p0[0], p0[1], p0[2], Rn]].concat(top.path.map((p, i) => [p[0], p[1], p[2], Rn * (1 - 0.5 * (i + 1) / top.path.length)])), limbs, set: Q.set, feet: Q.feet, made: { shoots, tips, deepest, snapped, regrown, strands: n + extra } };
   }
 
   const api = { grow, sprout };

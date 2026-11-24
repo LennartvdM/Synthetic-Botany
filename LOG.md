@@ -2206,3 +2206,52 @@ grain, the wiriest layer after the torn parts.
 In clay: on the loop and the one-limb tree the large sheets read as flat
 angular plates lying on the trunk, with an edge. Smaller ones are lost
 among the strands.
+
+**Bark as swathes of cells.** Said of the erratic patches: bark needs a
+minimum surface, tiny patches are not worth adding. And proposed:
+"encasing the tree in an invisible voronoi mesh and then creating swathes
+of voronoi clusters. That way you control how much it percolates and how
+much it stays cohesive."
+
+Built so, replacing the separate patches and their drawn outlines:
+
+- The mesh. Points are scattered evenly over the outside of the wood,
+  across each strand as well as along it, none nearer another than 0.08,
+  and each owns the space nearer to it than to any other. 180 to 320 cells
+  a tree. Torn strands have cells too; only the orb's opening has none.
+- Swathes. One starts at a cell and spreads to neighbours. `percolate` is
+  the chance it goes on after each cell. `cohere` is how strongly it
+  prefers a cell already touching several of its own. Swathes are laid
+  until `cover` of the cells are on (0.3). One under `least` cells (10) is
+  taken off again: the minimum surface.
+- The sheet: 0.03 thick, flat-faced, one thickness to its edge, lying
+  over the strands. Its edge is the boundary between a cell that is on and
+  one that is off, so it is straight runs and angles without any outline
+  being drawn. Peeled in places along that edge.
+
+`sketch/page7.png`, `sketch/page7-layers.png` (the four trees).
+`sketch/page8.png`, `sketch/page8-layers.png`: one tree, four spreads:
+few and compact (percolate 0.985, cohere 4), few and reaching (0.985, 0),
+many and small (0.93, 2), most of the tree (cover 0.65).
+
+Broke first (`sketch/page8-first-bubbles.png`): bark as bubbles and rings.
+Peeling was triggered by distance from a cell's own middle as well as from
+a real border, so every cell lifted except at its middle. Mended.
+
+What it does: bark is now a few large connected sheets with angular
+edges, one to four a tree, none tiny. The orb tree has bark on its trunk
+for the first time (three swathes either side of the orb). "Many and
+small" and "most of the tree" are plainly different from the first two.
+
+Wrong, or not there:
+
+- Compact and reaching look nearly alike. With one or two swathes of 30
+  cells on a limb two or three cells round, there is no room for an arm
+  to reach. `cohere` needs more cells, or larger trees, to show.
+- Where a sheet covers a limb it makes a smooth sleeve. The sheet spans
+  the grooves so well that the strands under it vanish, and with them the
+  tree's character; "most of the tree" is a smooth blob.
+- Edges are angular but at the size of one cell (0.08), which is fine
+  teeth, not the large points of the sketch given earlier.
+- Swathes favour limbs, because a limb is where a spreading swathe can
+  wrap right round and find most neighbours.

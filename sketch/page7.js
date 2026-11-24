@@ -5,7 +5,7 @@
 //            that snapped ends in a break, cut on the slant or stepped.
 //   slivers  narrow shards lying on the bands, pointed at both ends, their far ends standing off.
 //   shell    thin plates in a few places, a little broader than a strand, lying close.
-//   bark     the third layer: a few stiff patches lying over several strands at once, furrowed into plates. Back sunk into the band, front lying on
+//   bark     the third layer: a few sheets of tissue, each one unbroken skin over a region, with coarse grit. Back sunk into the band, front lying on
 //            top and ending in a point, a slant or a step; nearly all face toward the tip. No plate passes
 //            through another. One or two have split from the front.
 // Nothing is swept or blended. Throwaway like the other pages.
@@ -117,50 +117,37 @@
       if (!st) { count.dropped++; continue; }
       plate(s, st[0], st[1], forward, side, wide, high, split ? 'blunt' : e < 0.7 ? 'point' : 'blunt', { ridge: rd, eL, eR, split: split ? { fromEnd: true, s0: 0.42 + 0.2 * u1, s1: 1.001, u: 0.4 * (u2 - 0.5), wide: 0.2 + 0.12 * u3, lift: 0.5 + 0.5 * u4, depth: 9 } : null }, sd);
     }
-    // Bark: the third layer. A patch of bark is a stiff sheet lying over several strands at once. It rests on
-    // their ridges and spans the grooves between them, so under it the strands cannot be told apart. It is
-    // broken into long plates by furrows that run with the grain, and by an odd slanted break; each plate has
-    // its own thickness and is a little cupped. Like the shell it has a direction: its back thins into the wood
-    // and its front lifts clear, with a gap under it. There are a few patches to a tree, none near an orb.
-    const barkCount = recipe.bare ? 0 : recipe.bark === undefined ? 6 : recipe.bark, barks = [], rb = rng((recipe.seed || 1) + 123), woodPts = [];
-    for (const q of t.strands) if (!q.thread) for (let i = 0; i < q.K; i++) woodPts.push([q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i]]);
-    const barkPatch = (a, o, T, A, B, th) => {
-      const side = cross(T, o), g0 = 0.02, ns = Math.ceil(2 * A / g0) + 1, nu = Math.ceil(2 * B / g0) + 1; let h = new Float32Array(ns * nu).fill(-9);
-      // how high the wood stands under each place of the patch
-      for (const p of woodPts) { const d = [p[0] - a[0], p[1] - a[1], p[2] - a[2]], ps = dot(d, T), pu = dot(d, side), pv = dot(d, o), R = 1.3 * p[3]; if (Math.abs(ps) > A + R || Math.abs(pu) > B + R || pv < -0.2) continue;
-        for (let i = Math.max(0, Math.ceil((ps - R + A) / g0)); i <= Math.min(ns - 1, Math.floor((ps + R + A) / g0)); i++) for (let j = Math.max(0, Math.ceil((pu - R + B) / g0)); j <= Math.min(nu - 1, Math.floor((pu + R + B) / g0)); j++) { const q2 = ((i * g0 - A - ps) ** 2 + (j * g0 - B - pu) ** 2) / (R * R); if (q2 < 1) { const hh = pv + p[3] * Math.sqrt(1 - q2); if (hh > h[i * nu + j]) h[i * nu + j] = hh; } } }
-      for (let q = 0; q < h.length; q++) if (h[q] < -0.12) h[q] = -9;
-      // the sheet is stiff: it spans grooves (takes the highest wood near by) and is evened out, more along the grain
-      const sweep = (di, dj, rad, fn) => { const out = new Float32Array(h.length).fill(-9); for (let i = 0; i < ns; i++) for (let j = 0; j < nu; j++) { let acc = fn === 'max' ? -9 : 0, w = 0; for (let e = -rad; e <= rad; e++) { const ii = i + di * e, jj = j + dj * e; if (ii < 0 || ii >= ns || jj < 0 || jj >= nu) continue; const v = h[ii * nu + jj]; if (v < -5) continue; if (fn === 'max') acc = Math.max(acc, v); else { acc += v; w++; } } out[i * nu + j] = fn === 'max' ? acc : (w && h[i * nu + j] > -5 ? acc / w : -9); } h = out; };
-      sweep(0, 1, 3, 'max'); sweep(1, 0, 1, 'max'); for (let pass = 0; pass < 2; pass++) { sweep(0, 1, 2, 'mean'); sweep(1, 0, 4, 'mean'); }
-      const C = [], reach = [];
-      for (let i = 0; i < ns; i++) for (let j = 0; j < nu; j++) { const v = h[i * nu + j]; if (v < -5) continue; const P = [0, 1, 2].map((c) => a[c] + T[c] * (i * g0 - A) + side[c] * (j * g0 - B) + o[c] * v);
-        if (t.orb && H(P[0] - t.orb.c[0], P[1] - t.orb.c[1], P[2] - t.orb.c[2]) < t.orb.room * 1.6) { h[i * nu + j] = -9; continue; } if (i % 2 === 0 && j % 2 === 0) { C.push(P); reach.push(0.05 + th); } }
-      if (C.length < 12) return null;
-      for (let pass = 0; pass < 4; pass++) { const out = Float32Array.from(h); for (let i = 0; i < ns; i++) for (let j = 0; j < nu; j++) { if (h[i * nu + j] > -5) continue; let acc = 0, w = 0; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const ii = i + di, jj = j + dj; if (ii < 0 || ii >= ns || jj < 0 || jj >= nu || h[ii * nu + jj] < -5) continue; acc += h[ii * nu + jj]; w++; } if (w) out[i * nu + j] = acc / w - 0.03; } h = out; }   // at its edges the sheet turns down into the wood
-      const jl = Wood5.wander(2 * A, rb, 0.05), jr = Wood5.wander(2 * A, rb, 0.05), nF = 1 + Math.floor(B / 0.055 * (0.6 + 0.6 * rb())), fur = [], thj = [], curl = [];
-      for (let k = 0; k < nF; k++) fur.push({ c: -0.7 + 1.4 * (k + 0.5 + 0.8 * (rb() - 0.5)) / nF, jog: Wood5.wander(2 * A, rb, 0.04), g: 0.012 + 0.008 * rb() });
-      fur.sort((p, q) => p.c - q.c);
-      for (let k = 0; k <= nF; k++) { thj.push(0.65 + 0.7 * rb()); curl.push(0.15 + 0.5 * rb()); }
-      const breaks = []; for (let k = Math.floor(1 + 2 * rb()); k > 0; k--) breaks.push({ s0: A * (-0.5 + 1.2 * rb()), slope: (rb() < 0.5 ? -1 : 1) * (1.8 + 1.4 * rb()), g: 0.009 + 0.005 * rb(), from: Math.floor(rb() * (nF + 1)), to: 0 }); for (const b of breaks) b.to = b.from + Math.floor(rb() * 2);
-      const lift = th * (0.6 + 1.6 * rb());
-      const f = (x, y, z) => { const d = [x - a[0], y - a[1], z - a[2]], ps = dot(d, T), pu = dot(d, side), pv = dot(d, o); if (Math.abs(ps) > A || Math.abs(pu) > B) return Math.max(0.02, Math.abs(ps) - A, Math.abs(pu) - B);
-        const fi = (ps + A) / g0, fj = (pu + B) / g0, i = Math.min(ns - 2, Math.floor(fi)), j = Math.min(nu - 2, Math.floor(fj)), wi = fi - i, wj = fj - j, h00 = h[i * nu + j], h01 = h[i * nu + j + 1], h10 = h[(i + 1) * nu + j], h11 = h[(i + 1) * nu + j + 1]; if (h00 < -5 || h01 < -5 || h10 < -5 || h11 < -5) return 0.03;
-        const hs = (h00 * (1 - wj) + h01 * wj) * (1 - wi) + (h10 * (1 - wj) + h11 * wj) * wi, sn = ps / A, prof = Math.pow(Math.max(0, 1 - Math.pow(Math.abs(sn), 1.6)), 0.55), uHi = B * prof * (0.78 + 0.2 * jr(ps + A)), uLo = -B * prof * (0.78 + 0.2 * jl(ps + A));
-        let l = uLo, rgt = uHi, plate = 0, cut = -1; for (let k = 0; k < nF; k++) { const fu = (fur[k].c + 0.14 * fur[k].jog(ps + A)) * B * prof; if (fu < pu) { l = fu; plate = k + 1; } else if (rgt === uHi) rgt = fu; cut = Math.max(cut, fur[k].g * Math.sqrt(Math.max(0, 1 - sn * sn)) - Math.abs(pu - fu)); }
-        const mid = (l + rgt) / 2, hw = Math.max(0.01, (rgt - l) / 2), back = sstep(-1, -0.5, sn), up = lift * sstep(0.4, 1, sn), top = hs + th * (thj[plate] + curl[plate] * ((pu - mid) / hw) ** 2) * back + up, bottom = hs - 0.012 + up * 0.85;
-        for (const b of breaks) if (plate >= b.from && plate <= b.to) cut = Math.max(cut, b.g - Math.abs(ps - b.s0 - b.slope * pu) / H(1, b.slope));   // a break runs on the slant, never square across
-        // a furrow is a groove in the bark, deepest at its middle, not a cut through to the wood
-        return Math.max(pv - top, bottom - pv, uLo - pu, pu - uHi, Math.min(cut * 2.2, pv - (hs + up + th * thj[plate] * 0.3 * back))); };
-      return { f, C, reach, a, o, plates: nF + 1 }; };
+    // Bark: the third layer. Sheets of tissue. A sheet is one unbroken skin over a region of the tree: it lies on
+    // the wood, spans the grooves between strands so that nothing shows through, and goes round the tree with
+    // it. Its outline is irregular and it thins to nothing at its edge. Its surface has no grain: only coarse
+    // grit, rounded lumps of one size, the same in every direction. A few sheets to a tree, none over an orb.
+    const barkCount = recipe.bare ? 0 : recipe.bark === undefined ? 5 : recipe.bark, barks = [], rb = rng((recipe.seed || 1) + 123), wcell = 0.1, wgrid = new Map(), wkey = (x, y, z) => (Math.floor(x / wcell) + 512) * 1048576 + (Math.floor(y / wcell) + 512) * 1024 + Math.floor(z / wcell) + 512;
+    for (const q of t.strands) if (!q.thread) for (let i = 0; i < q.K; i++) { const p = [q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i]], k = wkey(p[0], p[1], p[2]), b = wgrid.get(k); if (b) b.push(p); else wgrid.set(k, [p]); }
+    // how far a place is outside the wood, taken softly so that the grooves between strands are bridged
+    const soft = 0.02, envelope = (x, y, z) => { let sum = 0; for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let c = -2; c <= 2; c++) { const g = wgrid.get(wkey(x + a * wcell, y + b * wcell, z + c * wcell)); if (!g) continue; for (const p of g) { const d = H(x - p[0], y - p[1], z - p[2]) - 0.95 * p[3]; if (d < 0.2) sum += Math.exp(-d / soft); } } return sum > 0 ? -soft * Math.log(sum) : 0.2; };
+    // coarse grit: the distance to the nearest of a scatter of points, one to a cell, so it has no direction
+    const hash3 = (i, j, k, n) => { let v = Math.imul(i, 374761393) ^ Math.imul(j, 668265263) ^ Math.imul(k, 1440662683) ^ Math.imul(n, 2246822519); v = Math.imul(v ^ (v >>> 13), 1274126177); return ((v ^ (v >>> 16)) >>> 0) / 4294967296; };
+    const grit = (x, y, z, g) => { const X = x / g, Y = y / g, Z = z / g, i0 = Math.floor(X), j0 = Math.floor(Y), k0 = Math.floor(Z); let best = 9; for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let c = -1; c <= 1; c++) { const i = i0 + a, j = j0 + b, k = k0 + c, d = H(X - i - hash3(i, j, k, 1), Y - j - hash3(i, j, k, 2), Z - k - hash3(i, j, k, 3)); if (d < best) best = d; } return Math.max(-0.4, 0.62 - best); };
+    const sheet = (a, R0, th) => {
+      const g0 = 0.02, R1 = R0 * 1.05, n = Math.ceil(2 * R1 / g0) + 2, lo = a.map((v) => v - R1 - g0), E = new Float32Array(n * n * n).fill(0.2), C = [], reach = [], v1 = unit([rb() - 0.5, rb() - 0.5, rb() - 0.5]), v2 = unit([rb() - 0.5, rb() - 0.5, rb() - 0.5]), p1 = rb() * 6.3, p2 = rb() * 6.3, grain = 0.032 + 0.008 * rb();
+      const reachAt = (dx, dy, dz, d) => R0 * (0.6 + 0.4 * (0.5 + 0.5 * Math.sin(3.1 * (dx * v1[0] + dy * v1[1] + dz * v1[2]) / d + p1) * Math.sin(2.3 * (dx * v2[0] + dy * v2[1] + dz * v2[2]) / d + p2)));   // an irregular outline
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) { const x = lo[0] + i * g0, y = lo[1] + j * g0, z = lo[2] + k * g0; if (H(x - a[0], y - a[1], z - a[2]) > R1 + 2 * g0) continue; const e = envelope(x, y, z); E[(i * n + j) * n + k] = e; if (Math.abs(e) < 0.05 && (i + j + k) % 2 === 0) { C.push([x, y, z]); reach.push(0.05 + th); } }
+      if (C.length < 30) return null;
+      const f = (x, y, z) => { const dx = x - a[0], dy = y - a[1], dz = z - a[2], d = H(dx, dy, dz) || 1e-9; if (d > R1) return Math.max(0.02, d - R1);
+        const m = 1 - d / reachAt(dx, dy, dz, d); if (m < -0.08) return 0.03; let fade = sstep(0, 0.3, m); if (t.orb) fade *= sstep(0, 1, (H(x - t.orb.c[0], y - t.orb.c[1], z - t.orb.c[2]) - t.orb.room * 1.35) / 0.08);
+        const fi = (x - lo[0]) / g0, fj = (y - lo[1]) / g0, fk = (z - lo[2]) / g0, i = Math.max(0, Math.min(n - 2, Math.floor(fi))), j = Math.max(0, Math.min(n - 2, Math.floor(fj))), k = Math.max(0, Math.min(n - 2, Math.floor(fk))), wi = fi - i, wj = fj - j, wk = fk - k, at3 = (ii, jj, kk) => E[(ii * n + jj) * n + kk];
+        const e = ((at3(i, j, k) * (1 - wk) + at3(i, j, k + 1) * wk) * (1 - wj) + (at3(i, j + 1, k) * (1 - wk) + at3(i, j + 1, k + 1) * wk) * wj) * (1 - wi) + ((at3(i + 1, j, k) * (1 - wk) + at3(i + 1, j, k + 1) * wk) * (1 - wj) + (at3(i + 1, j + 1, k) * (1 - wk) + at3(i + 1, j + 1, k + 1) * wk) * wj) * wi;
+        // the skin: thin, from a little inside the wood out to its thickness, which falls to nothing (and below) at
+        // the edge; grit on its outer face, right to the edge
+        return Math.max(e - (th * fade - 0.02 * (1 - fade)) - 0.011 * sstep(0, 0.06, m) * grit(x, y, z, grain), -(e + 0.035)); };
+      return { f, C, reach, a, R0 }; };
     for (let tries = 0; barks.length < barkCount && tries < 80 && thick.length; tries++) {
-      const s = thick[Math.floor(rb() * thick.length)], k = s.root + 6 + Math.floor(rb() * Math.max(1, s.K - s.root - 14)), fwd = rb() < 0.9, A = 0.2 + 0.2 * rb(), B = 0.1 + 0.1 * rb(), th = 0.03 + 0.012 * rb(); if (!outer(s, k)) continue;
-      const a = at(s, k), o = s.O[k]; if (t.orb && H(a[0] - t.orb.c[0], a[1] - t.orb.c[1], a[2] - t.orb.c[2]) < t.orb.room * 2.2) continue;
-      if (barks.some((b) => H(b.a[0] - a[0], b.a[1] - a[1], b.a[2] - a[2]) < 0.36 && dot(b.o, o) > 0)) continue;
-      let T = tan(s, k); const al = dot(T, o); T = unit(T.map((v, c) => (v - o[c] * al) * (fwd ? 1 : -1)));
-      const bp = barkPatch(a, o, T, A, B, th); if (bp) { barks.push(bp); all.push(bp); }
+      const s = thick[Math.floor(rb() * thick.length)], k = s.root + 6 + Math.floor(rb() * Math.max(1, s.K - s.root - 14)), R0 = 0.24 + 0.18 * rb(), th = 0.012 + 0.006 * rb(); if (!outer(s, k)) continue;
+      const a = at(s, k); if (t.orb && H(a[0] - t.orb.c[0], a[1] - t.orb.c[1], a[2] - t.orb.c[2]) < t.orb.room * 2.0) continue;
+      if (barks.some((b) => H(b.a[0] - a[0], b.a[1] - a[1], b.a[2] - a[2]) < 0.75 * (b.R0 + R0))) continue;
+      const bp = sheet(a, R0, th); if (bp) { barks.push(bp); all.push(bp); }
     }
-    count.bark = barks.length; count.barkPlates = barks.reduce((v, b) => v + b.plates, 0);
+    count.bark = barks.length;
     // which strands are near which place, so that only those are asked
     const cell = 0.12, grid = new Map(), key = (x, y, z) => (x + 64) * 16384 + (y + 64) * 128 + z + 64;
     all.forEach((s, i) => { const seen = new Set(); s.C.forEach((c, j) => { const m = s.reach[j] + 0.06;

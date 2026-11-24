@@ -2085,3 +2085,44 @@ Wrong, or not there:
 - Furrows within a patch are near parallel and evenly spaced.
 - The orb tree is the least changed: three patches, and none near the
   orb, which is where it is most wiry.
+
+**Furrowed bark withdrawn.** "It's the wrong kind of bark. It's like a
+see through mesh you've applied. I want sheets of tissue, that are patches
+around the tree. Their texture shouldn't have any direction at all. Just
+coarse grit." Kept as `sketch/page7-bark-furrowed-withdrawn.png`. It had
+furrows, plates and breaks, all along the grain: more lines on a thing
+with too many, and grooves that read as holes.
+
+Bark is now sheets of tissue:
+
+- One unbroken skin over a region. "How far outside the wood" is taken
+  softly over all the strands near by, so the grooves between them are
+  bridged, and the skin is a thin layer on that. Nothing shows through.
+- In the round. A sheet covers everything within reach of its middle, on
+  whatever side of the tree, so some go half way round a trunk or right
+  round a limb.
+- An irregular outline (its reach differs by direction), thinning to
+  nothing at the edge. Kept off an orb's room.
+- Coarse grit with no direction: the surface rises toward the nearest of
+  a scatter of points, one to a cell of about 0.035, giving rounded lumps
+  of one size. It is the first texture in this project put on a surface
+  for its own sake; the early rule against noise on surfaces was about
+  shapes being found, and this was asked for by name.
+
+Two builds. `sketch/page7-bark-tissue-first-padded.png`: 0.024 to 0.034
+thick over a loosely taken surface. Inflated pads, like cushions strapped
+on, with grit only in their middles. `sketch/page7.png`,
+`sketch/page7-bark-close.png`: 0.012 to 0.018 thick, taken closer to the
+wood, grit to the edge. The sheets follow the forms under them.
+
+Three to five sheets a tree. About 20 seconds more to build all four.
+
+Wrong, or not there:
+
+- The grit is rounded lumps, closer to pebbled or warty skin than to
+  grit. Finer or sharper grain is under what the mesh holds.
+- Where a sheet lands on a thin limb it still breaks into holes (the
+  one-limb tree's limb).
+- A sheet's edge is a soft fade into the wood. A sheet of tissue would
+  have an edge: a lip, a tear.
+- The orb tree has three sheets and none near the orb.

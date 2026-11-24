@@ -14,7 +14,10 @@
     { H, PI, clamp, sstep } = Fantastic.kit, mesh = Fantastic.mesh;
   function rng(seed) { let a = (seed * 2654435761) >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   const unit = (a) => { const l = H(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }, cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  // ?set={...} in the page's address overrides any part of every recipe, for finding out what causes what
+  const OVER = typeof location !== 'undefined' && new URLSearchParams(location.search).get('set') ? JSON.parse(new URLSearchParams(location.search).get('set')) : null;
   function tree(recipe) {
+    if (OVER) recipe = Object.assign({}, recipe, OVER);
     const t = Trees.grow(recipe), r = rng((recipe.seed || 1) + 50), all = [], count = { bands: 0, fine: 0, slivers: 0, plates: 0, cut: 0, dropped: 0 };
     const at = (s, k) => [s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]], tan = (s, k) => unit([0, 1, 2].map((q) => s.X[Math.min(s.K - 1, k + 1) * 3 + q] - s.X[Math.max(0, k - 1) * 3 + q]));
     const nearOrb = (p) => (t.orb ? 1 - sstep(1.3, 2.2, H(p[0] - t.orb.c[0], p[1] - t.orb.c[1], p[2] - t.orb.c[2]) / t.orb.room) : 0);
@@ -49,10 +52,12 @@
       for (let i = 0; i < K; i++) { if (!dir[i]) { let j = 1; while (j < 4 && !(dir[i - j] || dir[i + j])) j++; dir[i] = dir[i - j] || dir[i + j] || null; if (!dir[i]) g[i] = 0; else room[i] = Math.min(room[Math.max(0, i - j)], room[Math.min(K - 1, i + j)], 9) === 9 ? 0 : Math.min(room[i - j] === undefined ? 9 : room[i - j], room[i + j] === undefined ? 9 : room[i + j]); } g[i] = Math.min(g[i], room[i]); }
       return { g, dir }; });
     for (const [si, s] of t.strands.entries()) {
-      const K = s.K, fine = !!s.vine, ridge0 = 0.7 * (r() - 0.5); let k = 0, first = true;
+      // where a torn part still runs with what it tore from it is not drawn: there the two are one, and the other carries the girth
+      const fine = !!s.vine, ridge0 = 0.7 * (r() - 0.5); let kA = 0, kB = s.K - 1; if (fine && !s.thread) { while (kA < kB && s.rho[kA] < 0.013) kA++; while (kB > kA && s.rho[kB] < 0.013) kB--; if (kB - kA < 5) continue; }
+      const K = kB + 1; let k = kA, first = true;
       while (k < K - 1) {
         const rho0 = s.rho[Math.min(K - 1, k + 2)], want = chain && !s.thread ? Math.max(7, Math.round((7 + 10 * r()) * Math.max(rho0, 0.02) / 0.035)) : K; let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
-        const k0 = first ? 0 : Math.max(0, k - 3), n = k1 - k0, last = k1 === K - 1, wide = (fine ? 0.95 : 1.15) + 0.2 * r(), high = (fine ? 0.8 : 0.62) + 0.25 * r(), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, massW = 1.55 + 0.4 * r(), e = r(), ending = last ? 'own' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
+        const k0 = first ? kA : Math.max(kA, k - 3), n = k1 - k0, last = k1 === K - 1, wide = (fine ? 0.95 : 1.15) + 0.2 * r(), high = (fine ? 0.8 : 0.62) + 0.25 * r(), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, massW = 1.55 + 0.4 * r(), e = r(), ending = last ? 'own' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
           const no = nearOrb(base), tornHere = s.gap && s.inner && s.inner[i] ? Math.min(1, s.gap[i] / (1.2 * rho)) : 0, alone = 1 - sstep(0.9, 2.0, s.far[i] / rho), free = s.thread ? 1 : Math.max(no, tornHere, alone, 1 - sstep(s.root, s.root + 8, i)), body = mass * (1 - free),   // a strand running alone is a limb, not part of a mass
@@ -127,11 +132,11 @@
     // is taken off again. Where bark stops, it stops on the boundary between two cells, so its edge is straight
     // runs and angles. The sheet itself is thin, flat-faced, of one thickness to its edge, and lies over the
     // strands, spanning the grooves between them. In places along the edge it has peeled.
-    const BK = recipe.bare || recipe.bark === 0 ? null : Object.assign({ cell: 0.045, stretch: 2.5, cover: 0.3, percolate: 0.985, cohere: 0.6, least: 14, thick: 0.03 }, recipe.bark || {}), rb = rng((recipe.seed || 1) + 123);
+    const BK = recipe.bare || recipe.bark === 0 ? null : Object.assign({ cell: 0.055, stretch: 1.6, cover: 0.3, percolate: 0.985, cohere: 0.6, least: 12, thick: 0.018 }, recipe.bark || {}), rb = rng((recipe.seed || 1) + 123);
     const wcell = 0.15, wgrid = new Map(), wkey = (x, y, z) => (Math.floor(x / wcell) + 512) * 1048576 + (Math.floor(y / wcell) + 512) * 1024 + Math.floor(z / wcell) + 512;
     for (const q of t.strands) if (!q.thread) for (let i = 0; i < q.K; i++) { const p = [q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i]], k = wkey(p[0], p[1], p[2]), b = wgrid.get(k); if (b) b.push(p); else wgrid.set(k, [p]); }
     // how far a place is outside the wood, taken softly so that the grooves between strands are bridged
-    const soft = 0.011, envelope = (x, y, z) => { let sum = 0; for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let c = -1; c <= 1; c++) { const g = wgrid.get(wkey(x + a * wcell, y + b * wcell, z + c * wcell)); if (!g) continue; for (const p of g) { const d = H(x - p[0], y - p[1], z - p[2]) - 0.92 * p[3]; if (d < 0.08) sum += Math.exp(-d / soft); } } return sum > 0 ? -soft * Math.log(sum) : 0.2; };
+    const soft = 0.011, envelope = (x, y, z) => { let sum = 0; for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let c = -1; c <= 1; c++) { const g = wgrid.get(wkey(x + a * wcell, y + b * wcell, z + c * wcell)); if (!g) continue; for (const p of g) { const d = H(x - p[0], y - p[1], z - p[2]) - 0.88 * p[3]; if (d < 0.08) sum += Math.exp(-d / soft); } } return sum > 0 ? -soft * Math.log(sum) : 0.2; };
     const hash3 = (i, j, k, n) => { let v = Math.imul(i, 374761393) ^ Math.imul(j, 668265263) ^ Math.imul(k, 1440662683) ^ Math.imul(n, 2246822519); v = Math.imul(v ^ (v >>> 13), 1274126177); return ((v ^ (v >>> 16)) >>> 0) / 4294967296; };
     const vnoise = (x, y, z, n) => { const i = Math.floor(x), j = Math.floor(y), k = Math.floor(z), u = x - i, v = y - j, w = z - k, su = u * u * (3 - 2 * u), sv = v * v * (3 - 2 * v), sw = w * w * (3 - 2 * w), L = (a, b, t) => a + (b - a) * t;
       return L(L(L(hash3(i, j, k, n), hash3(i + 1, j, k, n), su), L(hash3(i, j + 1, k, n), hash3(i + 1, j + 1, k, n), su), sv), L(L(hash3(i, j, k + 1, n), hash3(i + 1, j, k + 1, n), su), L(hash3(i, j + 1, k + 1, n), hash3(i + 1, j + 1, k + 1, n), su), sv), sw); };
@@ -141,7 +146,7 @@
       // tears: distance from a cell's point is counted short along its strand's direction. No point is nearer
       // another than a cell's width, so counted.
       const sp = BK.cell, st = BK.stretch, P = [], gs = Math.max(0.1, sp * st), sgrid = new Map(), skey = (x, y, z) => (Math.floor(x / gs) + 512) * 1048576 + (Math.floor(y / gs) + 512) * 1024 + Math.floor(z / gs) + 512, cand = [];
-      for (const q of t.strands) if (!q.thread) for (let i = q.root + 1; i < q.K - 1; i++) if (q.rho[i] > 0.02 && q.far[i] > 0.9 * q.rho[i]) { const T = tan(q, i), sv = unit(cross(T, q.O[i])); for (const e of [-0.8, 0, 0.8]) cand.push([0, 1, 2].map((c) => q.X[i * 3 + c] + (q.O[i][c] * 0.8 + sv[c] * e) * q.rho[i]).concat(T, q.rho[i])); }
+      for (const q of t.strands) if (!q.thread) for (let i = q.root + 1; i < q.K - 1; i++) if (q.rho[i] > 0.02 && q.far[i] > 0.9 * q.rho[i]) { const T = tan(q, i), sv = unit(cross(T, q.O[i])); for (const e of [-0.8, 0, 0.8]) cand.push([0, 1, 2].map((c) => q.X[i * 3 + c] + (q.O[i][c] * 0.8 + sv[c] * e) * q.rho[i]).concat(T, q.far[i] + q.rho[i])); }
       for (let i = cand.length - 1; i > 0; i--) { const j = Math.floor(rb() * (i + 1)), x = cand[i]; cand[i] = cand[j]; cand[j] = x; }
       const dist = (c, x, y, z) => { const vx = x - c[0], vy = y - c[1], vz = z - c[2], al = vx * c[3] + vy * c[4] + vz * c[5]; return Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al) + (al / st) ** 2); };
       const nearSeeds = (x, y, z, fn) => { const cx = Math.floor(x / gs), cy = Math.floor(y / gs), cz = Math.floor(z / gs); for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let c = -2; c <= 2; c++) { const g = sgrid.get((cx + a + 512) * 1048576 + (cy + b + 512) * 1024 + cz + c + 512); if (g) for (const i of g) fn(i); } };
@@ -151,7 +156,7 @@
       // to 1 (it stays compact: it prefers a cell touching several).
       const on = new Uint8Array(N), tried = new Uint8Array(N), power = -3 + 7 * BK.cohere; let lit = 0, swathes = 0;
       for (let go = 0; go < 2000 && lit < BK.cover * N; go++) {
-        const start = Math.floor(rb() * N); if (on[start] || tried[start] || rb() > P[start][6] / girth || nb[start].some((j) => on[j])) continue; tried[start] = 1;   // bark begins on heavy wood more often than on a twig
+        const start = Math.floor(rb() * N); if (on[start] || tried[start] || rb() > (P[start][6] / girth) ** 2 || nb[start].some((j) => on[j])) continue; tried[start] = 1;   // bark begins where the wood is broad far more often than on a limb
         const mine = [start], inIt = new Set(mine);
         while (lit + mine.length < BK.cover * N && rb() < BK.percolate) { const front = new Map(); for (const i of mine) for (const j of nb[i]) if (!inIt.has(j) && !on[j]) front.set(j, (front.get(j) || 0) + 1); if (!front.size) break;
           let total = 0; const w = []; for (const [j, c] of front) { const v = Math.pow(c, power); w.push([j, v]); total += v; } let pick = rb() * total, chosen = w[0][0]; for (const [j, v] of w) { pick -= v; if (pick <= 0) { chosen = j; break; } } mine.push(chosen); inIt.add(chosen); }
@@ -160,13 +165,13 @@
       count.bark = swathes; count.barkCells = lit; count.cells = N;
       // how far outside the wood, kept at the corners of a fine grid as they are asked for
       const g0 = 0.02, memo = new Map(), Eat = (i, j, k) => { const key = (i + 512) * 1048576 + (j + 512) * 1024 + k + 512; let v = memo.get(key); if (v === undefined) { v = envelope(i * g0, j * g0, k * g0); memo.set(key, v); } return v; };
-      const th = BK.thick, peel = th * 1.4, seed = 1 + Math.floor(rb() * 1e6);
+      const th = BK.thick, peel = th * 2.2, seed = 1 + Math.floor(rb() * 1e6);
       const f = (x, y, z) => { let d1 = 9, d0 = 9; nearSeeds(x, y, z, (i) => { const d = dist(P[i], x, y, z); if (on[i]) { if (d < d1) d1 = d; } else if (d < d0) d0 = d; });
         if (d1 > 2 * sp) return 0.03; const border = (d0 - d1) / 2; let edge = Math.min(border, 1.6 * sp - d1); if (edge < -0.03) return 0.03;   // border: how far inside the boundary between a cell that is on and one that is off
         if (t.orb) edge = Math.min(edge, H(x - t.orb.c[0], y - t.orb.c[1], z - t.orb.c[2]) - t.orb.room * 1.35);
         const fi = x / g0, fj = y / g0, fk = z / g0, i = Math.floor(fi), j = Math.floor(fj), k = Math.floor(fk), wi = fi - i, wj = fj - j, wk = fk - k;
         const e = ((Eat(i, j, k) * (1 - wk) + Eat(i, j, k + 1) * wk) * (1 - wj) + (Eat(i, j + 1, k) * (1 - wk) + Eat(i, j + 1, k + 1) * wk) * wj) * (1 - wi) + ((Eat(i + 1, j, k) * (1 - wk) + Eat(i + 1, j, k + 1) * wk) * (1 - wj) + (Eat(i + 1, j + 1, k) * (1 - wk) + Eat(i + 1, j + 1, k + 1) * wk) * wj) * wi;
-        const near = sstep(0.05, 0, border) * sstep(0.52, 0.64, vnoise(x / 0.2, y / 0.2, z / 0.2, seed)), up = peel * near;   // peeled in places, and only along a real border
+        const lip = sstep(0.035, 0, border), near = Math.max(0.35 * lip, sstep(0.06, 0, border) * sstep(0.52, 0.64, vnoise(x / 0.2, y / 0.2, z / 0.2, seed))), up = peel * near;   // its border curls up a little everywhere and has peeled in places
         return Math.max(e - th - up, -0.035 + (0.035 + up * 0.85) * near - e, -edge * 0.9); };
       const C = [], reach = []; for (let i = 0; i < N; i++) if (on[i]) { C.push(P[i].slice(0, 3)); reach.push(sp * st * 0.9 + th + peel); }
       if (C.length) all.push({ f, C, reach, layer: 3 });

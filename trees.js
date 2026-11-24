@@ -91,7 +91,7 @@
         // a limb is held to its line only along its far part: how it gets there from the trunk is its strands' business.
         // And the trunk is let go where a limb leaves it, so the parting can pull it about.
         const h = onL ? sstep(0.35, 0.8, (i - lb.fi) / (lb.path.length - 1 - lb.fi)) : limbs.reduce((v, q) => v * (1 - 0.9 * Math.exp(-(((i - q.fi) / 9) ** 2))), 1);
-        st = { goal: [s.goal[k * 3], s.goal[k * 3 + 1], s.goal[k * 3 + 2]], who: [], limb: onL, h }; stations.set(key, st); } st.who.push(s, k); } });
+        st = { goal: [s.goal[k * 3], s.goal[k * 3 + 1], s.goal[k * 3 + 2]], who: [], limb: onL, h }; stations.set(key, st); } st.who.push(s, k); (s.stn || (s.stn = []))[k] = st; } });
     const M = S.map((s) => new Float64Array(s.K * 3));
     S.forEach((s, i) => { s.parent = -1; s.fam = i; s.press = 0; s.on = new Uint8Array(s.K); });
     // a split strand rejoins the one it split from at both its ends
@@ -108,7 +108,8 @@
     const rs = rng(P.seed + 55);
     const divide = (i) => { const s = S[i], n = s.K; let a = -1, b = -1; for (let k = Math.max(1, s.root); k < n - 1; k++) if (s.on[k]) { if (a < 0) a = k; b = k; } if (a < 0) return;
       // a tear runs on along the grain past where the strand was pressed: a little, or a long way, each end its own
-      const ka = Math.max(1, s.root, a - 4 - Math.floor(SP.run * rs() * rs())), kb = Math.min(n - 2, b + 4 + Math.floor(SP.run * rs() * rs())); if (kb - ka < 8) return; for (let k = ka; k <= kb; k++) if (s.rho[k] / Math.SQRT2 < SP.floor) return;
+      const ka = Math.max(1, s.root + 5 + Math.floor(14 * rs()), a - 4 - Math.floor(SP.run * rs() * rs())),   // and never down to where the roots begin, where they would all end in a ring
+        kb = Math.min(n - 2, b + 4 + Math.floor(SP.run * rs() * rs())); if (kb - ka < 8) return; for (let k = ka; k <= kb; k++) if (s.rho[k] / Math.SQRT2 < SP.floor) return;
       const nc = kb - ka + 1, X = new Float64Array(nc * 3), rr = new Float64Array(nc);
       for (let m = 0; m < nc; m++) { const k = ka + m, p = [s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]], tg = [0, 1, 2].map((q) => s.X[(k + 1) * 3 + q] - s.X[(k - 1) * 3 + q]), side = unit(cross(tg, [p[0] - orb.c[0], p[1] - orb.c[1], p[2] - orb.c[2]]));
         const rn = s.rho[k] / Math.SQRT2, amt = rn * 0.7 * Math.sin(PI * m / (nc - 1)); for (let q = 0; q < 3; q++) { X[m * 3 + q] = p[q] + side[q] * amt; s.X[k * 3 + q] = p[q] - side[q] * amt; } s.rho[k] = rn; rr[m] = rn; }
@@ -155,13 +156,23 @@
         if (s.goal[k * 3 + 1] > 0 && s.X[k * 3 + 1] < s.rho[k] * 0.6) s.X[k * 3 + 1] = s.rho[k] * 0.6; }   // but a root that dives is let through
       joins();
     }
-    // which way each strand faces outward: away from the middle of whatever wood is round it
+    // which way each strand faces outward: away from the middle of its own bundle, the strands that go its way
+    // with it, and square to its own direction. (Taking the middle of all the wood near by was wrong for a limb
+    // close to the trunk: its strands then faced away from the trunk, which is along their own length.)
+    // far: how far it lies from that middle. A strand with a way to itself lies on it.
+    for (const st of stations.values()) { let cx = 0, cy = 0, cz = 0, w = 0; for (let q = 0; q < st.who.length; q += 2) { const o = st.who[q], k = st.who[q + 1], m = o.rho[k] ** 2; cx += o.X[k * 3] * m; cy += o.X[k * 3 + 1] * m; cz += o.X[k * 3 + 2] * m; w += m; } st.c = [cx / w, cy / w, cz / w]; }
+    const stnOf = (q, k) => (q.child ? stnOf(S[q.parent], Math.min(S[q.parent].K - 1, q.po + k)) : (q.stn && q.stn[k]) || null);
     const big = R0 * 1.3, g = new Map(), kk = (x, y, z) => (Math.floor(x / big) + 512) * 1048576 + (Math.floor(y / big) + 512) * 1024 + Math.floor(z / big) + 512;
     S.forEach((s) => { for (let k = 0; k < s.K; k++) { const q = kk(s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]), b = g.get(q); if (b) b.push(s, k); else g.set(q, [s, k]); } });
     for (const s of S) { s.O = []; s.F = []; let last = [1, 0, 0];
-      for (let k = 0; k < s.K; k++) { const x = s.X[k * 3], y = s.X[k * 3 + 1], z = s.X[k * 3 + 2]; let cx = 0, cy = 0, cz = 0, w = 0;
-        for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let e = -1; e <= 1; e++) { const q = g.get(kk(x + a * big, y + b * big, z + e * big)); if (!q) continue; for (let t = 0; t < q.length; t += 2) { const o = q[t], l = q[t + 1], dx = o.X[l * 3] - x, dy = o.X[l * 3 + 1] - y, dz = o.X[l * 3 + 2] - z; if (dx * dx + dy * dy + dz * dz < big * big) { const m = o.rho[l] ** 2; cx += dx * m; cy += dy * m; cz += dz * m; w += m; } } }
-        let o = [-cx / w, -cy / w, -cz / w]; s.F.push(H(o[0], o[1], o[2])); if (H(o[0], o[1], o[2]) < 0.25 * s.rho[k]) o = last; o = unit(o); if (orb) { const rx = x - orb.c[0], ry = y - orb.c[1], rz = z - orb.c[2], rd = H(rx, ry, rz) || 1, w = 1 - sstep(1.15, 1.7, rd / orb.room); o = unit([o[0] * (1 - w) + rx / rd * w, o[1] * (1 - w) + ry / rd * w, o[2] * (1 - w) + rz / rd * w]); }   // near an orb it faces away from the orb
+      for (let k = 0; k < s.K; k++) { const x = s.X[k * 3], y = s.X[k * 3 + 1], z = s.X[k * 3 + 2], st = stnOf(s, k), k0 = Math.max(0, k - 1), k1 = Math.min(s.K - 1, k + 1), T = unit([s.X[k1 * 3] - s.X[k0 * 3], s.X[k1 * 3 + 1] - s.X[k0 * 3 + 1], s.X[k1 * 3 + 2] - s.X[k0 * 3 + 2]]); let o;
+        if (st) o = [x - st.c[0], y - st.c[1], z - st.c[2]];
+        else { let cx = 0, cy = 0, cz = 0, w = 0;   // a root: away from the middle of the wood near by
+          for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let e = -1; e <= 1; e++) { const q = g.get(kk(x + a * big, y + b * big, z + e * big)); if (!q) continue; for (let t = 0; t < q.length; t += 2) { const o2 = q[t], l = q[t + 1], dx = o2.X[l * 3] - x, dy = o2.X[l * 3 + 1] - y, dz = o2.X[l * 3 + 2] - z; if (dx * dx + dy * dy + dz * dz < big * big) { const m = o2.rho[l] ** 2; cx += dx * m; cy += dy * m; cz += dz * m; w += m; } } }
+          o = [-cx / w, -cy / w, -cz / w]; }
+        s.F.push(H(o[0], o[1], o[2])); const al = dot(o, T); o = [o[0] - T[0] * al, o[1] - T[1] * al, o[2] - T[2] * al];
+        if (H(o[0], o[1], o[2]) < 0.25 * s.rho[k]) { const lt = dot(last, T); o = [last[0] - T[0] * lt, last[1] - T[1] * lt, last[2] - T[2] * lt]; if (H(o[0], o[1], o[2]) < 1e-6) o = cross(T, [T[1], T[2], T[0]]); } o = unit(o);
+        if (orb) { const rx = x - orb.c[0], ry = y - orb.c[1], rz = z - orb.c[2], rd = H(rx, ry, rz) || 1, w = 1 - sstep(1.15, 1.7, rd / orb.room); o = unit([o[0] * (1 - w) + rx / rd * w, o[1] * (1 - w) + ry / rd * w, o[2] * (1 - w) + rz / rd * w]); }   // near an orb it faces away from the orb
         if (k < s.root) { const t = sstep(0, 0.7, 1 - k / s.root); o = unit([o[0] * (1 - t), o[1] * (1 - t) + t, o[2] * (1 - t)]); } s.O.push(o); last = o; }
       for (let pass = 0; pass < 8; pass++) s.O = s.O.map((o, k) => (k === 0 || k === s.K - 1 ? o : unit([0, 1, 2].map((q) => 0.5 * o[q] + 0.25 * (s.O[k - 1][q] + s.O[k + 1][q])))));
     }

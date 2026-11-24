@@ -1,5 +1,6 @@
 // Sketchbook, page 10. A snapped limb, on a test piece: page 7's one-limb trunk whole, and with its limb broken
-// off at each of three ages: a fresh break, a knot, a hollow; and the hollow again with the strands split over it.
+// off: a fresh break; a hollow; the hollow with lips of scar round it; healed over (a knot); and the hollow with
+// the strands split over it.
 // Throwaway like the other pages.
 (function () {
   const { tree } = Trees7, mesh = Fantastic.mesh;
@@ -8,8 +9,9 @@
   const S = [
     ['whole', R(undefined)],
     ['fresh break', R('fresh')],
-    ['knot', R('knot')],
     ['hollow', R('hollow')],
+    ['hollow, lips round it', R('hollow', { heal: { hollow: 0.45 } })],
+    ['knot: healed over', R('knot')],
     ['hollow, torn over', R('hollow', { hollow: { at: 0.4 } })],
   ];
   if (typeof location !== 'undefined') { const only = new URLSearchParams(location.search).get('only'); if (only) { const keep = only.split(',').map(Number).map((i) => S[i]).filter(Boolean); S.length = 0; S.push(...keep); } }   // ?only=2 builds just that one

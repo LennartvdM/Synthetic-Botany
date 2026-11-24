@@ -41,8 +41,8 @@
     const lay = (Ls, parent) => { for (const L of Ls || []) {
       const base = parent ? parent.path : trunk, from = parent ? parent.fi : 0, fi = Math.min(base.length - 2, Math.max(from + (parent ? 1 : 0), from + Math.round(L.at * (base.length - 1 - from))));
       const ctrl = [base[Math.max(0, fi - 14)], base[fi], ...L.path.map((p) => [p[0], p[1], p[2], 0])], all = line(ctrl, ds), skip = all.findIndex((p) => H(p[0] - base[fi][0], p[1] - base[fi][1], p[2] - base[fi][2]) < ds * 0.8);
-      // (a snapped shoot is cut short here: a fresh stub is longer than it is wide, a knot's is nearly flush, a hollow's is only a direction)
-      const want = Math.max(1, L.count || Math.round(L.share * n)), Re = base[fi][3] * Math.sqrt(want / (parent ? parent.want : n)), keep = L.stub ? Math.max(2, Math.round((0.75 * base[fi][3] + (L.stub === 'fresh' ? 1.6 * Re + 0.05 : L.stub === 'knot' ? 0.25 * Re + 0.02 : 0.07)) / ds)) : Infinity;   // (measured from where it comes out of the wood it leaves, not from that wood's middle)
+      // (a snapped shoot is cut short here: a fresh stub is longer than it is wide; once it has rotted out it is only a direction)
+      const want = Math.max(1, L.count || Math.round(L.share * n)), Re = base[fi][3] * Math.sqrt(want / (parent ? parent.want : n)), keep = L.stub ? Math.max(2, Math.round((0.75 * base[fi][3] + (L.stub === 'fresh' ? 1.6 * Re + 0.05 : 0.07)) / ds)) : Infinity;   // (measured from where it comes out of the wood it leaves, not from that wood's middle)
       const own = all.slice(Math.max(1, skip + 1)).slice(0, keep), lb = { L, fi, parent, own, base, want };
       lb.path = base.slice(0, fi + 1).concat(own); limbs.push(lb); lay(L.limbs, lb); } };
     lay(P.limbs, null); limbs.sort((x, y) => x.fi - y.fi); limbs.forEach((lb, li) => (lb.i = li));
@@ -65,9 +65,9 @@
       return [(s.a - m.ca) / m.ext, (s.b - m.cb) / m.ext, m.n]; };
     for (const s of S) {
       const path = s.limb >= 0 ? limbs[s.limb].path : trunk, fr = s.limb >= 0 ? limbs[s.limb].frames : tf, fi = s.limb >= 0 ? limbs[s.limb].fi : -1, own = path.length - 1 - Math.max(0, fi);
-      const first = s === S.find((q) => q.limb === s.limb), u1 = r(), u2 = r(), u3 = r(), stub = s.limb >= 0 ? limbs[s.limb].L.stub : null; s.snapped = stub ? stub !== 'hollow' : !first && u1 < 0.6;   // some strands snap short of the end, and keep their girth to the break
+      const first = s === S.find((q) => q.limb === s.limb), u1 = r(), u2 = r(), u3 = r(), stub = s.limb >= 0 ? limbs[s.limb].L.stub : null; s.snapped = stub ? stub === 'fresh' : !first && u1 < 0.6;   // some strands snap short of the end, and keep their girth to the break
       // (a shoot that snapped off: all its strands end at the break, a little apart; where it has rotted out they end below where it left, fined down to points like any other end)
-      const end = stub ? (stub === 'hollow' ? Math.max(4, fi - 3 - Math.round(5 * u2)) : path.length - 1 - (stub === 'knot' ? 0 : Math.round(own * 0.4 * u2))) : path.length - 1 - (first ? 0 : Math.round(own * (s.snapped ? 0.25 + 0.4 * u2 : 0.3 * u2))), fine = 0.12 + 0.2 * u3, X = [], rho = [], goal = [], hold = [];
+      const end = stub ? (stub !== 'fresh' ? Math.max(4, fi - 3 - Math.round(5 * u2)) : path.length - 1 - Math.round(own * 0.4 * u2)) : path.length - 1 - (first ? 0 : Math.round(own * (s.snapped ? 0.25 + 0.4 * u2 : 0.3 * u2))), fine = 0.12 + 0.2 * u3, X = [], rho = [], goal = [], hold = [];
       for (let i = 0; i <= end; i++) {
         const [u, v, m] = place(s, i), ow = ownerAt(s.limb, i), Rg = path[i][3] * Math.sqrt(m / (ow >= 0 ? limbs[ow].count : n)) * 0.8, wind = windAt(s.limb, i), c = Math.cos(wind), sn = Math.sin(wind), a = u * c - v * sn, b = u * sn + v * c, [, Nn, Bn] = fr[i];
         // (a limb's strands wind round each other as they go out)
@@ -86,16 +86,15 @@
     }
     // Where a shoot snapped off (a limb given as a `stub`). Three ages of the same event:
     //   fresh   the stub stands, its strands broken off a little apart
-    //   knot    the stub is nearly flush, and the wood that stayed has thickened round it
-    //   hollow  the stub has rotted out: its strands end inside
-    // In all three the place where the shoot was stays its own: a tunnel along its line, from inside the wood it
-    // left to well outside, which no other strand may lie in. So the wood that stayed flows round the wound and
-    // never closes across it. And the wood near the wound thickens (the collar). How much stub is left in the
-    // tunnel, how deep it goes and how thick the collar is, is the age.
+    //   hollow  the stub has rotted out: its strands end below, fined to points, and there is room where it was
+    //   knot    the same, healed over. Here a knot is exactly a hollow; what closes it is not wood and is not made
+    //           here (the surface lays scar over it). A knot built of strand ends was tried and withdrawn.
+    // A fresh stub keeps the place the shoot had as its own: a tunnel along its line which no other strand may
+    // lie in. And the wood near any wound thickens a little.
     const marks = [];
     for (const lb of limbs) if (lb.L.stub) { const b = lb.base[lb.fi], own = lb.own, d = unit([0, 1, 2].map((k) => own[Math.min(own.length - 1, 3)][k] - b[k])), s0 = S.find((q) => q.limb === lb.i), m = place(s0, lb.fi)[2], kind = lb.L.stub;
       // (a hollow is no wider than leaves the wood a back: wider, it is a window through it)
-      const Rb = b[3] * Math.sqrt(m / (lb.parent ? lb.parent.count : n)) * 0.8, r = Math.min(Math.max(0.045, own[0][3] * 0.9), kind === 'hollow' ? Math.max(0.045, 0.55 * Rb) : 9), deep = kind === 'hollow' ? 0.9 * r : 0.6 * r, at = (f) => [0, 1, 2].map((k) => b[k] + d[k] * f);
+      const Rb = b[3] * Math.sqrt(m / (lb.parent ? lb.parent.count : n)) * 0.8, r = Math.min(Math.max(0.045, own[0][3] * 0.9), kind !== 'fresh' ? Math.max(0.045, 0.55 * Rb) : 9), deep = kind !== 'fresh' ? 0.9 * r : 0.6 * r, at = (f) => [0, 1, 2].map((k) => b[k] + d[k] * f);
       marks.push({ c: at(Rb), a: at(Math.max(0, Rb - deep)), e: at(Rb + 1.5 * r), o: at(0.85 * Rb), R: Math.max(0.07, 0.75 * Rb), r, d, kind, limb: lb.i }); }
     let vg = 1;
     // an orb held in the trunk: a ball, with room round it for the strands that are willing to give it
@@ -106,7 +105,7 @@
     // that stayed part round. It opens gradually, as a splitting orb's does: opened all at once it throws strands across its own
     // mouth. Given `hollow: { at }` (0.4, say) the strands also split over it, as over an orb: an older, more ravaged hollow.
     // (The first hollow of a tree that holds no orb; any other is only its tunnel.)
-    else { const v = marks.find((q) => q.kind === 'hollow'); if (v) { orb = { c: v.o, r: 0.7 * v.R, room: v.R, empty: true }; v.asOrb = true; } }
+    else { const v = marks.find((q) => q.kind !== 'fresh'); if (v) { orb = { c: v.o, r: 0.7 * v.R, room: v.R, empty: true }; v.asOrb = true; } }
     const rhoMax = Math.max(...S.map((s) => Math.max(...s.rho))), cell = rhoMax * 2.1;
     // a strand that has split off another parts from it gradually: at the join the two are one, and they come
     // fully apart only some way along. (0: still one; 1: two.)
@@ -182,9 +181,9 @@
       S.forEach((s, i) => { for (let q = 0; q < s.K * 3; q++) s.X[q] += M[i][q]; }); }
       for (const s of S) for (let k = 0; k < s.K; k++) {   // to the orb, each as far as it is willing; and to the ground
         if (orb) { const keep = (orb.r + (orb.room - orb.r) * s.give) * grown + s.rho[k], dx = s.X[k * 3] - orb.c[0], dy = s.X[k * 3 + 1] - orb.c[1], dz = s.X[k * 3 + 2] - orb.c[2], d = H(dx, dy, dz) || 1e-9; s.on[k] = d < keep + 0.004 ? 1 : 0; if (d < keep) { s.press += keep - d; const f = keep / d; s.X[k * 3] = orb.c[0] + dx * f; s.X[k * 3 + 1] = orb.c[1] + dy * f; s.X[k * 3 + 2] = orb.c[2] + dz * f; } }
-        for (const v of marks) { if (v.asOrb || (s.limb === v.limb && v.kind !== 'hollow')) continue;   // and out of the tunnel where a shoot was (its own stub, if it has one, is what lies there)
+        for (const v of marks) { if (v.asOrb || (s.limb === v.limb && v.kind === 'fresh')) continue;   // and out of the tunnel where a shoot was (its own stub, if it has one, is what lies there)
           const ax = v.e[0] - v.a[0], ay = v.e[1] - v.a[1], az = v.e[2] - v.a[2], t = Math.max(0, Math.min(1, ((s.X[k * 3] - v.a[0]) * ax + (s.X[k * 3 + 1] - v.a[1]) * ay + (s.X[k * 3 + 2] - v.a[2]) * az) / (ax * ax + ay * ay + az * az))), qx = v.a[0] + ax * t, qy = v.a[1] + ay * t, qz = v.a[2] + az * t;
-          const keep = v.r * (v.kind === 'hollow' ? 1 : 0.8) * vg + s.rho[k], dx = s.X[k * 3] - qx, dy = s.X[k * 3 + 1] - qy, dz = s.X[k * 3 + 2] - qz, d = H(dx, dy, dz) || 1e-9; if (d < keep) { const f = keep / d; s.X[k * 3] = qx + dx * f; s.X[k * 3 + 1] = qy + dy * f; s.X[k * 3 + 2] = qz + dz * f; } }
+          const keep = v.r * (v.kind !== 'fresh' ? 1 : 0.8) * vg + s.rho[k], dx = s.X[k * 3] - qx, dy = s.X[k * 3 + 1] - qy, dz = s.X[k * 3 + 2] - qz, d = H(dx, dy, dz) || 1e-9; if (d < keep) { const f = keep / d; s.X[k * 3] = qx + dx * f; s.X[k * 3 + 1] = qy + dy * f; s.X[k * 3 + 2] = qz + dz * f; } }
         if (s.goal[k * 3 + 1] > 0 && s.X[k * 3 + 1] < s.rho[k] * 0.6) s.X[k * 3 + 1] = s.rho[k] * 0.6; }   // but a root that dives is let through
       joins();
       if (SP && pass % SP.every === 0) { const cand = S.map((s, i) => [s.press, i]).filter((q) => q[0] > SP.at).sort((a, b) => b[0] - a[0]); for (const [, i] of cand) { if (S.length >= SP.most) break; divide(i); } for (const s of S) s.press = 0; }
@@ -199,9 +198,9 @@
       S.forEach((s, i) => { for (let q = 0; q < s.K * 3; q++) s.X[q] += M[i][q]; }); }
       for (const s of S) for (let k = 0; k < s.K; k++) {   // to the orb, each as far as it is willing; and to the ground
         if (orb) { const keep = (orb.r + (orb.room - orb.r) * s.give) * grown + s.rho[k], dx = s.X[k * 3] - orb.c[0], dy = s.X[k * 3 + 1] - orb.c[1], dz = s.X[k * 3 + 2] - orb.c[2], d = H(dx, dy, dz) || 1e-9; s.on[k] = d < keep + 0.004 ? 1 : 0; if (d < keep) { const f = keep / d; s.X[k * 3] = orb.c[0] + dx * f; s.X[k * 3 + 1] = orb.c[1] + dy * f; s.X[k * 3 + 2] = orb.c[2] + dz * f; } }
-        for (const v of marks) { if (v.asOrb || (s.limb === v.limb && v.kind !== 'hollow')) continue;   // and out of the tunnel where a shoot was (its own stub, if it has one, is what lies there)
+        for (const v of marks) { if (v.asOrb || (s.limb === v.limb && v.kind === 'fresh')) continue;   // and out of the tunnel where a shoot was (its own stub, if it has one, is what lies there)
           const ax = v.e[0] - v.a[0], ay = v.e[1] - v.a[1], az = v.e[2] - v.a[2], t = Math.max(0, Math.min(1, ((s.X[k * 3] - v.a[0]) * ax + (s.X[k * 3 + 1] - v.a[1]) * ay + (s.X[k * 3 + 2] - v.a[2]) * az) / (ax * ax + ay * ay + az * az))), qx = v.a[0] + ax * t, qy = v.a[1] + ay * t, qz = v.a[2] + az * t;
-          const keep = v.r * (v.kind === 'hollow' ? 1 : 0.8) * vg + s.rho[k], dx = s.X[k * 3] - qx, dy = s.X[k * 3 + 1] - qy, dz = s.X[k * 3 + 2] - qz, d = H(dx, dy, dz) || 1e-9; if (d < keep) { const f = keep / d; s.X[k * 3] = qx + dx * f; s.X[k * 3 + 1] = qy + dy * f; s.X[k * 3 + 2] = qz + dz * f; } }
+          const keep = v.r * (v.kind !== 'fresh' ? 1 : 0.8) * vg + s.rho[k], dx = s.X[k * 3] - qx, dy = s.X[k * 3 + 1] - qy, dz = s.X[k * 3 + 2] - qz, d = H(dx, dy, dz) || 1e-9; if (d < keep) { const f = keep / d; s.X[k * 3] = qx + dx * f; s.X[k * 3 + 1] = qy + dy * f; s.X[k * 3 + 2] = qz + dz * f; } }
         if (s.goal[k * 3 + 1] > 0 && s.X[k * 3 + 1] < s.rho[k] * 0.6) s.X[k * 3 + 1] = s.rho[k] * 0.6; }   // but a root that dives is let through
       joins();
     }

@@ -2575,3 +2575,41 @@ Wrong, or not there:
   it comes out as loose tiles; not looked into.
 - A corner still has no cause. Putting the snapped shoot at a corner, as
   the lost leader, is not built.
+
+## Scar is its own stuff; the knot of strand ends is withdrawn
+
+Said of the knot on page 10 (`sketch/page10-knot-of-straps-withdrawn.png`,
+third column): "It's overworking it with inadequate tools. You're using
+straps of ribon to build the scar tissue around the hole."
+
+Retracted, from run 015: the knot as "the stub nearly flush and ending in
+one face, the wood round it thickened". It was wood's pieces set to do
+something wood's pieces do not do.
+
+What a knot is now. In the strands it is exactly a hollow: the shoot
+rotted out, its strands end below, the wood that stayed parts round the
+room it left. What closes the room is a different material, laid by the
+surface and not by the kernel: scar. Soft and swollen where the wood is
+flat-faced; a few lips of unequal size rolling in from the rim of the
+opening and pressing together in creases; lying in the room the strands
+left and nowhere else, so the strands hold it as they hold an orb. One
+dial, `heal`: 0 none (the open hollow), 0.45 lips round a hole, 0.9
+closed. That is the pairing already written down for this work, something
+thick that binds and something softer that swells, and it needed no new
+idea, only the second stuff.
+
+`sketch/page10.png`, `-close`, `-oblique`, six pieces: whole, fresh break,
+hollow, hollow with lips, knot, hollow torn over. `-scar-first.png` is the
+first try, by layer (scar is the fifth colour).
+
+What it does: both the lipped hollow and the knot read in the small
+picture, and read as a second material, not as more wood.
+
+Wrong, or not there:
+- It is still a fairly even ring, and a closed one is a bun. Narrowing it
+  across the grain and making the lips less equal helped a little. It does
+  not yet take its outline from the opening the strands actually leave,
+  which is an almond.
+- It stands a little proud of the wood. Nothing of the wood laps over it.
+- The fresh break is as it was: small.
+- Still one such place a tree, and still only on the test trunk.

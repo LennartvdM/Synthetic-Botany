@@ -11,7 +11,7 @@
 // Nothing is swept or blended. Throwaway like the other pages.
 (function () {
   const shard = (K) => Wood5.shard(Object.assign(K, { inset: true })),   // a slanted end cuts back into its piece, never out past it
-    { H, PI, clamp, sstep } = Fantastic.kit, mesh = Fantastic.mesh;
+    { H, PI, clamp, sstep, smin } = Fantastic.kit, mesh = Fantastic.mesh;
   function rng(seed) { let a = (seed * 2654435761) >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   const unit = (a) => { const l = H(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }, cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
   // ?set={...} in the page's address overrides any part of every recipe, for finding out what causes what
@@ -23,7 +23,7 @@
     // Room kept clear in the wood: round an orb, and where a snapped shoot has rotted out. And every wound, hollow or not,
     // is left quiet: no bark, shell or slivers near it, so that it is not one more detail among the others.
     // (An orb's room is a ball; a hollow's is the tunnel the shoot left, from a to e. `to` is the nearest point of a room's middle.)
-    const rooms = (t.orb ? [{ a: t.orb.c, e: t.orb.c, room: t.orb.room, orb: true }] : []).concat((t.marks || []).filter((v) => v.kind === 'hollow' && !v.asOrb).map((v) => ({ a: v.a, e: v.e, room: v.r }))), wounds = t.marks || [];
+    const rooms = (t.orb ? [{ a: t.orb.c, e: t.orb.c, room: t.orb.room, orb: true }] : []).concat((t.marks || []).filter((v) => v.kind !== 'fresh' && !v.asOrb).map((v) => ({ a: v.a, e: v.e, room: v.r }))), wounds = t.marks || [];
     const to = (o, x, y, z) => { const ax = o.e[0] - o.a[0], ay = o.e[1] - o.a[1], az = o.e[2] - o.a[2], l = ax * ax + ay * ay + az * az, u = l ? Math.max(0, Math.min(1, ((x - o.a[0]) * ax + (y - o.a[1]) * ay + (z - o.a[2]) * az) / l)) : 0; return [o.a[0] + ax * u, o.a[1] + ay * u, o.a[2] + az * u]; },
       away = (o, x, y, z) => { const q = to(o, x, y, z); return H(x - q[0], y - q[1], z - q[2]); };
     const nearOrb = (p) => (t.orb ? 1 - sstep(1.3, 2.2, H(p[0] - t.orb.c[0], p[1] - t.orb.c[1], p[2] - t.orb.c[2]) / t.orb.room) : 0);
@@ -78,7 +78,7 @@
           let lipU = 0; if (inn) { const sg = dot(inn, sv); if (Math.abs(sg) > 0.4) lipU = Math.sign(sg) * roomToward(base, sv.map((v) => v * Math.sign(sg)), Math.min(0.25 * s.gap[i], 1.0 * rho), rho, si, s.fam); }
           const home = fine && !s.thread && s.inner && s.inner[i] ? (first ? 1 - sstep(0, 0.35, q) : 0) + (last ? sstep(0.65, 1, q) : 0) : 0, hm = home ? home * (s.gap[i] + 0.6 * rho) : 0;   // its two ends bend back into what it tore from, so that it is never left hanging
           C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * (gu + lipU) / 2 : 0) + (hm ? s.inner[i][j] * hm : 0))); O.push(s.O[i]); W.push(Math.max(0.006, Math.min(wCap, rho * w * front * back + (Math.abs(gu) + Math.abs(lipU)) / 2))); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(deepHere + Math.max(0, -gv)); }
-        const w1 = W[W.length - 1], end = ending === 'own' ? (s.stub === 'knot' ? { skew: 0.5 * (r() - 0.5) } : s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
+        const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
           : ending === 'step' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.2 * r()), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()) } : { skew: 0 };
         // The next piece starts under this one's front, as far back as the front is cut away: a point takes the last
         // third, a slant runs back by its skew times the width. Started any later it leaves a hole where the cut
@@ -145,6 +145,23 @@
     // is taken off again. Where bark stops, it stops on the boundary between two cells, so its edge is straight
     // runs and angles. The sheet itself is thin, flat-faced, of one thickness to its edge, and lies over the
     // strands, spanning the grooves between them. In places along the edge it has peeled.
+    // Scar. Where a shoot has rotted out and the wood has healed over the place, what closes it is a different
+    // stuff: soft and swollen, rolling in from the rim of the opening as a few lips of unequal size that press
+    // together in creases. It is not wood and is not built of wood's pieces. It lies in the room the strands left
+    // and nowhere else, so the strands hold it as they would an orb. It is narrower across the grain than along it,
+    // as the opening is, and does not stand far out of the wood. heal: 0 none (an open hollow), about 0.45
+    // lips round a hole, 0.9 closed (a knot).
+    const heal = Object.assign({ knot: 0.9, hollow: 0 }, recipe.heal || {}); count.scars = 0;
+    for (const v of wounds) { const hl = heal[v.kind] || 0; if (!hl || !v.asOrb || !t.orb) continue;
+      const c = t.orb.c, R = t.orb.room, d = v.d, u = unit(cross(d, Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), w = cross(d, u), rs = rng((recipe.seed || 1) + 77), n = 3 + Math.floor(2 * rs()), cuts = [], lips = [];
+      for (let i = 0, a = 2 * PI * rs(); i < n; i++) { cuts.push(a); a += 2 * PI / n * (0.6 + 0.8 * rs()); }
+      for (let i = 0; i < n; i++) { const a0 = cuts[i], a1 = i + 1 < n ? cuts[i + 1] : cuts[0] + 2 * PI, lr = R * (0.2 + 0.42 * hl) * (0.6 + 0.8 * rs()), rr = Math.max(0, R - lr * 0.95), m = R * (0.15 + 0.2 * rs()), pts = [];
+        for (let q = 0; q <= 4; q++) { const a = a0 + (a1 - a0) * (0.08 + 0.84 * q / 4); pts.push([0, 1, 2].map((k) => c[k] + d[k] * m + (u[k] * Math.cos(a) * 0.78 + w[k] * Math.sin(a)) * rr).concat(lr * (0.7 + 0.3 * Math.sin(PI * q / 4)))); }   // thickest in its middle
+        lips.push(pts); }
+      const f = (x, y, z) => { let dd = 9; for (const pts of lips) { let e = 9; for (let q = 0; q < 4; q++) { const a = pts[q], b = pts[q + 1], bx = b[0] - a[0], by = b[1] - a[1], bz = b[2] - a[2], tt = clamp(((x - a[0]) * bx + (y - a[1]) * by + (z - a[2]) * bz) / (bx * bx + by * by + bz * bz || 1e-9), 0, 1);
+            e = Math.min(e, H(x - a[0] - bx * tt, y - a[1] - by * tt, z - a[2] - bz * tt) - (a[3] + (b[3] - a[3]) * tt)); } dd = smin(dd, e, 0.012); }
+        return Math.max(dd, H(x - c[0], y - c[1], z - c[2]) - R * 0.99, (x - c[0]) * d[0] + (y - c[1]) * d[1] + (z - c[2]) * d[2] - 0.6 * R); };
+      all.push({ f, C: [c], reach: [R + 0.02], layer: 4 }); count.scars++; }
     const BK = recipe.bare || recipe.bark === 0 ? null : Object.assign({ cell: 0.075, stretch: 1.6, cover: 0.4, percolate: 0.985, cohere: 0.6, least: 10, thick: 0.02, peel: 0.18 }, recipe.bark || {}), rb = rng((recipe.seed || 1) + 123);
     // which pieces are near which place, so that only those are asked
     const cell = 0.12, grid = new Map(), key = (x, y, z) => (x + 64) * 16384 + (y + 64) * 128 + z + 64;

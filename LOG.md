@@ -2502,3 +2502,76 @@ is not thrown away: it is wanted for an evil biome, where the player
 should be disturbed. Noted in `LANGUAGE.md` with the dials that make it
 (`kink: 0, set: 0`). So `sketch/page9-tense-withdrawn.png` is withdrawn as
 the ordinary wood only.
+
+## Run 015: snapped shoots (fresh break, knot, hollow)
+
+Asked for: knots and hollows at last, as branches that snapped off.
+
+A snapped shoot is a limb given as a `stub`. Its strands still run from
+their roots up to where it left; what differs is how they end, and what
+the wood that stayed does about it. Three ages of one event:
+- fresh: the stub stands, longer than it is wide, its strands broken off a
+  little apart.
+- knot: the stub is nearly flush and ends in one face; the wood round it
+  has thickened (the collar).
+- hollow: the stub has rotted out. Its strands end below, fined to points.
+
+Predicted: a hollow from a bough of four to six strands would read at the
+scale of the trunk and one from two strands would close to a slit; the
+collar would look like a goitre, not a ring; a knot's several blunt ends
+would look like cut cables.
+
+What happened, in order.
+
+1. On grown trees (`sprout({ snap: 3 })`, shoots of two to four strands of
+   eighteen): nothing to see
+   (`sketch/page10-first-on-grown-trees-invisible.png`,
+   `runs/015-snapped/ages.png` for the strands). Wounds 0.09 to 0.13
+   across on a trunk 0.4 across, behind other limbs. The worry that these
+   could not compete with the detail was right, and no amount of quiet
+   round them helps at that size. (Snapping the heaviest shoots instead
+   took the whole crown off; so only shoots carrying up to a quarter of
+   the strands are snapped.)
+2. So, a test piece: page 7's one-limb trunk with its limb, three strands
+   of eight, snapped. Still nothing. Two plain faults: the stub's length
+   was measured from the middle of the trunk and never came out of it; and
+   with the limb's strands gone the rest closed over the place.
+3. Every wound given a tunnel along the line the shoot had, which no other
+   strand may lie in. The fresh break and the knot then stood out of the
+   wood. The hollow came out as a window clean through the trunk
+   (`sketch/page10-window-withdrawn.png`): a tunnel as wide as the limb was
+   leaves the trunk no back.
+4. Narrower, with a back: the dead strands' blunt ends stacked in the
+   mouth like the slats of a vent (`sketch/page10-louvres-withdrawn.png`).
+   Fined to points and ended lower, they went, and so did the hole: with
+   three of eight strands ended there is no wood left on that side to make
+   a mouth. The trunk is just thinner above.
+5. What was said when intrusions began: "intrusions are basically the
+   hollows." Taken literally. A hollow is an orb's room with no orb in it:
+   room inside the trunk, toward the side the shoot left on, which the
+   strands that stayed part round. That reads at once
+   (`sketch/page10.png`, `-close`, `-oblique`): an almond opening with the
+   strands flowing round it, visible in the small picture. It has to open
+   gradually; opened all at once it throws strands across its own mouth.
+   With `hollow: { at: 0.4 }` the strands also split over it as over an
+   orb: a cage over a void, an older and more ravaged hollow.
+
+Against the predictions: the hollow does read at trunk scale, but not for
+the reason given; it reads because it is simple and empty where everything
+else is busy. The collar is not seen at all, as ring or as goitre. The
+knot does look like cut blocks, not a knot.
+
+Wrong, or not there:
+- The knot is a chopped stump. Nothing has grown over it and there is no
+  ring round it. The thickening of the wood near a wound (`swell`) cannot
+  be seen in any of the three.
+- The fresh break is small: two of its three strands end inside the
+  trunk's outline.
+- One hollow a tree (the first, and only if the tree holds no orb). A
+  second is only its tunnel.
+- None of this is back on grown trees. A wound needs a shoot worth a third
+  of the trunk to read, and a grown tree's side shoots are a sixth.
+- Bark is switched off on these pieces. On this trunk, with the wood set,
+  it comes out as loose tiles; not looked into.
+- A corner still has no cause. Putting the snapped shoot at a corner, as
+  the lost leader, is not built.

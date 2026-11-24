@@ -20,6 +20,12 @@
     if (OVER) recipe = Object.assign({}, recipe, OVER);
     const t = Trees.grow(recipe), r = rng((recipe.seed || 1) + 50), all = [], count = { bands: 0, fine: 0, slivers: 0, plates: 0, cut: 0, dropped: 0 };
     const at = (s, k) => [s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]], tan = (s, k) => unit([0, 1, 2].map((q) => s.X[Math.min(s.K - 1, k + 1) * 3 + q] - s.X[Math.max(0, k - 1) * 3 + q]));
+    // Room kept clear in the wood: round an orb, and where a snapped shoot has rotted out. And every wound, hollow or not,
+    // is left quiet: no bark, shell or slivers near it, so that it is not one more detail among the others.
+    // (An orb's room is a ball; a hollow's is the tunnel the shoot left, from a to e. `to` is the nearest point of a room's middle.)
+    const rooms = (t.orb ? [{ a: t.orb.c, e: t.orb.c, room: t.orb.room, orb: true }] : []).concat((t.marks || []).filter((v) => v.kind === 'hollow' && !v.asOrb).map((v) => ({ a: v.a, e: v.e, room: v.r }))), wounds = t.marks || [];
+    const to = (o, x, y, z) => { const ax = o.e[0] - o.a[0], ay = o.e[1] - o.a[1], az = o.e[2] - o.a[2], l = ax * ax + ay * ay + az * az, u = l ? Math.max(0, Math.min(1, ((x - o.a[0]) * ax + (y - o.a[1]) * ay + (z - o.a[2]) * az) / l)) : 0; return [o.a[0] + ax * u, o.a[1] + ay * u, o.a[2] + az * u]; },
+      away = (o, x, y, z) => { const q = to(o, x, y, z); return H(x - q[0], y - q[1], z - q[2]); };
     const nearOrb = (p) => (t.orb ? 1 - sstep(1.3, 2.2, H(p[0] - t.orb.c[0], p[1] - t.orb.c[1], p[2] - t.orb.c[2]) / t.orb.room) : 0);
     // A strand is not drawn as one piece: one section pushed along one line is a ribbon. It is drawn as a chain
     // of stiff pieces, as page 5's wood was. Each piece is nearly as deep as it is wide, runs for some girths
@@ -39,14 +45,14 @@
     // the bend is a split's join, the inside is the other half of the same body, and the fill is the crotch.
     const gain = recipe.elbow === undefined ? 3 : recipe.elbow, pts = []; t.strands.forEach((q, qi) => { if (!q.thread) for (let i = 0; i < q.K; i++) pts.push([q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i], qi, q.fam]); });
     const roomToward = (p, n, want, rho, qi, fam) => { for (const o of pts) { if (o[4] === qi || (fam !== undefined && o[5] === fam)) continue; const d = [o[0] - p[0], o[1] - p[1], o[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dl > want + rho + o[3] + 0.02 || dot(d, n) < 0.3 * dl) continue; want = Math.min(want, Math.max(0, dl - rho - o[3] - 0.012)); }
-      if (t.orb) { const d = [t.orb.c[0] - p[0], t.orb.c[1] - p[1], t.orb.c[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dot(d, n) > 0.3 * dl) want = Math.min(want, Math.max(0, dl - t.orb.room - rho)); } return want; };
+      for (const o of rooms) { const q = to(o, p[0], p[1], p[2]), d = [q[0] - p[0], q[1] - p[1], q[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dot(d, n) > 0.3 * dl) want = Math.min(want, Math.max(0, dl - o.room - rho)); } return want; };
     const ease = t.strands.map((q, qi) => { const K = q.K, g = new Float64Array(K), dir = new Array(K).fill(null), room = new Float64Array(K).fill(9); if (q.thread || !gain || K < 7) return { g, dir };
       for (let i = 2; i < K - 2; i++) { const p = at(q, i), a = at(q, i - 2), b = at(q, i + 2), h = (H(b[0] - p[0], b[1] - p[1], b[2] - p[2]) + H(a[0] - p[0], a[1] - p[1], a[2] - p[2])) / 2 || 1e-9, T = tan(q, i);
         let kv = [0, 1, 2].map((j) => (a[j] + b[j] - 2 * p[j]) / (h * h)); const al = dot(kv, T); kv = kv.map((v, j) => v - T[j] * al); const kap = H(kv[0], kv[1], kv[2]), rho = q.rho[i]; if (kap * rho < 0.06) continue;
         const n = kv.map((v) => v / kap); dir[i] = n; let want = rho * Math.min(1.5, gain * (kap * rho - 0.06));
         for (const o of pts) { if (o[4] === qi || (q.fam !== undefined && o[5] === q.fam)) continue;
           const d = [o[0] - p[0], o[1] - p[1], o[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dl > want + rho + o[3] + 0.02 || dot(d, n) < 0.3 * dl) continue; want = Math.min(want, Math.max(0, dl - rho - o[3] - 0.012)); }
-        if (t.orb) { const d = [t.orb.c[0] - p[0], t.orb.c[1] - p[1], t.orb.c[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dot(d, n) > 0.3 * dl) want = Math.min(want, Math.max(0, dl - t.orb.room - rho)); }
+        for (const o of rooms) { const q = to(o, p[0], p[1], p[2]), d = [q[0] - p[0], q[1] - p[1], q[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dot(d, n) > 0.3 * dl) want = Math.min(want, Math.max(0, dl - o.room - rho)); }
         g[i] = want; room[i] = want; }
       for (let pass = 0; pass < 3; pass++) { const c = Float64Array.from(g); for (let i = 1; i < K - 1; i++) g[i] = Math.max(c[i] * 0.5 + 0.25 * (c[i - 1] + c[i + 1]), 0); }   // eased in and out along the strand
       for (let i = 0; i < K; i++) { if (!dir[i]) { let j = 1; while (j < 4 && !(dir[i - j] || dir[i + j])) j++; dir[i] = dir[i - j] || dir[i + j] || null; if (!dir[i]) g[i] = 0; else room[i] = Math.min(room[Math.max(0, i - j)], room[Math.min(K - 1, i + j)], 9) === 9 ? 0 : Math.min(room[i - j] === undefined ? 9 : room[i - j], room[i + j] === undefined ? 9 : room[i + j]); } g[i] = Math.min(g[i], room[i]); }
@@ -64,14 +70,15 @@
           toMid = Math.max(0.95 * rho, Math.min(s.far[i] * 0.9, (s.limb >= 0 ? 1.5 : 3.2) * rho));   // a limb is thin: reaching for its middle must not come out of its other side
           // (a torn part leaves and rejoins what it tore from from underneath: laid level with it there, the two surfaces run through each other and come out pitted)
           const lift = (first ? (fine ? -0.9 * (1 - sstep(0, 0.35, q)) : 0) : -0.28 * (1 - sstep(0, 0.3, q))) + proud * q * q - (fine && last ? 0.9 * sstep(0.65, 1, q) : 0), front = ending === 'point' ? Math.pow(Math.min(1, (1 - q) / 0.3), 0.7) : 1, back = first ? 1 : 0.7 + 0.3 * sstep(0, 0.3, q), w = Math.min(wide, 1.05 + (wide - 1.05) * (1 - no)) + body * (massW - 1.05);
-          let deepHere = rho * 0.95 + body * (toMid - rho * 0.95); if (t.orb) deepHere = Math.max(rho * 0.5, Math.min(deepHere, H(base[0] - t.orb.c[0], base[1] - t.orb.c[1], base[2] - t.orb.c[2]) - t.orb.room - 0.01));   // never into an orb's room
+          let deepHere = rho * 0.95 + body * (toMid - rho * 0.95); for (const o of rooms) deepHere = Math.max(rho * 0.5, Math.min(deepHere, away(o, base[0], base[1], base[2]) - o.room - 0.01));
+          let wCap = 9; for (const o of rooms) if (!o.orb) wCap = Math.min(wCap, Math.max(0.6 * rho, away(o, base[0], base[1], base[2]) - o.room));   // nor is it drawn so wide that its edge stands in a hollow   // never into an orb's room
           const eg = ease[si].g[i], en = ease[si].dir[i], inn = s.inner && s.gap && s.gap[i] > 0 ? s.inner[i] : null, sv = eg || inn ? unit(cross(tan(s, i), s.O[i])) : null, gu = eg ? eg * dot(en, sv) : 0, gv = eg ? eg * dot(en, s.O[i]) : 0;   // the elbow's fill, across the strand and through it
           // a tear's lip: toward what it tore from, a part reaches a quarter of the way across the gap, so that
           // where the gap is narrow the two lips all but meet (a web with a slit), and where it is wide they stand apart
           let lipU = 0; if (inn) { const sg = dot(inn, sv); if (Math.abs(sg) > 0.4) lipU = Math.sign(sg) * roomToward(base, sv.map((v) => v * Math.sign(sg)), Math.min(0.25 * s.gap[i], 1.0 * rho), rho, si, s.fam); }
           const home = fine && !s.thread && s.inner && s.inner[i] ? (first ? 1 - sstep(0, 0.35, q) : 0) + (last ? sstep(0.65, 1, q) : 0) : 0, hm = home ? home * (s.gap[i] + 0.6 * rho) : 0;   // its two ends bend back into what it tore from, so that it is never left hanging
-          C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * (gu + lipU) / 2 : 0) + (hm ? s.inner[i][j] * hm : 0))); O.push(s.O[i]); W.push(Math.max(0.006, rho * w * front * back + (Math.abs(gu) + Math.abs(lipU)) / 2)); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(deepHere + Math.max(0, -gv)); }
-        const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
+          C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * (gu + lipU) / 2 : 0) + (hm ? s.inner[i][j] * hm : 0))); O.push(s.O[i]); W.push(Math.max(0.006, Math.min(wCap, rho * w * front * back + (Math.abs(gu) + Math.abs(lipU)) / 2))); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(deepHere + Math.max(0, -gv)); }
+        const w1 = W[W.length - 1], end = ending === 'own' ? (s.stub === 'knot' ? { skew: 0.5 * (r() - 0.5) } : s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
           : ending === 'step' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.2 * r()), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()) } : { skew: 0 };
         // The next piece starts under this one's front, as far back as the front is cut away: a point takes the last
         // third, a slant runs back by its skew times the width. Started any later it leaves a hole where the cut
@@ -84,7 +91,7 @@
       }
     }
     // where a strand is on the outside of the wood, and off the ground
-    const outer = (s, k) => k > s.root + 4 && k < s.K - 3 && s.far[k] > 1.1 * s.rho[k] && s.rho[k] > 0.03;
+    const outer = (s, k) => k > s.root + 4 && k < s.K - 3 && s.far[k] > 1.1 * s.rho[k] && s.rho[k] > 0.03 && !wounds.some((v) => H(s.X[k * 3] - v.c[0], s.X[k * 3 + 1] - v.c[1], s.X[k * 3 + 2] - v.c[2]) < 2 * v.r);
     const stretch = (s, len) => { for (let go = 0; go < 6; go++) { const k0 = s.root + 4 + Math.floor(r() * Math.max(1, s.K - s.root - len - 8)), k1 = k0 + len; if (k1 < s.K - 2 && outer(s, k0) && outer(s, k1) && outer(s, (k0 + k1) >> 1)) return [k0, k1]; } return null; };
     const thick = t.strands.filter((q) => !q.vine && !(q.inner && q.inner.some((v) => v)) && Math.max(...q.rho) > 0.045);
     if (!recipe.bare) for (const s of thick) for (let j = 0; j < 2; j++) {   // slivers
@@ -157,7 +164,7 @@
       const nearSeeds = (x, y, z, fn) => { const cx = Math.floor(x / gs), cy = Math.floor(y / gs), cz = Math.floor(z / gs); for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let c = -2; c <= 2; c++) { const g = sgrid.get((cx + a + 512) * 1048576 + (cy + b + 512) * 1024 + cz + c + 512); if (g) for (const i of g) fn(i); } };
       // Bark may not lie on the foot, on a strand buried in the middle, on thin wood, or within reach of an orb's room. Those places have cells
       // all the same, barred from being switched on, so that wherever bark stops it stops on a boundary between two cells.
-      for (const c of cand) { if (t.orb && H(c[0] - t.orb.c[0], c[1] - t.orb.c[1], c[2] - t.orb.c[2]) < t.orb.room * 1.35 + 0.6 * sp * st) c[10] = 1;
+      for (const c of cand) { if (rooms.some((o) => away(o, c[0], c[1], c[2]) < o.room * 1.35 + 0.6 * sp * st) || wounds.some((v) => H(c[0] - v.c[0], c[1] - v.c[1], c[2] - v.c[2]) < v.r * 2 + 0.6 * sp * st)) c[10] = 1;
         let ok = true; nearSeeds(c[0], c[1], c[2], (i) => { if (ok && dist(c, P[i][0], P[i][1], P[i][2]) < sp) ok = false; }); if (!ok) continue; const k = skey(c[0], c[1], c[2]), g = sgrid.get(k); if (g) g.push(P.length); else sgrid.set(k, [P.length]); P.push(c); }
       const N = P.length, barred = P.map((p) => p[10]), nb = P.map((p, i) => { const out = []; nearSeeds(p[0], p[1], p[2], (j) => { if (j !== i && dist(p, P[j][0], P[j][1], P[j][2]) < 1.8 * sp) out.push(j); }); return out; }), girth = Math.max(...P.map((p) => p[6])); for (let i = 0; i < N; i++) if (P[i][6] < 0.4 * girth) barred[i] = 1;   // and not where the wood is a thin limb or a tip
       // swathes. cohere runs from 0 (a swathe reaches out in arms: it prefers a cell touching only one of its own)
@@ -195,7 +202,7 @@
       const f = (x, y, z) => { let d1 = 9, d0 = 9, i1 = -1; got.length = 0; nearSeeds(x, y, z, (i) => { const d = dist(P[i], x, y, z); if (on[i]) { if (d < 2.2 * sp) got.push(i, d); if (d < d1) { d1 = d; i1 = i; } } else if (d < d0) d0 = d; });
         if (d1 > 2 * sp) return 0.03; const border = (d0 - d1) / 2, pc = P[i1], vx = x - pc[0], vy = y - pc[1], vz = z - pc[2], al = Math.abs(vx * pc[3] + vy * pc[4] + vz * pc[5]), ac = Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al));
         let edge = Math.min(border, 1.5 * sp - Math.max(al / st, ac, 0.75 * (al / st + ac))); if (edge < -0.03) return 0.03;   // border: how far inside the boundary between a cell that is on and one that is off; with no cell beyond it, a cell ends eight-sided, not round
-        if (t.orb) edge = Math.min(edge, H(x - t.orb.c[0], y - t.orb.c[1], z - t.orb.c[2]) - t.orb.room * 1.35);
+        for (const o of rooms) edge = Math.min(edge, away(o, x, y, z) - o.room * 1.35);
         const flake = plates[i1].slope > 0.4; let sv = 0, sl = 0, sw = 0;
         for (let a = 0; a < got.length; a += 2) { const i = got[a], q = plates[i]; if (i !== i1 && (flake || q.slope > 0.4 || got[a + 1] > d1 + 5 * tau)) continue; const p = P[i], w = Math.exp(-(got[a + 1] - d1) / tau);
           sv += w * ((x - p[0]) * q.n[0] + (y - p[1]) * q.n[1] + (z - p[2]) * q.n[2] - q.h); sw += w;
@@ -208,7 +215,7 @@
     // which layer the surface belongs to at a place: that of whichever piece is nearest there
     const o = t.orb, f = (x, y, z) => solid(x, y, z);
     f.layerAt = (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); let d = 9, l = 0; if (b) for (const i of b) { const v = all[i].f(x, y, z); if (v < d) { d = v; l = all[i].layer || 0; } } return l; };
-    f.orb = o; f.measure = t.measure; f.count = count; return f;
+    f.orb = o && !o.empty ? o : null; f.marks = wounds; f.measure = t.measure; f.count = count; return f;
   }
   // the same four trees. bare: bands only, so the body can be judged by itself.
   const bare = false, S = [

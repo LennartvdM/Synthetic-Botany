@@ -1,0 +1,6 @@
+nothing snapped: {"shoots":16,"tips":16,"deepest":3,"snapped":0} overlap 0.11 pairs over 0/872
+3 snapped: fresh: {"shoots":16,"tips":16,"deepest":3,"snapped":3} overlap 0.15 pairs over 1/887
+3 snapped: knots: {"shoots":16,"tips":16,"deepest":3,"snapped":3} overlap 0.17 pairs over 1/878
+3 snapped: hollows: {"shoots":16,"tips":16,"deepest":3,"snapped":3} overlap 0.14 pairs over 0/705
+3 snapped: mixed: {"shoots":16,"tips":16,"deepest":3,"snapped":3} overlap 0.18 pairs over 2/794
+mixed, seed 3: {"shoots":12,"tips":12,"deepest":3,"snapped":3} overlap 0.22 pairs over 1/971

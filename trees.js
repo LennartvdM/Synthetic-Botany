@@ -98,9 +98,11 @@
     // rejoin beyond it. Either may divide again. So the most pressed end up the finest, and a fine strand is
     // what is left of a heavy one. (Run 012: this one rule gave thin strands over a body, forks, crossings,
     // and the thinnest nearest.)
-    const SP = orb && P.orb.split ? Object.assign({ at: 0.5, every: 40, floor: 0.012, most: 160, neck: 1.0, least: 0.009, strings: 1 }, P.orb.split === true ? {} : P.orb.split) : null; let forks = 0;
+    const SP = orb && P.orb.split ? Object.assign({ at: 0.5, every: 40, floor: 0.012, most: 160, neck: 1.0, least: 0.009, strings: 1, run: 34 }, P.orb.split === true ? {} : P.orb.split) : null; let forks = 0;
+    const rs = rng(P.seed + 55);
     const divide = (i) => { const s = S[i], n = s.K; let a = -1, b = -1; for (let k = Math.max(1, s.root); k < n - 1; k++) if (s.on[k]) { if (a < 0) a = k; b = k; } if (a < 0) return;
-      const ka = Math.max(1, s.root, a - 6), kb = Math.min(n - 2, b + 6); if (kb - ka < 8) return; for (let k = ka; k <= kb; k++) if (s.rho[k] / Math.SQRT2 < SP.floor) return;
+      // a tear runs on along the grain past where the strand was pressed: a little, or a long way, each end its own
+      const ka = Math.max(1, s.root, a - 4 - Math.floor(SP.run * rs() * rs())), kb = Math.min(n - 2, b + 4 + Math.floor(SP.run * rs() * rs())); if (kb - ka < 8) return; for (let k = ka; k <= kb; k++) if (s.rho[k] / Math.SQRT2 < SP.floor) return;
       const nc = kb - ka + 1, X = new Float64Array(nc * 3), rr = new Float64Array(nc);
       for (let m = 0; m < nc; m++) { const k = ka + m, p = [s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]], tg = [0, 1, 2].map((q) => s.X[(k + 1) * 3 + q] - s.X[(k - 1) * 3 + q]), side = unit(cross(tg, [p[0] - orb.c[0], p[1] - orb.c[1], p[2] - orb.c[2]]));
         const rn = s.rho[k] / Math.SQRT2, amt = rn * 0.7 * Math.sin(PI * m / (nc - 1)); for (let q = 0; q < 3; q++) { X[m * 3 + q] = p[q] + side[q] * amt; s.X[k * 3 + q] = p[q] - side[q] * amt; } s.rho[k] = rn; rr[m] = rn; }

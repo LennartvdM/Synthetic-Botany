@@ -1932,3 +1932,26 @@ Wrong, or not there:
   say from them that the lips meet there as intended.
 - Threads are still hard to see at this size.
 - Still nothing peels free at one end.
+
+**"Maybe some strands are too short."** With arrows at the shoulder above
+the orb, where the cage stops in a shelf.
+
+Measured: all 26 split-off parts rejoined between heights 0.82 and 0.92,
+with the top of the orb's room at 0.86. Their lengths were 11 to 15
+steps. Cause: a strand was split only over the stretch where it was
+pressed, plus a fixed six steps each way. Every tear was the same short
+length and they all ended in a ring.
+
+Changed in `trees.js`: a tear runs on along the grain past where the
+strand was pressed, each end by its own amount (4 steps and up to 34
+more, most of them short, a few long).
+
+Now: parts rejoin anywhere from 0.88 to 1.46, lengths 12 to 39 steps.
+`sketch/page7-orb-long-tears.png`. The shelf is gone. Parts run from near
+the foot past the orb and on up the trunk, ending at unlike heights.
+
+Cost: the bulb is less marked. With long parts all round it the trunk is
+closer to one tall cone again, and the orb sits in a deep opening in it
+rather than in a swelling of its own. Also still true: the sharpest turns
+at the joins are no gentler (161, 127, 115 degrees); longer parts did not
+ease them, as hoped.

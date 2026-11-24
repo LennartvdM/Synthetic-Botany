@@ -2496,3 +2496,9 @@ Not there:
 - Roots are set in the shape they were first laid in, and have knuckles
   where they dive.
 - Shoot ends are still long smooth points.
+
+Run 014, afterwards. Elbows accepted ("that solves it"). The tense wood
+is not thrown away: it is wanted for an evil biome, where the player
+should be disturbed. Noted in `LANGUAGE.md` with the dials that make it
+(`kink: 0, set: 0`). So `sketch/page9-tense-withdrawn.png` is withdrawn as
+the ordinary wood only.

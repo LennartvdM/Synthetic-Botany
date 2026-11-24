@@ -137,3 +137,20 @@ Second material, wood (`wood.js`). One rule: every tip is the far end of a
 strand that began as a root. Read off the pictures given for it: bundled,
 winding, ribboned, crested, grooved, hollowed between strands, pointed at
 every end, splayed at the ground. "Ancient." Leaves are not part of it.
+
+### Wood, tense and relaxed (said of page 9)
+
+Two moods of the same wood, both wanted.
+
+- Relaxed: branches are straight runs joined by corners, and the wood
+  keeps the shape it grew in. This is the wood for ordinary places.
+- Tense: no corners, every strand pulled taut, a branch only bending
+  slightly toward where it is going. Said of it: "very disturbing and
+  icky", "tense and stressed". Kept on purpose: "high tautness in the
+  early attempt still is usable for an evil biome. It genuinely feels
+  uncomfortable to look at and that's good whenever the player should be
+  disturbed."
+
+To get the tense wood: `Trees.sprout({ kink: 0, set: 0 })`. Record of it:
+`sketch/page9-tense-withdrawn.png` (withdrawn as the ordinary wood, not as
+a look).

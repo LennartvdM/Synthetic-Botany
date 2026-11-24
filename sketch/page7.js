@@ -24,7 +24,7 @@
     for (const s of t.strands) {
       const K = s.K, fine = !!s.vine, ridge0 = 0.7 * (r() - 0.5); let k = 0, first = true;
       while (k < K - 1) {
-        const rho0 = s.rho[Math.min(K - 1, k + 2)], want = chain ? Math.max(7, Math.round((7 + 10 * r()) * Math.max(rho0, 0.02) / 0.035)) : K; let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
+        const rho0 = s.rho[Math.min(K - 1, k + 2)], want = chain && !s.thread ? Math.max(7, Math.round((7 + 10 * r()) * Math.max(rho0, 0.02) / 0.035)) : K; let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
         const k0 = first ? 0 : Math.max(0, k - 3), n = k1 - k0, last = k1 === K - 1, wide = (fine ? 0.95 : 1.15) + 0.2 * r(), high = (fine ? 0.8 : 0.62) + 0.25 * r(), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, e = r(), ending = last ? 'own' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
@@ -32,14 +32,16 @@
           C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift)); O.push(s.O[i]); W.push(Math.max(0.006, rho * w * front * back)); Hh.push(rho * high * (0.6 + 0.4 * front)); D.push(rho * 0.95); }
         const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (0.6 + 1.0 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
           : ending === 'step' ? { skew: 0.4 * (r() - 0.5), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.0 + 1.2 * r()) } : { skew: 0 };
-        all.push(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: clamp(ridge0 + 0.4 * (r() - 0.5), -0.6, 0.6), eL: 0.2 + 0.5 * r(), eR: 0.2 + 0.5 * r() }, end)));
+        // a part that has split from another has a torn face toward it: a steep wall on that side, the ridge near it
+        const mid = (k0 + k1) >> 1, inn = s.inner && s.inner[mid], sg = inn ? dot(inn, unit(cross(tan(s, mid), s.O[mid]))) : 0, torn = Math.abs(sg) > 0.4 ? Math.sign(sg) : 0, e1 = 0.2 + 0.5 * r(), e2 = 0.2 + 0.5 * r(), rd = clamp(ridge0 + 0.4 * (r() - 0.5), -0.6, 0.6);
+        all.push(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? 0.6 * torn : rd, eL: torn < 0 ? 0.95 : torn > 0 ? 0.12 : e1, eR: torn > 0 ? 0.95 : torn < 0 ? 0.12 : e2 }, s.thread ? { skew: 0 } : end)));
         count[fine ? 'fine' : 'bands'] = (count[fine ? 'fine' : 'bands'] || 0) + 1; k = k1; first = false;
       }
     }
     // where a strand is on the outside of the wood, and off the ground
     const outer = (s, k) => k > s.root + 4 && k < s.K - 3 && s.far[k] > 1.1 * s.rho[k] && s.rho[k] > 0.03;
     const stretch = (s, len) => { for (let go = 0; go < 6; go++) { const k0 = s.root + 4 + Math.floor(r() * Math.max(1, s.K - s.root - len - 8)), k1 = k0 + len; if (k1 < s.K - 2 && outer(s, k0) && outer(s, k1) && outer(s, (k0 + k1) >> 1)) return [k0, k1]; } return null; };
-    const thick = t.strands.filter((q) => !q.vine && Math.max(...q.rho) > 0.045);
+    const thick = t.strands.filter((q) => !q.vine && !(q.inner && q.inner.some((v) => v)) && Math.max(...q.rho) > 0.045);
     if (!recipe.bare) for (const s of thick) for (let j = 0; j < 2; j++) {   // slivers
       const u = r(), len = 10 + Math.floor(18 * r()), side = (r() < 0.5 ? -1 : 1) * (0.25 + 0.5 * r()), lift = 0.3 + 0.7 * r(), wide = 0.3 + 0.25 * r(), high = 0.3 + 0.2 * r(), sd = 1 + Math.floor(r() * 1e6), rd = 0.8 * (r() - 0.5), eL = 0.1 + 0.6 * r(), eR = 0.1 + 0.6 * r(), st = u < 0.6 ? stretch(s, len) : null; if (!st) continue;
       const C = [], O = [], W = [], Hh = [], D = [];
@@ -92,7 +94,7 @@
   const bare = false, S = [
     ['one limb', tree({ bare, seed: 1, trunk: [[0, 0.22, 0, 0.27], [0.08, 0.7, 0.02, 0.25], [-0.1, 1.1, 0.05, 0.22], [-0.32, 1.45, 0, 0.18], [-0.3, 1.8, -0.05, 0.14]], limbs: [{ at: 0.5, share: 0.38, path: [[0.35, 1.25, 0.15], [0.62, 1.3, 0.2], [0.8, 1.1, 0.15]] }] })],
     ['a loop', tree({ bare, seed: 2, twist: 0.9, trunk: [[0, 0.22, 0, 0.28], [0.1, 0.7, 0, 0.26], [0.42, 1.05, 0.08, 0.23], [0.3, 1.5, 0.16, 0.2], [-0.26, 1.52, 0.08, 0.18], [-0.54, 1.08, -0.08, 0.16], [-0.2, 0.82, -0.22, 0.14], [0.2, 1.0, -0.34, 0.11]], limbs: [{ at: 0.42, share: 0.25, path: [[0.6, 1.8, 0.3], [0.82, 1.72, 0.36]] }] })],
-    ['holding an orb', tree({ bare, seed: 3, strands: 40, mixed: true, lmax: 0.9, settle: 200, trunk: [[0, 0.22, 0, 0.3], [0, 0.6, 0, 0.28], [0.1, 1.0, 0, 0.23], [0.3, 1.4, 0.1, 0.18], [0.55, 1.7, 0.2, 0.13]], limbs: [{ at: 0.6, share: 0.3, path: [[-0.3, 1.3, -0.1], [-0.6, 1.5, -0.1], [-0.8, 1.35, 0]] }], orb: { at: 0.27, r: 0.13, room: 0.4, off: 0.7, split: { at: 1.2 } } }), 0.0072],
+    ['holding an orb', tree({ bare, seed: 3, strands: 12, uneven: 0.9, lmax: 0.9, settle: 200, trunk: [[0, 0.22, 0, 0.3], [0, 0.6, 0, 0.28], [0.1, 1.0, 0, 0.23], [0.3, 1.4, 0.1, 0.18], [0.55, 1.7, 0.2, 0.13]], limbs: [{ at: 0.6, share: 0.3, path: [[-0.3, 1.3, -0.1], [-0.6, 1.5, -0.1], [-0.8, 1.35, 0]] }], orb: { at: 0.27, r: 0.13, room: 0.4, off: 0.7, split: { at: 1.2 } } }), 0.0065],
     ['forked low', tree({ bare, seed: 4, strands: 10, twist: 0.3, trunk: [[0, 0.22, 0, 0.3], [-0.05, 0.6, 0, 0.28], [-0.2, 0.98, -0.05, 0.22], [-0.45, 1.35, -0.1, 0.17], [-0.5, 1.72, 0, 0.13]], limbs: [{ at: 0.3, share: 0.4, path: [[0.35, 0.9, 0.1], [0.55, 1.25, 0.2], [0.5, 1.6, 0.1]] }, { at: 0.62, share: 0.25, path: [[-0.6, 1.1, 0.25], [-0.85, 1.2, 0.35]] }] })],
   ];
   window.Fantastic = { names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), measures: S.map((s) => s[1].measure), counts: S.map((s) => s[1].count), build: (i) => mesh(S[i][1], S[i][0], S[i][2] || 0.0095, 2.05), mesh, kit: Fantastic.kit };

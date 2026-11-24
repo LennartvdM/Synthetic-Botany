@@ -1821,3 +1821,45 @@ What is still ribbon: the fine strands over the orb. A third of a girth
 is nothing on a strand 0.012 thick, so they are still smooth cords in
 smooth arcs, side by side at even spacing. And strands that run together
 are still separate, with air between them: nothing fuses.
+
+**Fusing, and string cheese.** On my proposing to fuse strands that run
+together: "Fusing I'm most worried about actually, it should be part of
+it but the plasticity is also in that the bark should be able to stretch
+and split like cheese string."
+
+Read here as: no fusing step. If the tree is a few heavy strands and
+everything fine comes from pulling them apart, then what is fused is
+simply what has not been pulled apart. And the split should behave like
+string cheese, which it did not: it made two clean cords.
+
+Changed:
+
+- The orb tree is back to 12 heavy strands of unlike girth (the mixed
+  population of 40 is dropped for it; that was the shaggy cone).
+- Torn faces. Each part of a split knows which way its other part lies
+  and is drawn with a steep flat wall on that side and its ridge beside
+  it, so two parts read as one body cut down the grain.
+- Necking. The further a part has been drawn from what it split from,
+  the thinner it is there (down to a least girth).
+- Threads. Near where a split closes, up to two fine threads at each end
+  still cross the gap on a slant, where nothing else is in the way.
+
+Numbers, orb 0.7 girths out: 12 strands become 40 by 28 splits; split-off
+girths from 0.010 to 0.053, spread evenly across that range; 42 threads;
+no touching pair overlaps.
+
+`sketch/page7-orb-string-cheese.png`. What it does: heavy again. The orb
+shows through two or three large openings between parted halves with flat
+inner faces, and a thread crosses its face. The girths round it vary far
+more than before. It no longer reads as ribbon.
+
+Wrong, or not there:
+
+- Necking does not show. Parts look the same girth along their length.
+- Threads are few where they can be seen, and read as wire: straight,
+  one girth, round. String cheese threads taper from both ends and are
+  thinnest in the middle.
+- A long thin part stands off the trunk above the orb like a loose cable.
+- Some parted halves end in square plank corners.
+- Nothing peels: every split rejoins at both ends. A strip attached at
+  one end and lifting at the other is not there.

@@ -2168,3 +2168,41 @@ Wrong, or not there:
 - The long tears cannot be found in the pictures.
 - The loop tree has a ragged hole where a sheet crosses the inside of
   the loop.
+
+**Erratic outlines, and colour by layer.** Given, with a sketch of three
+outlines (a few big angular points of unlike length, deep notches,
+straight runs of edge, none alike): "The fringes of the pieces should be
+simplified, and the patches should be highly erratic." And: elements may
+be given separate colours to see what is being done, with grey clay to
+judge whether the result is cohesive.
+
+Bark sheets: the strip fringe, the long tear and the last of the grit are
+gone. Each sheet has its own outline: a polygon of four to six points with
+a notch between each pair, turned a little off the grain, with clean
+straight edges of the sheet's full thickness (0.028 to 0.038). Sizes vary
+widely (half-length 0.14 to 0.5). Peeling in places along the edge. Up to
+seven a tree.
+
+Viewer: a switch colours each layer: strands, torn parts, slivers and
+shell, bark. Each vertex takes the layer of whichever piece is nearest.
+
+`sketch/page7-layers.png`, `sketch/page7.png` (the same in clay).
+
+Two things the colours showed at once:
+
+- `sketch/page7-layers-first-stars.png`. The first outlines were thin-armed
+  stars, all point and no body. Notches now come in only about half way,
+  so a sheet is a broad body with points off it.
+- The orb tree is nearly all "torn parts". At first that was a fault of
+  the tagging (whole strands tagged, not stretches); mended, it is still
+  nearly all torn parts, because almost every stretch of that trunk has
+  been split. That is why it reads strandy where the others do not.
+
+Also seen in colour: the orb tree's only bark is on its limb. Bark is
+anchored on strands that have not split, and on that tree hardly any are
+left. And slivers and shell (pink) are long narrow streaks along the
+grain, the wiriest layer after the torn parts.
+
+In clay: on the loop and the one-limb tree the large sheets read as flat
+angular plates lying on the trunk, with an edge. Smaller ones are lost
+among the strands.

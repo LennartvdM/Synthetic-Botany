@@ -1,6 +1,6 @@
-share 0.15, seed 1: {"shoots":7,"tips":7,"deepest":2} overlap 0.18 pairs over 1/683
-share 0.15, seed 2: {"shoots":7,"tips":7,"deepest":2} overlap 0.23 pairs over 2/777
-share 0.35, seed 1: {"shoots":12,"tips":12,"deepest":3} overlap 0.13 pairs over 0/751
-share 0.35, seed 2: {"shoots":12,"tips":12,"deepest":3} overlap 0.22 pairs over 2/878
-share 0.5, seed 1: {"shoots":13,"tips":13,"deepest":4} overlap 0.22 pairs over 16/932
-share 0.5, seed 2: {"shoots":15,"tips":15,"deepest":4} overlap 0.17 pairs over 2/941
+share 0.15, seed 1: {"shoots":7,"tips":7,"deepest":2} overlap 0.16 pairs over 1/564
+share 0.15, seed 2: {"shoots":7,"tips":7,"deepest":2} overlap 0.19 pairs over 2/598
+share 0.35, seed 1: {"shoots":9,"tips":9,"deepest":3} overlap 0.10 pairs over 0/767
+share 0.35, seed 2: {"shoots":11,"tips":11,"deepest":3} overlap 0.18 pairs over 1/790
+share 0.5, seed 1: {"shoots":17,"tips":17,"deepest":4} overlap 0.39 pairs over 29/933
+share 0.5, seed 2: {"shoots":17,"tips":17,"deepest":5} overlap 0.24 pairs over 19/897

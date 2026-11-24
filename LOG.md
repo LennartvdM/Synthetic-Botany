@@ -2359,3 +2359,78 @@ Wrong, or not there:
   step all the way round.
 - Nothing peels free at one end and hangs. Knots, hollows and notches are
   still not begun.
+
+## Run 013: branches, as a graph that is grown
+
+Asked for: branches before knots and hollows, as a graph, so that some can
+be snapped off afterwards. Until now a tree was a trunk with one or two
+limbs, and both lines were given by hand.
+
+Two changes.
+
+**The kernel takes limbs on limbs.** `trees.js` knew only limbs off the
+trunk. A limb can now carry `limbs` of its own, to any depth: each takes
+its strands from the side of the bundle it leaves on, a bundle is let go
+where a limb leaves it and held along its far part, as the trunk was.
+Every strand still runs unbroken from its root to the end of one shoot.
+The four trees of page 7 come out the same to the last digit (fingerprint
+of every strand's points, girths and facing, before and after).
+
+**The lines are grown** (`Trees.sprout`), by one rule. A shoot carries
+some of the tree's strands. It runs on, wandering and turning upward, for
+a length that goes with how many it carries. At intervals it forks: a
+`share` of what it still carries leaves to one side, toward whichever side
+is most open, and the rest is turned the other way by as much as it lost.
+A heavy shoot runs further between forks than a light one. A shoot down to
+one strand cannot fork. 18 strands a tree.
+
+Predicted before drawing anything:
+1. `share` decides the habit: small gives a leader with side shoots, a
+   half gives even forks and no leader.
+2. The trunk will lose its line where forks come close together, since it
+   is let go round each one.
+3. A shoot of one strand will not be told from a strand that simply ends.
+
+`runs/013-branches/share.png` (share 0.15, 0.35, 0.5, two seeds each) and
+`spread.png` (how wide a shoot leaves, 0.6 to 1.6; how strongly it turns
+up): bare strands, coloured by the shoot each ends on, from the front, the
+right and above.
+
+1. Held. At 0.15 most strands stay on the trunk and end there (7 shoots);
+   at 0.5 nearly every strand leaves (17 shoots, 4 or 5 deep) and nothing
+   leads.
+2. Did not happen. The trunk keeps its line with five forks on it.
+3. Held, and it matters for what comes next: the crown is mostly single
+   strands, and a bough that divides can be seen only in the first third
+   of its length.
+
+Broke first, twice:
+- A bouquet. With forks 0.3 apart most trunk strands never left, and the
+  shoots, turning up, lay against the trunk.
+- Horns on a stump (`sketch/page9-first-horns.png`, with the wood on). The
+  graph was right but nothing was long for its girth: foot 0.25 across,
+  boughs 0.5 long. Now the foot is 0.2, the first fork is a quarter of the
+  way up, and a shoot's length is 1.15 x (0.22 + the root of its share of
+  the strands).
+
+With page 7's wood (`sketch/page9.png`, `-layers`, `-other-side`; four of
+the range): a short grooved trunk dividing into boughs that divide again
+and taper to points. The boughs keep the trunk's strands in sight where
+they leave it, so a fork is strands parting and not a limb set on.
+
+Surprised me: the tree with shoots leaving widest (1.6) came out nearly
+flat, wide from the front and narrow from the side, at every spread tried
+on that seed. "Toward whichever side is most open" keeps choosing the two
+sides it began with.
+
+Wrong, or not there:
+- Every shoot ends in a long smooth point. Nothing ends blunt or broken
+  out in the crown, where it would show.
+- 18 strands make 18 roots: a skirt round the foot.
+- Bark has little room. Most of a branched tree is thinner than the 0.4 of
+  its greatest breadth that bark is barred from, so it has one small sheet
+  on the trunk.
+- Worst overlap between two strands is 0.39 of their joined girth on one
+  even-forked tree (29 pairs over 0.15), 0.34 on the widest. The crowded
+  crown is where; not looked into.
+- `up` does little: shoots are too short for turning to tell.

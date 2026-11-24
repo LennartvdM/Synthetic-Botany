@@ -1795,3 +1795,29 @@ Wrong, or not there:
   one has 40, mostly thin, and it shows.
 - The other three trees are untouched and still on the old population.
 - One seed, one orb size. About 40 seconds to settle, a minute to mesh.
+
+**"A bit ribbony."** Said of the orb tree, with no fix offered. Read here
+as the fault of page 4 come back: each strand was drawn as one flat
+section pushed along one smooth line, which is an extrusion. Page 5 had
+answered that by never drawing a long thing as one piece, and the strand
+trees dropped it.
+
+Changed in page 7's surface, for every tree: a strand is drawn as a chain
+of stiff pieces. Each runs 7 to 17 girths of its strand, is nearly as
+deep as it is wide (was about a third), and is drawn toward its own
+straight line, though never more than a third of a girth off the
+strand's, so the chain bends in knees. Its back is sunk under the piece
+before; its front lies a little proud and ends in a point, a slant or a
+step. All face the tip. The strands themselves are unchanged.
+
+`sketch/page7-orb-chained.png` (orb tree whole and close, and the
+one-limb tree). The orb tree is now 217 pieces on its heavy strands and 44
+on its fine ones.
+
+What it does: the trunk reads as overlapping splints with ends, steps and
+slanted cuts, and is chunkier. Heavy strands are plainly better.
+
+What is still ribbon: the fine strands over the orb. A third of a girth
+is nothing on a strand 0.012 thick, so they are still smooth cords in
+smooth arcs, side by side at even spacing. And strands that run together
+are still separate, with air between them: nothing fuses.

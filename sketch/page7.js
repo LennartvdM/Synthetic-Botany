@@ -13,20 +13,28 @@
   function rng(seed) { let a = (seed * 2654435761) >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   const unit = (a) => { const l = H(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }, cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
   function tree(recipe) {
-    const t = Trees.grow(recipe), r = rng((recipe.seed || 1) + 50), all = [], count = { bands: 0, slivers: 0, plates: 0, cut: 0, dropped: 0 };
+    const t = Trees.grow(recipe), r = rng((recipe.seed || 1) + 50), all = [], count = { bands: 0, fine: 0, slivers: 0, plates: 0, cut: 0, dropped: 0 };
     const at = (s, k) => [s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]], tan = (s, k) => unit([0, 1, 2].map((q) => s.X[Math.min(s.K - 1, k + 1) * 3 + q] - s.X[Math.max(0, k - 1) * 3 + q]));
-    for (const s of t.strands.filter((q) => q.vine)) {   // strands split off round an orb: as deep as they are wide, the same flat-faced wood
-      const C = [], W = [], Hh = [], D = [], wide = 0.9 + 0.2 * r(), sd = 1 + Math.floor(r() * 1e6), rd = 0.8 * (r() - 0.5), eL = 0.15 + 0.4 * r(), eR = 0.15 + 0.4 * r();
-      for (let k = 0; k < s.K; k++) { C.push(at(s, k)); W.push(Math.max(0.006, s.rho[k] * wide)); Hh.push(s.rho[k] * 0.9); D.push(s.rho[k] * 0.9); }
-      all.push(shard({ C, O: s.O, W, Hh, D, deep: Math.max(...D), seed: sd, wiggle: 1, ridge: rd, eL, eR, skew: 0 })); count.vines = (count.vines || 0) + 1;
-    }
-    const nearOrb = (p) => (t.orb ? 1 - sstep(1.3, 2.2, H(p[0] - t.orb.c[0], p[1] - t.orb.c[1], p[2] - t.orb.c[2]) / t.orb.room) : 0);   // near an orb a band is drawn no wider than its strand, so that what is open stays open
-    for (const s of t.strands.filter((q) => !q.vine)) {   // bands
-      const K = s.K, wide = 1.4 + 0.3 * r(), high = 0.3 + 0.25 * r(), draw = 0.25 * (r() < 0.5 ? -1 : 1) * (0.5 + 0.5 * r()), waves = 1 + Math.floor(2 * r()), C = [], W = [], Hh = [], D = [];
-      for (let k = 0; k < K; k++) { const q = k / (K - 1), bow = Math.sin(PI * waves * q) * Math.sqrt(Math.sin(PI * q)); const alone = 1 - sstep(0.9, 2.0, s.far[k] / s.rho[k]);   // in a bundle a strand shows one broad face; by itself it is a whole limb, and as deep as it is wide
-        const no = nearOrb(at(s, k)); C.push(at(s, k)); W.push(Math.max(0.004, s.rho[k] * (wide + (1.05 - wide) * Math.max(alone, no)) * (1 + draw * bow * (1 - no)))); Hh.push(s.rho[k] * (high + (0.85 - high) * alone)); D.push(s.rho[k] * 0.95); }
-      const w1 = W[K - 1], brk = s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (0.6 + 1.0 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 };
-      all.push(shard(Object.assign({ C, O: s.O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: 0.7 * (r() - 0.5), eL: 0.2 + 0.5 * r(), eR: 0.2 + 0.5 * r() }, brk))); count.bands++;
+    const nearOrb = (p) => (t.orb ? 1 - sstep(1.3, 2.2, H(p[0] - t.orb.c[0], p[1] - t.orb.c[1], p[2] - t.orb.c[2]) / t.orb.room) : 0);
+    // A strand is not drawn as one piece: one section pushed along one line is a ribbon. It is drawn as a chain
+    // of stiff pieces, as page 5's wood was. Each piece is nearly as deep as it is wide, runs for some girths
+    // of the strand, and is too stiff for the strand's line, so the chain bends in knees. Its back is sunk under
+    // the piece before it; its front lies a little proud and ends in a point, a slant or a step. All face the tip.
+    const chain = recipe.chain === undefined ? 1 : recipe.chain;
+    for (const s of t.strands) {
+      const K = s.K, fine = !!s.vine, ridge0 = 0.7 * (r() - 0.5); let k = 0, first = true;
+      while (k < K - 1) {
+        const rho0 = s.rho[Math.min(K - 1, k + 2)], want = chain ? Math.max(7, Math.round((7 + 10 * r()) * Math.max(rho0, 0.02) / 0.035)) : K; let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
+        const k0 = first ? 0 : Math.max(0, k - 3), n = k1 - k0, last = k1 === K - 1, wide = (fine ? 0.95 : 1.15) + 0.2 * r(), high = (fine ? 0.8 : 0.62) + 0.25 * r(), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, e = r(), ending = last ? 'own' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
+        const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
+        for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
+          const lift = first ? proud * q * q : -0.28 * (1 - sstep(0, 0.3, q)) + proud * q * q, no = nearOrb(base), front = ending === 'point' ? Math.pow(Math.min(1, (1 - q) / 0.3), 0.7) : 1, back = first ? 1 : 0.7 + 0.3 * sstep(0, 0.3, q), w = Math.min(wide, 1.05 + (wide - 1.05) * (1 - no));
+          C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift)); O.push(s.O[i]); W.push(Math.max(0.006, rho * w * front * back)); Hh.push(rho * high * (0.6 + 0.4 * front)); D.push(rho * 0.95); }
+        const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (0.6 + 1.0 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
+          : ending === 'step' ? { skew: 0.4 * (r() - 0.5), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.0 + 1.2 * r()) } : { skew: 0 };
+        all.push(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: clamp(ridge0 + 0.4 * (r() - 0.5), -0.6, 0.6), eL: 0.2 + 0.5 * r(), eR: 0.2 + 0.5 * r() }, end)));
+        count[fine ? 'fine' : 'bands'] = (count[fine ? 'fine' : 'bands'] || 0) + 1; k = k1; first = false;
+      }
     }
     // where a strand is on the outside of the wood, and off the ground
     const outer = (s, k) => k > s.root + 4 && k < s.K - 3 && s.far[k] > 1.1 * s.rho[k] && s.rho[k] > 0.03;

@@ -2896,3 +2896,52 @@ Wrong, or not there:
 - Letting go is tried a little way ahead only. Nothing looks for the far
   side of a wide gap.
 - The trunk still does not answer the ground.
+
+## Run 020: roots in switchbacks
+
+Given: a drawing of one root. Fat where it starts and fining down slowly;
+short runs, two to four of its own widths long, set across the way it is
+going; turns that double it back on itself, some rounded and some sharp;
+neighbouring runs close enough to touch. The roots of the last entry
+(`sketch/page11-tentacles-withdrawn.png`) had none of that: long even
+curves.
+
+Built so: a root has a way it is going on the whole, and it goes that way
+by runs set across it, 55 to 85 degrees to one side and then the other, a
+turn as tight as its girth allows between them. Now and then a run goes
+straight on, or two turn the same way and it loops. A run is not begun
+where it would lie on another root or an earlier run of its own. The way
+it is going bends downhill. Letting go through the air is kept.
+
+What went wrong, and it took four renders to see it:
+- The first three (`sketch/page11-wiry-kinks-withdrawn.png` is the third)
+  came out as long straight legs ending in thin kinked tails, with crumbs.
+  I changed run lengths, turn angles and girth and it stayed the same. The
+  cause was not in the walking at all. While the tree settles a root was
+  still a fifth taut about a straight line, and only its far end is held:
+  so every winding between the foot and the far end was drawn out flat,
+  1500 times over. A walked root now keeps its shape wholly.
+- With longer roots the settling ran away on one site (a root's points
+  thrown out to 10^18). Taut, stiff and held together were more than one
+  pass can undo; stiffness is capped for trees with walked roots.
+- The wood's pieces were longer than a run and lay across the turns. A
+  root is now drawn a run at a time: a piece ends at the turn.
+What should have been done first was done last: draw the root paths alone,
+from above, at their girth (`runs/020-roots/roots.png`), and compare that
+with the drawing, before any wood.
+
+Now. From above the paths are of the drawing's kind: fat at the foot,
+doubling back, tails in small zigzags. With the wood on the four sites
+(`sketch/page11.png`, `-other-side`, `-from-above`) the roots are jointed
+and gnarled and go over the stone in turns.
+
+Against the drawing, still:
+- Runs are longer for their width than drawn, especially the first out of
+  the foot, and less tightly packed. Nowhere do two runs lie against each
+  other.
+- Turns are sharper than drawn: there is no rounded arch among them.
+- The roots are thick again near the foot, which was the complaint before
+  this one.
+- Crumbs where runs of two roots meet (the cleft, the slope).
+- Roots still cross each other: room is looked for at the start of a run,
+  not along it.

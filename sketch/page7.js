@@ -63,7 +63,9 @@
       const K = kB + 1; let k = kA, first = true, backBy = 3;
       while (k < K - 1) {
         const rho0 = s.rho[Math.min(K - 1, k + 2)], want = chain && !s.thread ? Math.max(7, Math.round((7 + 10 * r()) * Math.max(rho0, 0.02) / 0.035)) : K; let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
-        const k0 = first ? kA : Math.max(kA, k - backBy), n = k1 - k0, last = k1 === K - 1, wide = (fine ? 0.95 : 1.15) + 0.2 * r(), high = (fine ? 0.8 : 0.62) + 0.25 * r(), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, massW = 1.55 + 0.4 * r(), e = r(), ending = last ? 'own' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
+        // a root that doubles back is drawn a run at a time: a piece ends at the turn, and does not lie across it
+        let turned = false; if (k < s.root) { const sg = (j) => unit([0, 1, 2].map((c) => s.X[(j + 1) * 3 + c] - s.X[j * 3 + c])), d0 = sg(Math.min(K - 2, k + 1)); for (let j = k + 3; j < Math.min(k1, s.root); j++) if (dot(sg(j), d0) < 0.3) { k1 = j; turned = true; break; } }
+        const k0 = first ? kA : Math.max(kA, k - backBy), n = k1 - k0, last = k1 === K - 1, wide = (fine ? 0.95 : 1.15) + 0.2 * r(), high = (fine ? 0.8 : 0.62) + 0.25 * r(), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, massW = 1.55 + 0.4 * r(), e = r(), ending = last ? 'own' : turned ? 'turn' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
           const no = nearOrb(base), tornHere = s.gap && s.inner && s.inner[i] ? Math.min(1, s.gap[i] / (1.2 * rho)) : 0, alone = 1 - sstep(0.9, 2.0, s.far[i] / rho), free = s.thread ? 1 : Math.max(no, tornHere, alone, 1 - sstep(s.root, s.root + 8, i)), body = mass * (1 - free),   // a strand running alone is a limb, not part of a mass
@@ -80,7 +82,7 @@
           const home = fine && !s.thread && s.inner && s.inner[i] ? (first ? 1 - sstep(0, 0.35, q) : 0) + (last ? sstep(0.65, 1, q) : 0) : 0, hm = home ? home * (s.gap[i] + 0.6 * rho) : 0;   // its two ends bend back into what it tore from, so that it is never left hanging
           C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * (gu + lipU) / 2 : 0) + (hm ? s.inner[i][j] * hm : 0))); O.push(s.O[i]); W.push(Math.max(0.006, Math.min(wCap, rho * w * front * back + (Math.abs(gu) + Math.abs(lipU)) / 2))); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(deepHere + Math.max(0, -gv)); }
         const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
-          : ending === 'step' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.2 * r()), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()) } : { skew: 0 };
+          : ending === 'turn' ? { skew: 0.6 * (r() - 0.5) } : ending === 'step' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.2 * r()), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()) } : { skew: 0 };
         // The next piece starts under this one's front, as far back as the front is cut away: a point takes the last
         // third, a slant runs back by its skew times the width. Started any later it leaves a hole where the cut
         // was, and a root or a limb, which has nothing beside it to hide the hole, comes apart there.

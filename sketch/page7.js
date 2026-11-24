@@ -5,7 +5,7 @@
 //            that snapped ends in a break, cut on the slant or stepped.
 //   slivers  narrow shards lying on the bands, pointed at both ends, their far ends standing off.
 //   shell    thin plates in a few places, a little broader than a strand, lying close.
-//   bark     the third layer: a few thin flat sheets, each with its own erratic outline, peeling in places. Back sunk into the band, front lying on
+//   bark     the third layer: the tree is encased in an unseen mesh of cells, and bark is swathes of them switched on. Back sunk into the band, front lying on
 //            top and ending in a point, a slant or a step; nearly all face toward the tip. No plate passes
 //            through another. One or two have split from the front.
 // Nothing is swept or blended. Throwaway like the other pages.
@@ -117,46 +117,56 @@
       if (!st) { count.dropped++; continue; }
       plate(s, st[0], st[1], forward, side, wide, high, split ? 'blunt' : e < 0.7 ? 'point' : 'blunt', { ridge: rd, eL, eR, split: split ? { fromEnd: true, s0: 0.42 + 0.2 * u1, s1: 1.001, u: 0.4 * (u2 - 0.5), wide: 0.2 + 0.12 * u3, lift: 0.5 + 0.5 * u4, depth: 9 } : null }, sd);
     }
-    // Bark: the third layer. A few sheets to a tree, lying over the strands and spanning the grooves between
-    // them, none over an orb. What a sheet is like is said at `sheet` below.
-    const barkCount = recipe.bare ? 0 : recipe.bark === undefined ? 7 : recipe.bark, barks = [], rb = rng((recipe.seed || 1) + 123), wcell = 0.1, wgrid = new Map(), wkey = (x, y, z) => (Math.floor(x / wcell) + 512) * 1048576 + (Math.floor(y / wcell) + 512) * 1024 + Math.floor(z / wcell) + 512;
+    // Bark: the third layer. The tree is encased in an unseen mesh of cells: points scattered evenly over its
+    // surface, each owning the space nearer to it than to any other. Bark is a swathe of those cells switched on.
+    // A swathe starts at one cell and spreads to neighbours. Two things steer it:
+    //   percolate  the chance it goes on spreading after each cell: how far a swathe runs
+    //   cohere     how strongly it prefers a cell that already touches several of its own: high keeps it compact,
+    //              low lets it reach out in arms
+    // Swathes are laid until `cover` of the cells are on. One smaller than `least` cells is not worth having and
+    // is taken off again. Where bark stops, it stops on the boundary between two cells, so its edge is straight
+    // runs and angles. The sheet itself is thin, flat-faced, of one thickness to its edge, and lies over the
+    // strands, spanning the grooves between them. In places along the edge it has peeled.
+    const BK = recipe.bare || recipe.bark === 0 ? null : Object.assign({ cell: 0.08, cover: 0.3, percolate: 0.975, cohere: 2, least: 10, thick: 0.03 }, recipe.bark || {}), rb = rng((recipe.seed || 1) + 123);
+    const wcell = 0.15, wgrid = new Map(), wkey = (x, y, z) => (Math.floor(x / wcell) + 512) * 1048576 + (Math.floor(y / wcell) + 512) * 1024 + Math.floor(z / wcell) + 512;
     for (const q of t.strands) if (!q.thread) for (let i = 0; i < q.K; i++) { const p = [q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i]], k = wkey(p[0], p[1], p[2]), b = wgrid.get(k); if (b) b.push(p); else wgrid.set(k, [p]); }
     // how far a place is outside the wood, taken softly so that the grooves between strands are bridged
-    const soft = 0.02, envelope = (x, y, z) => { let sum = 0; for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let c = -2; c <= 2; c++) { const g = wgrid.get(wkey(x + a * wcell, y + b * wcell, z + c * wcell)); if (!g) continue; for (const p of g) { const d = H(x - p[0], y - p[1], z - p[2]) - 0.95 * p[3]; if (d < 0.2) sum += Math.exp(-d / soft); } } return sum > 0 ? -soft * Math.log(sum) : 0.2; };
-    // a soft directionless unevenness, and the same thing used to tell one strip of bark from the next
+    const soft = 0.02, envelope = (x, y, z) => { let sum = 0; for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (let c = -1; c <= 1; c++) { const g = wgrid.get(wkey(x + a * wcell, y + b * wcell, z + c * wcell)); if (!g) continue; for (const p of g) { const d = H(x - p[0], y - p[1], z - p[2]) - 0.95 * p[3]; if (d < 0.12) sum += Math.exp(-d / soft); } } return sum > 0 ? -soft * Math.log(sum) : 0.2; };
     const hash3 = (i, j, k, n) => { let v = Math.imul(i, 374761393) ^ Math.imul(j, 668265263) ^ Math.imul(k, 1440662683) ^ Math.imul(n, 2246822519); v = Math.imul(v ^ (v >>> 13), 1274126177); return ((v ^ (v >>> 16)) >>> 0) / 4294967296; };
     const vnoise = (x, y, z, n) => { const i = Math.floor(x), j = Math.floor(y), k = Math.floor(z), u = x - i, v = y - j, w = z - k, su = u * u * (3 - 2 * u), sv = v * v * (3 - 2 * v), sw = w * w * (3 - 2 * w), L = (a, b, t) => a + (b - a) * t;
       return L(L(L(hash3(i, j, k, n), hash3(i + 1, j, k, n), su), L(hash3(i, j + 1, k, n), hash3(i + 1, j + 1, k, n), su), sv), L(L(hash3(i, j, k + 1, n), hash3(i + 1, j, k + 1, n), su), L(hash3(i, j + 1, k + 1, n), hash3(i + 1, j + 1, k + 1, n), su), sv), sw); };
-    // A sheet of bark: thin, flat-faced, of one thickness right up to where it stops, so its edge is a cliff.
-    // Its outline is erratic and its own: a few points of very unlike length with deep notches between them,
-    // joined by straight runs of edge, no two sheets alike. No fringe. Here and there along the edge it has
-    // peeled and stands off the wood with a gap under it.
-    const outlineOf = (A, B) => { const m = 4 + Math.floor(3 * rb()), V = [], turn = 0.5 * (rb() - 0.5), long = Math.floor(rb() * m); let th0 = rb() * 6.3;
-      for (let i = 0; i < m; i++) { const step = 6.283 / m, a1 = th0 + step * (i + 0.5 * (rb() - 0.5)), a2 = a1 + step * (0.3 + 0.4 * rb()), r1 = (0.75 + 0.45 * rb()) * (i === long ? 1.45 : 1), r2 = 0.42 + 0.3 * rb();   // a broad body, with points off it
-        for (const [a, r] of [[a1, r1], [a2, r2]]) { const x = A * r * Math.cos(a), y = B * r * Math.sin(a); V.push([x * Math.cos(turn) - y * Math.sin(turn), x * Math.sin(turn) + y * Math.cos(turn)]); } }
-      return V; };
-    const inside = (V, px, py) => { let d = 1e9, inn = false; for (let i = 0, j = V.length - 1; i < V.length; j = i++) { const a = V[j], b = V[i], ex = b[0] - a[0], ey = b[1] - a[1], wx = px - a[0], wy = py - a[1], q = Math.max(0, Math.min(1, (wx * ex + wy * ey) / (ex * ex + ey * ey))); d = Math.min(d, H(wx - ex * q, wy - ey * q)); if ((b[1] > py) !== (a[1] > py) && px < (a[0] - b[0]) * (py - b[1]) / (a[1] - b[1]) + b[0]) inn = !inn; } return inn ? d : -d; };
-    const sheet = (a, o, T, A, B, th) => {
-      const side = cross(T, o), V = outlineOf(A, B), R1 = Math.max(...V.map((v) => H(v[0], v[1]))) + 0.05, g0 = 0.02, n = Math.ceil(2 * R1 / g0) + 2, lo = a.map((v) => v - R1 - g0), E = new Float32Array(n * n * n).fill(0.2), C = [], reach = [], seed = 1 + Math.floor(rb() * 1e6), peel = th * (0.7 + 1.3 * rb());
-      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) { const x = lo[0] + i * g0, y = lo[1] + j * g0, z = lo[2] + k * g0, dx = x - a[0], dy = y - a[1], dz = z - a[2], pv = dx * o[0] + dy * o[1] + dz * o[2]; if (pv < -0.16 || pv > 0.22 || H(dx, dy, dz) > R1 + 0.03) continue;
-        const e = envelope(x, y, z); E[(i * n + j) * n + k] = e; if (Math.abs(e) < 0.06 && (i + j + k) % 2 === 0) { C.push([x, y, z]); reach.push(0.06 + th + peel); } }
-      if (C.length < 20) return null;
-      const f = (x, y, z) => { const dx = x - a[0], dy = y - a[1], dz = z - a[2], dl = H(dx, dy, dz); if (dl > R1) return Math.max(0.02, dl - R1);
-        const ps = dx * T[0] + dy * T[1] + dz * T[2], pu = dx * side[0] + dy * side[1] + dz * side[2], pv = dx * o[0] + dy * o[1] + dz * o[2]; let edge = Math.min(inside(V, ps, pu), pv + 0.12); if (edge < -0.03) return 0.03;
-        if (t.orb) edge = Math.min(edge, H(x - t.orb.c[0], y - t.orb.c[1], z - t.orb.c[2]) - t.orb.room * 1.4);
-        const fi = (x - lo[0]) / g0, fj = (y - lo[1]) / g0, fk = (z - lo[2]) / g0, i = Math.max(0, Math.min(n - 2, Math.floor(fi))), j = Math.max(0, Math.min(n - 2, Math.floor(fj))), k = Math.max(0, Math.min(n - 2, Math.floor(fk))), wi = fi - i, wj = fj - j, wk = fk - k, at3 = (ii, jj, kk) => E[(ii * n + jj) * n + kk];
-        const e = ((at3(i, j, k) * (1 - wk) + at3(i, j, k + 1) * wk) * (1 - wj) + (at3(i, j + 1, k) * (1 - wk) + at3(i, j + 1, k + 1) * wk) * wj) * (1 - wi) + ((at3(i + 1, j, k) * (1 - wk) + at3(i + 1, j, k + 1) * wk) * (1 - wj) + (at3(i + 1, j + 1, k) * (1 - wk) + at3(i + 1, j + 1, k + 1) * wk) * wj) * wi;
-        const near = sstep(0.07, 0, edge) * sstep(0.5, 0.62, vnoise(ps / 0.16, pu / 0.16, 0.5, seed)), up = peel * near;   // peeled in places along the edge
+    count.bark = 0; count.barkCells = 0; count.cells = 0;
+    if (BK) {
+      // the cells: points on the outside of the wood, none nearer another than a cell's width
+      const sp = BK.cell, P = [], sgrid = new Map(), skey = (x, y, z) => (Math.floor(x / sp) + 512) * 1048576 + (Math.floor(y / sp) + 512) * 1024 + Math.floor(z / sp) + 512, cand = [];
+      for (const q of t.strands) if (!q.thread) for (let i = q.root + 1; i < q.K - 1; i++) if (q.rho[i] > 0.02 && q.far[i] > 0.9 * q.rho[i]) { const sv = unit(cross(tan(q, i), q.O[i])); for (const e of [-0.8, 0, 0.8]) cand.push([0, 1, 2].map((c) => q.X[i * 3 + c] + (q.O[i][c] * 0.8 + sv[c] * e) * q.rho[i])); }   // across each strand as well as along it
+      for (let i = cand.length - 1; i > 0; i--) { const j = Math.floor(rb() * (i + 1)), x = cand[i]; cand[i] = cand[j]; cand[j] = x; }
+      const nearSeeds = (x, y, z, fn) => { const cx = Math.floor(x / sp), cy = Math.floor(y / sp), cz = Math.floor(z / sp); for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let c = -2; c <= 2; c++) { const g = sgrid.get((cx + a + 512) * 1048576 + (cy + b + 512) * 1024 + cz + c + 512); if (g) for (const i of g) fn(i); } };
+      for (const c of cand) { if (t.orb && H(c[0] - t.orb.c[0], c[1] - t.orb.c[1], c[2] - t.orb.c[2]) < t.orb.room * 1.25) continue; let ok = true; nearSeeds(c[0], c[1], c[2], (i) => { if (H(c[0] - P[i][0], c[1] - P[i][1], c[2] - P[i][2]) < sp) ok = false; }); if (!ok) continue; const k = skey(c[0], c[1], c[2]), g = sgrid.get(k); if (g) g.push(P.length); else sgrid.set(k, [P.length]); P.push(c); }
+      const N = P.length, nb = P.map((p, i) => { const out = []; nearSeeds(p[0], p[1], p[2], (j) => { if (j !== i && H(p[0] - P[j][0], p[1] - P[j][1], p[2] - P[j][2]) < 1.75 * sp) out.push(j); }); return out; });
+      // swathes
+      const on = new Uint8Array(N), tried = new Uint8Array(N); let lit = 0, swathes = 0;
+      for (let go = 0; go < 400 && lit < BK.cover * N; go++) {
+        const start = Math.floor(rb() * N); if (on[start] || tried[start] || nb[start].some((j) => on[j])) continue; tried[start] = 1;
+        const mine = [start], inIt = new Set(mine);
+        while (lit + mine.length < BK.cover * N && rb() < BK.percolate) { const front = new Map(); for (const i of mine) for (const j of nb[i]) if (!inIt.has(j) && !on[j]) front.set(j, (front.get(j) || 0) + 1); if (!front.size) break;
+          let total = 0; const w = []; for (const [j, c] of front) { const v = Math.pow(c, BK.cohere); w.push([j, v]); total += v; } let pick = rb() * total, chosen = w[0][0]; for (const [j, v] of w) { pick -= v; if (pick <= 0) { chosen = j; break; } } mine.push(chosen); inIt.add(chosen); }
+        if (mine.length < BK.least) continue;   // not worth having
+        for (const i of mine) on[i] = 1; lit += mine.length; swathes++; }
+      count.bark = swathes; count.barkCells = lit; count.cells = N;
+      // how far outside the wood, kept at the corners of a fine grid as they are asked for
+      const g0 = 0.02, memo = new Map(), Eat = (i, j, k) => { const key = (i + 512) * 1048576 + (j + 512) * 1024 + k + 512; let v = memo.get(key); if (v === undefined) { v = envelope(i * g0, j * g0, k * g0); memo.set(key, v); } return v; };
+      const th = BK.thick, peel = th * 1.4, seed = 1 + Math.floor(rb() * 1e6);
+      const f = (x, y, z) => { let d1 = 9, d0 = 9; nearSeeds(x, y, z, (i) => { const d = H(x - P[i][0], y - P[i][1], z - P[i][2]); if (on[i]) { if (d < d1) d1 = d; } else if (d < d0) d0 = d; });
+        if (d1 > 2 * sp) return 0.03; let edge = Math.min((d0 - d1) / 2, 1.3 * sp - d1); if (edge < -0.03) return 0.03;   // the boundary between a cell that is on and one that is off
+        if (t.orb) edge = Math.min(edge, H(x - t.orb.c[0], y - t.orb.c[1], z - t.orb.c[2]) - t.orb.room * 1.35);
+        const fi = x / g0, fj = y / g0, fk = z / g0, i = Math.floor(fi), j = Math.floor(fj), k = Math.floor(fk), wi = fi - i, wj = fj - j, wk = fk - k;
+        const e = ((Eat(i, j, k) * (1 - wk) + Eat(i, j, k + 1) * wk) * (1 - wj) + (Eat(i, j + 1, k) * (1 - wk) + Eat(i, j + 1, k + 1) * wk) * wj) * (1 - wi) + ((Eat(i + 1, j, k) * (1 - wk) + Eat(i + 1, j, k + 1) * wk) * (1 - wj) + (Eat(i + 1, j + 1, k) * (1 - wk) + Eat(i + 1, j + 1, k + 1) * wk) * wj) * wi;
+        const near = sstep(0.06, 0, edge) * sstep(0.52, 0.64, vnoise(x / 0.2, y / 0.2, z / 0.2, seed)), up = peel * near;   // peeled in places along the edge
         return Math.max(e - th - up, -0.035 + (0.035 + up * 0.85) * near - e, -edge * 0.9); };
-      return { f, C, reach, a, R0: R1, layer: 3 }; };
-    for (let tries = 0; barks.length < barkCount && tries < 120 && thick.length; tries++) {
-      const s = thick[Math.floor(rb() * thick.length)], k = s.root + 6 + Math.floor(rb() * Math.max(1, s.K - s.root - 14)), big = rb(), A = 0.14 + 0.3 * big * big + 0.06 * rb(), B = A * (0.4 + 0.45 * rb()), th = 0.028 + 0.01 * rb(); if (!outer(s, k)) continue;
-      const a = at(s, k), o = s.O[k]; if (t.orb && H(a[0] - t.orb.c[0], a[1] - t.orb.c[1], a[2] - t.orb.c[2]) < t.orb.room * 1.8) continue;
-      if (barks.some((b) => H(b.a[0] - a[0], b.a[1] - a[1], b.a[2] - a[2]) < 0.6 * (b.R0 + A))) continue;
-      let T = tan(s, k); const al = dot(T, o); T = unit(T.map((v, c) => v - o[c] * al));
-      const bp = sheet(a, o, T, A, B, th); if (bp) { barks.push(bp); all.push(bp); }
+      const C = [], reach = []; for (let i = 0; i < N; i++) if (on[i]) { C.push(P[i]); reach.push(sp * 1.1 + th + peel); }
+      if (C.length) all.push({ f, C, reach, layer: 3 });
     }
-    count.bark = barks.length;
     // which strands are near which place, so that only those are asked
     const cell = 0.12, grid = new Map(), key = (x, y, z) => (x + 64) * 16384 + (y + 64) * 128 + z + 64;
     all.forEach((s, i) => { const seen = new Set(); s.C.forEach((c, j) => { const m = s.reach[j] + 0.06;
@@ -173,5 +183,6 @@
     ['holding an orb', tree({ bare, seed: 3, strands: 12, uneven: 0.9, lmax: 0.9, settle: 60, trunk: [[0, 0.22, 0, 0.3], [0, 0.6, 0, 0.28], [0.1, 1.0, 0, 0.23], [0.3, 1.4, 0.1, 0.18], [0.55, 1.7, 0.2, 0.13]], limbs: [{ at: 0.6, share: 0.3, path: [[-0.3, 1.3, -0.1], [-0.6, 1.5, -0.1], [-0.8, 1.35, 0]] }], orb: { at: 0.27, r: 0.13, room: 0.4, off: 0.75, split: { at: 1.2 } } }), 0.0065],
     ['forked low', tree({ bare, seed: 4, strands: 10, twist: 0.3, trunk: [[0, 0.22, 0, 0.3], [-0.05, 0.6, 0, 0.28], [-0.2, 0.98, -0.05, 0.22], [-0.45, 1.35, -0.1, 0.17], [-0.5, 1.72, 0, 0.13]], limbs: [{ at: 0.3, share: 0.4, path: [[0.35, 0.9, 0.1], [0.55, 1.25, 0.2], [0.5, 1.6, 0.1]] }, { at: 0.62, share: 0.25, path: [[-0.6, 1.1, 0.25], [-0.85, 1.2, 0.35]] }] })],
   ];
+  window.Trees7 = { tree };   // later pages build on this
   window.Fantastic = { names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), measures: S.map((s) => s[1].measure), counts: S.map((s) => s[1].count), build: (i) => { const g = mesh(S[i][1], S[i][0], S[i][2] || 0.0095, 2.05), n = g.pos.length / 3; g.layer = new Uint8Array(n); for (let q = 0; q < n; q++) g.layer[q] = S[i][1].layerAt(g.pos[q * 3] - g.nrm[q * 3] * 0.004, g.pos[q * 3 + 1] - g.nrm[q * 3 + 1] * 0.004, g.pos[q * 3 + 2] - g.nrm[q * 3 + 2] * 0.004); return g; }, mesh, kit: Fantastic.kit };
 })();

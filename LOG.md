@@ -2042,3 +2042,46 @@ Wrong, or not there:
 - The orb shows through one opening from the front, not several.
 - Bark is back to a few narrow plates. Nothing ties the surface across
   strands except their running into each other.
+
+**A third layer: bark.** Proposed: core, then the secondary layer of
+"ribbons" which is not true bark, and now patches of actual bark on top,
+procedural, to break up the wiry look.
+
+Built in page 7's surface. A patch of bark is a stiff sheet over several
+strands at once. Under it the height of the wood is taken, the highest
+near by is kept (so the sheet spans the grooves between strands), and it
+is evened out, more along the grain. On that sheet:
+
+- An outline pointed at both ends with wandering sides, 0.4 to 0.8 long
+  and 0.2 to 0.4 wide.
+- Furrows along the grain, each on its own wandering line, splitting the
+  patch into two to six long plates. Each plate has its own thickness
+  (0.65 to 1.35 of the patch's) and is a little cupped, higher at its
+  edges.
+- One or two breaks on the slant (about 20 to 30 degrees to the grain),
+  across one or two plates only.
+- A direction: the back thins to nothing in the wood, the front lifts
+  clear by up to twice the bark's thickness with a gap under it. Nine in
+  ten face the tip.
+- Up to six patches a tree, apart from each other, none within about two
+  of an orb's room. The orb tree got three.
+
+Two builds. `sketch/page7-bark-first-slashes.png`: furrows cut through to
+the wood and read as claw slashes or gills, and patch edges were
+perforated where the sheet stopped in mid air. `sketch/page7.png`,
+`sketch/page7-bark-close.png`: furrows are grooves, deepest in the middle
+and going about two thirds through; at its edges the sheet turns down
+into the wood.
+
+What it does: a patch hides the strands under it and puts a different,
+broader rhythm there. Trunks with a patch or two no longer read as wire.
+
+Wrong, or not there:
+
+- Every patch is the same almond. Seen twice on one tree the shape is
+  recognised, the fault named earlier for the shell's diamond.
+- Edges are still perforated in places, and patches that land on a thin
+  limb break up into noise (worst on the one-limb tree's limb).
+- Furrows within a patch are near parallel and evenly spaced.
+- The orb tree is the least changed: three patches, and none near the
+  orb, which is where it is most wiry.

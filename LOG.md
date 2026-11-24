@@ -2126,3 +2126,45 @@ Wrong, or not there:
 - A sheet's edge is a soft fade into the wood. A sheet of tissue would
   have an edge: a lip, a tear.
 - The orb tree has three sheets and none near the orb.
+
+**Tortoise shells.** Said of the tissue sheets, with four photographs of
+thin pale bark coming off trunks: "It feels as though you're slapping
+tortoise shells on it. The bark patches need to feel shredded and torn at
+the edges." Kept as `sketch/page7-bark-tissue-shells-withdrawn.png`.
+
+Read off the photographs, as geometry: the bark is a thin flat sheet of
+one thickness right up to where it stops, so its edge is a cliff; its
+ends are torn along the grain into pointed tongues of unlike length while
+its sides run straighter; it has split open in long tears pointed at both
+ends, with the wood showing in them; at torn ends it stands off the wood;
+its face is nearly smooth.
+
+Rebuilt on that:
+
+- One thickness (0.026 to 0.034) to the edge. No fade.
+- Strips. Which strip a place belongs to depends only on where it lies
+  across the grain, and each strip ends where it happens to, each end
+  torn separately. So the two ends of a sheet are tongues.
+- On about half the strips, toward the torn end, the whole thickness
+  stands off the wood, with a gap under it.
+- Seven sheets in ten have one long tear along the grain.
+- The lumps are gone. A slight directionless unevenness is left (0.004).
+
+`sketch/page7.png`, `sketch/page7-bark-close.png`. Two to five sheets a
+tree.
+
+What it does: the sheets read as skin coming away in shreds, not as
+shells. Ends are fringed with tongues; some stand off.
+
+Wrong, or not there:
+
+- Over-shredded. The fringe is many thin spikes of similar size. The
+  photographs have fewer, broader tongues and long clean runs of edge
+  between them.
+- The edge does not read as a cliff. The tongues are so thin that their
+  thickness cannot be seen, and it looks like torn cloth or hide.
+- The sheets are large and smooth, and where one wraps a limb it hides
+  the strands entirely: the limb becomes a smooth sleeve.
+- The long tears cannot be found in the pictures.
+- The loop tree has a ragged hole where a sheet crosses the inside of
+  the loop.

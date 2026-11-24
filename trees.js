@@ -1,7 +1,8 @@
 // Trees, as strands with an inside. A tree is a fixed number of fat strands and nothing else. Each strand
 // begins as a root, goes up the trunk with the rest, leaves with some of them along a limb
 // or carries on to the top, and ends in a point. Where strands share a way they are a bundle; a fork is the
-// bundle parting. The trunk's and limbs' lines are given; where each strand lies is not. That is settled:
+// bundle parting. A limb may leave a limb, so the lines are a graph; they are given, or grown by sprout() at
+// the foot of this file. Where each strand lies is not given. That is settled:
 // every strand is anchored at the far end of its root and nowhere else, is pulled taut, resists bending, and
 // gives way to every other strand, to the ground, and to an orb if the tree holds one. Only the bundle as
 // a whole is kept on its line, and not where a limb leaves: a limb is held only along its far part. So
@@ -33,18 +34,30 @@
     const r = rng(P.seed), n = P.strands, ds = P.ds, trunk = line(P.trunk, ds), nT = trunk.length, R0 = trunk[0][3], rho0 = R0 * Math.sqrt(P.fill / n), turn = (i) => P.twist * TAU * i / nT;
     // every strand has a place in the bundle's section, and a girth of its own (mixed: most thin, a few heavy)
     const S = Array.from({ length: n }, (_, j) => { const d = Math.sqrt((j + 0.5) / n), a = j * GA + 0.5 * (r() - 0.5); return { a: d * Math.cos(a), b: d * Math.sin(a), fat: P.mixed ? 0.35 + 1.9 * Math.pow(r(), 2.5) : 1 + P.uneven * (r() - 0.5), limb: -1, give: r() < P.giving ? 1 : 0.25 * r() }; });
-    // limbs take their strands from the side of the bundle they leave on
-    const tf = frames(trunk), limbs = P.limbs.map((L) => ({ L, fi: Math.round(L.at * (nT - 1)) })).sort((x, y) => x.fi - y.fi);
-    for (const [li, lb] of limbs.entries()) {
-      const fi = lb.fi, ctrl = [trunk[Math.max(0, fi - 14)], trunk[fi], ...lb.L.path.map((p) => [p[0], p[1], p[2], 0])], all = line(ctrl, ds), skip = all.findIndex((p) => H(p[0] - trunk[fi][0], p[1] - trunk[fi][1], p[2] - trunk[fi][2]) < ds * 0.8);
-      const own = all.slice(Math.max(1, skip + 1)), count = Math.max(1, Math.round(lb.L.share * n)), Rl = trunk[fi][3] * Math.sqrt(count / n);
+    // Limbs. A limb leaves the trunk, or another limb (its own `limbs`), part way along it (`at`), and takes its
+    // strands (`share` of all, or `count`) from the side of the bundle it leaves on. So the tree is a graph: every
+    // strand goes from its root up the trunk, out along one limb after another, and ends on the last.
+    const tf = frames(trunk), limbs = [];
+    const lay = (Ls, parent) => { for (const L of Ls || []) {
+      const base = parent ? parent.path : trunk, from = parent ? parent.fi : 0, fi = Math.min(base.length - 2, Math.max(from + (parent ? 1 : 0), from + Math.round(L.at * (base.length - 1 - from))));
+      const ctrl = [base[Math.max(0, fi - 14)], base[fi], ...L.path.map((p) => [p[0], p[1], p[2], 0])], all = line(ctrl, ds), skip = all.findIndex((p) => H(p[0] - base[fi][0], p[1] - base[fi][1], p[2] - base[fi][2]) < ds * 0.8);
+      const own = all.slice(Math.max(1, skip + 1)), lb = { L, fi, parent, own, base, want: Math.max(1, L.count || Math.round(L.share * n)) };
+      lb.path = base.slice(0, fi + 1).concat(own); limbs.push(lb); lay(L.limbs, lb); } };
+    lay(P.limbs, null); limbs.sort((x, y) => x.fi - y.fi); limbs.forEach((lb, li) => (lb.i = li));
+    // how far round the bundle has wound by a step of the way out to a limb (li: -1 is the trunk)
+    const chain = (li) => { const c = []; for (let q = li >= 0 ? limbs[li] : null; q; q = q.parent) c.unshift(q); return c; };
+    const windAt = (li, i) => { const c = chain(li); let w = turn(i); for (let e = 0; e < c.length; e++) if (i > c[e].fi) w += P.wind * TAU * (Math.min(i, e + 1 < c.length ? c[e + 1].fi : Infinity) - c[e].fi) / (c[e].path.length - 1 - c[e].fi); return w; };
+    for (const lb of limbs) {
+      const fi = lb.fi, base = lb.base, own = lb.own, from = S.filter((q) => q.limb === (lb.parent ? lb.parent.i : -1)), count = Math.max(1, Math.min(lb.want, from.length - (lb.parent ? 1 : 0))), Rl = base[fi][3] * Math.sqrt(count / (lb.parent ? lb.parent.count : n));
       own.forEach((p, i) => (p[3] = Rl * (1 - 0.45 * i / own.length)));   // a limb keeps most of its girth to its end
-      const [, Nn, Bn] = tf[fi], d = unit([0, 1, 2].map((k) => own[Math.min(own.length - 1, 8)][k] - trunk[fi][k])), dn = dot(d, Nn), db = dot(d, Bn), c = Math.cos(turn(fi)), s = Math.sin(turn(fi));
-      S.filter((q) => q.limb < 0).sort((x, y) => ((y.a * c - y.b * s) * dn + (y.a * s + y.b * c) * db) - ((x.a * c - x.b * s) * dn + (x.a * s + x.b * c) * db)).slice(0, count).forEach((q) => (q.limb = li));
-      lb.path = trunk.slice(0, fi + 1).concat(own); lb.frames = frames(lb.path); lb.scale = trunk[fi][3] / R0;
+      const [, Nn, Bn] = (lb.parent ? lb.parent.frames : tf)[fi], d = unit([0, 1, 2].map((k) => own[Math.min(own.length - 1, 8)][k] - base[fi][k])), dn = dot(d, Nn), db = dot(d, Bn), wd = windAt(lb.parent ? lb.parent.i : -1, fi), c = Math.cos(wd), s = Math.sin(wd);
+      from.sort((x, y) => ((y.a * c - y.b * s) * dn + (y.a * s + y.b * c) * db) - ((x.a * c - x.b * s) * dn + (x.a * s + x.b * c) * db)).slice(0, count).forEach((q) => (q.limb = lb.i));
+      lb.count = count; lb.frames = frames(lb.path); lb.scale = lb.parent ? lb.parent.scale * (0.7 + 0.3 * base[fi][3] / base[lb.parent.fi + 1][3]) : trunk[fi][3] / R0;
     }
+    // whose stretch of the way a step is: the trunk's (-1), or that of the limb on the way out to limb li that has left by then
+    const ownerAt = (li, i) => { let q = li >= 0 ? limbs[li] : null; while (q && i <= q.fi) q = q.parent; return q ? q.i : -1; };
     // where a strand would lie if it had its bundle to itself: its place in the section of whoever shares its way there
-    const group = (s, i) => (s.limb >= 0 && i > limbs[s.limb].fi ? S.filter((q) => q.limb === s.limb) : S.filter((q) => q.limb < 0 || limbs[q.limb].fi >= i)), seen = new Map();
+    const group = (s, i) => { const ow = ownerAt(s.limb, i); return S.filter((q) => ownerAt(q.limb, i) === ow); }, seen = new Map();
     const place = (s, i) => { const g = group(s, i), k = g.map((q) => S.indexOf(q)).join(); let m = seen.get(k);
       if (!m) { const ca = g.reduce((v, q) => v + q.a, 0) / g.length, cb = g.reduce((v, q) => v + q.b, 0) / g.length; m = { ca, cb, ext: Math.max(1e-6, ...g.map((q) => H(q.a - ca, q.b - cb))) + 0.35 / Math.sqrt(g.length), n: g.length }; seen.set(k, m); }
       return [(s.a - m.ca) / m.ext, (s.b - m.cb) / m.ext, m.n]; };
@@ -53,11 +66,11 @@
       const first = s === S.find((q) => q.limb === s.limb), u1 = r(), u2 = r(), u3 = r(); s.snapped = !first && u1 < 0.6;   // some strands snap short of the end, and keep their girth to the break
       const end = path.length - 1 - (first ? 0 : Math.round(own * (s.snapped ? 0.25 + 0.4 * u2 : 0.3 * u2))), fine = 0.12 + 0.2 * u3, X = [], rho = [], goal = [], hold = [];
       for (let i = 0; i <= end; i++) {
-        const [u, v, m] = place(s, i), onLimb = fi >= 0 && i > fi, Rg = (onLimb ? path[i][3] : path[i][3] * Math.sqrt(m / n)) * 0.8, wind = turn(i) + (onLimb ? P.wind * TAU * (i - fi) / own : 0), c = Math.cos(wind), sn = Math.sin(wind), a = u * c - v * sn, b = u * sn + v * c, [, Nn, Bn] = fr[i];
+        const [u, v, m] = place(s, i), ow = ownerAt(s.limb, i), Rg = path[i][3] * Math.sqrt(m / (ow >= 0 ? limbs[ow].count : n)) * 0.8, wind = windAt(s.limb, i), c = Math.cos(wind), sn = Math.sin(wind), a = u * c - v * sn, b = u * sn + v * c, [, Nn, Bn] = fr[i];
         // (a limb's strands wind round each other as they go out)
         const tip = s.snapped ? 1 : Math.max(0.12, Math.pow(Math.min(1, (end - i) * ds / fine), 0.7));   // or it fines down to a point
         X.push([0, 1, 2].map((k) => path[i][k] + (Nn[k] * a + Bn[k] * b) * Rg)); goal.push(path[i].slice(0, 3)); hold.push(0);
-        rho.push(rho0 * s.fat * tip * (onLimb ? limbs[s.limb].scale * (0.7 + 0.3 * path[i][3] / path[fi + 1][3]) : path[i][3] / R0));
+        rho.push(rho0 * s.fat * tip * (ow >= 0 ? limbs[ow].scale * (0.7 + 0.3 * path[i][3] / path[limbs[ow].fi + 1][3]) : path[i][3] / R0));
       }
       // its root: the strand itself coming down from the foot of the trunk the way it faces there, heavy, and
       // most often going into the ground. A few stay on it and run out to a point.
@@ -87,10 +100,10 @@
     };
     // which strands pass each step of the trunk and of each limb together
     const stations = new Map();
-    S.forEach((s) => { for (let k = s.root; k < s.K; k++) { const i = k - s.root, key = (s.limbAt >= 0 && i > s.limbAt ? 'limb' + s.limb : 'trunk') + ':' + i; let st = stations.get(key); if (!st) { const onL = key[0] === 'l', lb = onL ? limbs[s.limb] : null;
+    S.forEach((s) => { for (let k = s.root; k < s.K; k++) { const i = k - s.root, ow = ownerAt(s.limb, i), key = (ow >= 0 ? 'limb' + ow : 'trunk') + ':' + i; let st = stations.get(key); if (!st) { const onL = ow >= 0, lb = onL ? limbs[ow] : null;
         // a limb is held to its line only along its far part: how it gets there from the trunk is its strands' business.
-        // And the trunk is let go where a limb leaves it, so the parting can pull it about.
-        const h = onL ? sstep(0.35, 0.8, (i - lb.fi) / (lb.path.length - 1 - lb.fi)) : limbs.reduce((v, q) => v * (1 - 0.9 * Math.exp(-(((i - q.fi) / 9) ** 2))), 1);
+        // And the trunk, or a limb, is let go where a limb leaves it, so the parting can pull it about.
+        const h = limbs.reduce((v, q) => (q.parent === lb ? v * (1 - 0.9 * Math.exp(-(((i - q.fi) / 9) ** 2))) : v), onL ? sstep(0.35, 0.8, (i - lb.fi) / (lb.path.length - 1 - lb.fi)) : 1);
         st = { goal: [s.goal[k * 3], s.goal[k * 3 + 1], s.goal[k * 3 + 2]], who: [], limb: onL, h }; stations.set(key, st); } st.who.push(s, k); (s.stn || (s.stn = []))[k] = st; } });
     const M = S.map((s) => new Float64Array(s.K * 3));
     S.forEach((s, i) => { s.parent = -1; s.fam = i; s.press = 0; s.on = new Uint8Array(s.K); });
@@ -222,6 +235,41 @@
     return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
   }
 
-  const api = { grow };
+  // The tree's lines, grown and not given. A shoot carries some of the tree's strands. It runs on, wandering and
+  // turning upward, for a length that goes with how many it carries. At intervals it forks: a share of what it
+  // still carries leaves to one side as a shoot of its own, toward whichever side is most open, and the rest
+  // is turned the other way by as much as it lost. A heavy shoot runs further between forks than a light one,
+  // and a shoot down to one strand cannot fork. Nothing else: one
+  // rule, and `share` is its main number (small: a leader with side shoots; a half: even forks and no leader).
+  // Returns { strands, trunk, limbs } for grow(), and what it made (shoots, tips, deepest).
+  function sprout(rule) {
+    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.14, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.11 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
+    const length = (c) => Q.reach * (Q.twig + Math.sqrt(c / n)), inside = (p) => Math.abs(p[0]) < 0.9 && Math.abs(p[2]) < 0.9 && p[1] < 1.9 && p[1] > 0.3, laid = [];   // every point of every shoot so far
+    const open = (p) => { let d = 9; for (const q of laid) d = Math.min(d, H(p[0] - q[0], p[1] - q[1], p[2] - q[2])); return d; };
+    let shoots = 0, tips = 0, deepest = 0;
+    const shoot = (p, d, c, len, depth, lead) => {
+      const pts = [], kids = [], phase = TAU * r(); const gap = () => Q.every * (0.4 + 2.2 * Math.sqrt(c / n)) * (0.7 + 0.6 * r());   // a heavy shoot runs further between forks than a light one
+      let gone = 0, next = lead ? Q.first * len : gap(), w = [0, 0, 0], turnN = 0; shoots++; deepest = Math.max(deepest, depth);
+      while (gone < len) {
+        w = w.map((v) => 0.6 * v + 0.4 * (2 * r() - 1)); const al = dot(w, d), lift = Q.up * (lead ? 0.4 : 1);
+        d = unit(d.map((v, k) => v + st * (Q.wander * 1.6 * (w[k] - d[k] * al) + lift * (UP[k] - v * d[1]))));
+        const q = p.map((v, k) => v + d[k] * st); if (!inside(q) && pts.length >= 2) break; p = q; gone += st; pts.push(p); laid.push(p);
+        if (c >= 2 && gone >= next && len - gone > 0.15) {
+          const k = Math.max(1, Math.min(c - 1, Math.round(Q.share * c * (0.7 + 0.6 * r())))), kl = length(k), th = Q.spread * (0.75 + 0.5 * r()), T = d, N = unit(cross(T, Math.abs(T[1]) < 0.9 ? UP : [1, 0, 0])), B = cross(T, N);
+          let best = null; for (let e = 0; e < 6; e++) { const ph = phase + turnN * GA + e * TAU / 6 + 0.5 * (r() - 0.5), side = N.map((v, j) => v * Math.cos(ph) + B[j] * Math.sin(ph)), dir = unit(T.map((v, j) => v * Math.cos(th) + side[j] * Math.sin(th))), probe = p.map((v, j) => v + dir[j] * kl * 0.6);
+            const score = (inside(probe) ? 0 : -1) + open(probe) + 0.15 * dir[1]; if (!best || score > best.score) best = { score, side, dir }; }
+          turnN++; const part = th * k / c; d = unit(T.map((v, j) => v * Math.cos(part) - best.side[j] * Math.sin(part)));
+          const kid = shoot(p, best.dir, k, kl, depth + 1, false); if (kid.path.length >= 2) { kid.s = gone; kid.count = k; kids.push(kid); c -= k; }
+          next = gone + gap();
+        }
+      }
+      tips++; return { path: pts, limbs: kids, total: gone };
+    };
+    const R0 = Q.foot, p0 = [0, 0.22, 0], d0 = unit([0.25 * (r() - 0.5), 1, 0.25 * (r() - 0.5)]), top = shoot(p0, d0, n, Q.tall, 0, true);
+    const tidy = (sh) => sh.limbs.map((k) => ({ at: Math.min(0.97, k.s / sh.total), count: k.count, path: k.path, limbs: tidy(k) }));
+    return { strands: n, trunk: [[p0[0], p0[1], p0[2], R0]].concat(top.path.map((p, i) => [p[0], p[1], p[2], R0 * (1 - 0.5 * (i + 1) / top.path.length)])), limbs: tidy(top), made: { shoots, tips, deepest } };
+  }
+
+  const api = { grow, sprout };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Trees = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

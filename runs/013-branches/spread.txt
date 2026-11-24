@@ -1,0 +1,6 @@
+spread 0.6, up 0.05: {"shoots":11,"tips":11,"deepest":3} overlap 0.16 pairs over 1/879
+spread 1.0: {"shoots":11,"tips":11,"deepest":3} overlap 0.17 pairs over 3/945
+spread 1.3: {"shoots":11,"tips":11,"deepest":3} overlap 0.18 pairs over 4/940
+spread 1.6: {"shoots":11,"tips":11,"deepest":3} overlap 0.18 pairs over 5/940
+spread 1.3, up 0.5: {"shoots":11,"tips":11,"deepest":3} overlap 0.21 pairs over 5/929
+spread 1.3, up -0.4: {"shoots":11,"tips":11,"deepest":3} overlap 0.17 pairs over 5/856

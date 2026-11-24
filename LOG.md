@@ -1729,3 +1729,69 @@ or lets it leave bare. Grip, meant to carry thin strands out with it,
 does not.
 
 Each manifold took about ten minutes on four cores.
+
+## The tree, with what the manifold found (`trees.js`, page 7)
+
+"Let's build the tree." The orb tree rebuilt on the manifold's result. The
+withdrawn roots-over-the-orb code and the girth-by-distance rule are
+removed from `trees.js`.
+
+Into the tree kernel:
+
+- Split. A strand pressed against the orb long enough divides lengthwise
+  over the pressed stretch into two of half the area, which part sideways
+  and rejoin beyond. Either may divide again, down to a least girth.
+- The orb grows, so that strands are pressed in turn.
+- A mixed population (option): about 40 strands, most thin, a few heavy,
+  as in the manifold, in place of 12 near-equal ones.
+- Stiffness by girth (option): a strand leaves the tree's line only
+  gradually, over a stretch rising with its girth squared.
+- A last clearing phase: strands only give way to each other and keep off
+  the orb, with nothing pulling them together.
+
+Three builds:
+
+1. `page7-orb-split-first-gourd.png` Split only, on the old 12 thick
+   strands round an orb nearly as wide as the trunk. A gourd: about 50
+   parallel bands in one layer, one slit, nothing crossing, nothing thin
+   over the face. The tree did not match the manifold's conditions.
+2. `page7-orb-split-buried.png` Mixed population, stiffness, a smaller
+   orb (0.13, room 0.18). The orb is gone from sight. Measured by rays from
+   its middle over its outer half: 4% open under 1.7 strands, at the
+   strands' own girth. Also found here: many thin strands among thick ones
+   overlapped (up to 434 of 2661 touching pairs by more than 15%), all at
+   the orb. More give-way steps a pass helped slowly; the clearing phase
+   removed them (0 of 1162).
+3. `page7-orb-split.png` The same with the orb placed further out.
+
+Why 2 was buried, worked out after seeing it: split conserves area, so
+two halves are together wider than the strand they came from (by root 2).
+Splitting makes cover, not openness. Openness comes from where the orb is,
+which the manifold never varied. Measured, the orb's outer face against
+its place (in girths from the trunk's line):
+
+  0.45  4% open, 1.7 strands deep
+  0.7   27% open, 1.0 deep, 23 strands over it, girths 0.012 to 0.031
+  0.8   48% open, 0.6 deep, 14 strands, 0.012 to 0.031
+  0.9   77% open, 8 strands
+  1.1   bare
+
+Control at 0.7 without split: 83% open, 5 strands over the face, girths
+up to 0.040. So split turns 5 strands over the face into 23 thin ones, and
+place sets how much shows. No heavy strand lies over the face at any
+setting: the heavy ones in its way have been divided.
+
+What 3 looks like: the orb glows through gaps between thin strands that
+part over it and rejoin above and below; heavier strands stand behind and
+beside; girths are mixed all the way up the trunk.
+
+Wrong, or not there:
+
+- Little crossing. The strands over the face fan side by side; few go
+  over one another. The manifold's crossings came with many more strands
+  pressed in layers.
+- The trunk above is a shaggy cone to one spike, and the roots are many
+  thin toes. The body approved earlier had 8 to 10 broad strands; this
+  one has 40, mostly thin, and it shows.
+- The other three trees are untouched and still on the old population.
+- One seed, one orb size. About 40 seconds to settle, a minute to mesh.

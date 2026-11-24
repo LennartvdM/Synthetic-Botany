@@ -89,5 +89,5 @@ $('which').addEventListener('change', arrange); $('cut').addEventListener('chang
 new ResizeObserver(fit).observe($('stage'));
 fit();
 (function next(i) { if (i >= Fantastic.names.length) { window.__ready = true; return; } addShape(i); arrange(); setTimeout(() => next(i + 1), 30); })(0);
-window.__cheats = { arrange, set: (i, cut, a, p, r) => { $('which').value = i; $('cut').value = cut || 'none'; arrange(); if (a != null) az = a; if (p != null) pol = p; if (r) rad = r; place(); } };
+window.__cheats = { arrange, set: (i, cut, a, p, r, ty) => { $('which').value = i; $('cut').value = cut || 'none'; arrange(); if (a != null) az = a; if (p != null) pol = p; if (r) rad = r; if (ty != null) target.y = ty; place(); } };
 </script>

@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 0.5, snake: 1, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 0.5, snake: 1, air: 0.05, reach: 0.6, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -85,23 +85,36 @@
         for (let m = 1; m <= Kr; m++) { const g = m / Kr, t = bend * g * g, dir = [away[0] * Math.cos(t) - away[2] * Math.sin(t), 0, away[0] * Math.sin(t) + away[2] * Math.cos(t)], rad = rho[0] * (dives ? 0.5 + 0.5 * (1 - g) : 0.2 + 0.8 * Math.pow(1 - g, 0.8));
           q = [q[0] + dir[0] * ds, p0[1] + (rad * 0.6 - p0[1]) * sstep(0, 0.8, g) - (dives ? 0.35 * sstep(0.6, 1, g) : 0), q[2] + dir[2] * ds]; rx.push(q); rr.push(rad); rg.push(q); }
       } else {
-        // On ground that is not level a root is not laid, it is walked. From the foot it goes the way its strand faces,
-        // one step at a time over the surface, and at each step takes, of three ways (on, a little left, a little
-        // right), the one that goes more downhill, lies more in a crease, and is further from the roots already
-        // there. It is kept at its own girth's height off the surface, so it goes over an edge and down a face and
-        // never through a corner or clear of the ground. Going down a face counts little toward its length, so one
-        // that goes over an edge runs on until it comes to a ledge. Most then go into the ground where they are.
-        // And it snakes: its heading swings from side to side as it goes, by a different amount and over a different
-        // length for every root and for every swing, so one root pulls in many directions along its run.
-        let pos = p0, h = away, prog = 0, ph = TAU * r(), wave = Math.max(0.24, rho[0] * (7 + 7 * r())), amp = P.snake * (0.4 + 0.5 * r());   // (a swing is several girths long: tighter than that a root runs into itself)
-         const c0 = G(p0[0], p0[1], p0[2]), most = Kr * 4;
-        for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = rho[0] * (dives ? 0.5 + 0.5 * (1 - g) : 0.2 + 0.8 * Math.pow(1 - g, 0.8)), nn = gradG(pos[0], pos[1], pos[2]);
+        // On ground a root is not laid, it is walked. From the foot it goes the way its strand faces, one step at a time
+        // over the surface, kept at its own girth's height off it, so it goes over an edge and down a face and never
+        // through a corner. Three things steer it.
+        //   It snakes. Its heading has a curl that drifts at random and carries on, so it winds, and may come right
+        //   round on itself; never tighter than a few of its own girths, and not across itself or another root.
+        //   At each step, of three ways (on, a little left, a little right) it takes the one more downhill, more in a
+        //   crease, and with more room.
+        //   It may let go. Where the ground falls away in front of it, and now and then anywhere, it tries leaving the
+        //   surface: out and a little up, sagging as it goes. If that comes down on ground again within reach it goes
+        //   that way, through the air, and takes hold where it lands. If it would not come down, it stays on the surface.
+        // Going down a face or through the air counts little toward its length, so a root that leaves the level it
+        // began on runs on until it has ground under it again. Most then go into the ground where they are.
+        let pos = p0, h = away, prog = 0, curl = 0, air = 0; const c0 = G(p0[0], p0[1], p0[2]), most = Kr * 6, kmax = ds / (3.2 * Math.max(0.03, rho[0])), spans = [];
+        const girth = (g) => rho[0] * (dives ? 0.3 + 0.7 * Math.pow(1 - g, 1.5) : 0.12 + 0.88 * Math.pow(1 - g, 1.5));   // slender soon: a root is heavy only where it leaves the foot
+        const room = (pr, own) => { let near = 0.22; for (const q of rootPts) near = Math.min(near, H(pr[0] - q[0], pr[1] - q[1], pr[2] - q[2])); for (let e = 0; e < own; e++) near = Math.min(near, H(pr[0] - rx[e][0], pr[1] - rx[e][1], pr[2] - rx[e][2])); return near; };
+        for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = girth(g), nn = gradG(pos[0], pos[1], pos[2]), want = c0 + (rad * 0.6 - c0) * sstep(0, 0.8, g) - (dives ? 0.35 * sstep(0.6, 1, g) : 0);
           let tt = h.map((v, k) => v - nn[k] * dot(h, nn)); const dn = UP.map((v, k) => -(v - nn[k] * nn[1])), dl = H(dn[0], dn[1], dn[2]); if (H(tt[0], tt[1], tt[2]) < 0.2) tt = dl > 1e-6 ? dn : cross(nn, [1, 0, 0]); tt = unit(tt);
-          { const sw = amp * (TAU * ds / wave) * Math.cos(ph), sd = cross(nn, tt); tt = unit(tt.map((v, k) => v * Math.cos(sw) + sd[k] * Math.sin(sw))); ph += TAU * ds / wave; if (ph > TAU) { ph -= TAU; wave = Math.max(0.24, rho[0] * (7 + 7 * r())); amp = P.snake * (0.4 + 0.5 * r()); } }
+          curl = Math.max(-kmax, Math.min(kmax, curl * 0.94 + P.snake * 0.35 * kmax * (2 * r() - 1))); { const sd = cross(nn, tt); tt = unit(tt.map((v, k) => v * Math.cos(curl) + sd[k] * Math.sin(curl))); }
           const side = cross(nn, tt); let best = null;
-          for (const a of [-0.3, 0, 0.3]) { const c = tt.map((v, k) => v * Math.cos(a) + side[k] * Math.sin(a)), pr = pos.map((v, k) => v + c[k] * 0.07); let near = 0.22; for (const q of rootPts) near = Math.min(near, H(pr[0] - q[0], pr[1] - q[1], pr[2] - q[2]));
-            const score = P.down * dot(c, dn) - P.crease * Math.min(1, Math.max(0, G(pr[0] + nn[0] * 0.07, pr[1] + nn[1] * 0.07, pr[2] + nn[2] * 0.07)) / 0.07) + 1.8 * near / 0.22 + (a === 0 ? 0.15 : 0) + 0.1 * r(); if (!best || score > best.score) best = { score, c }; }
-          h = best.c; const want = c0 + (rad * 0.6 - c0) * sstep(0, 0.8, g) - (dives ? 0.35 * sstep(0.6, 1, g) : 0); let nx = pos.map((v, k) => v + h[k] * ds);
+          for (const a of [-0.3, 0, 0.3]) { const c = tt.map((v, k) => v * Math.cos(a) + side[k] * Math.sin(a)), pr = pos.map((v, k) => v + c[k] * 0.07);
+            const score = P.down * dot(c, dn) - P.crease * Math.min(1, Math.max(0, G(pr[0] + nn[0] * 0.07, pr[1] + nn[1] * 0.07, pr[2] + nn[2] * 0.07)) / 0.07) + 1.8 * room(pr, rx.length - 12) / 0.22 + (a === 0 ? 0.15 : 0) + 0.1 * r(); if (!best || score > best.score) best = { score, c }; }
+          h = best.c; let nx = pos.map((v, k) => v + h[k] * ds);
+          // letting go: only once it is down on the surface and not yet going in
+          const falls = G(nx[0], nx[1], nx[2]) > want + 0.6 * ds, may = g > 0.25 && g < 0.6 && air < 2 && (falls || r() < P.air); let flew = false;
+          if (may) for (const lift of [0.5, 0.2, 0.9]) { const d = unit(h.map((v, k) => v + nn[k] * lift)), pts = []; let ok = false;
+            for (let t = ds; t < P.reach; t += ds) { const q = [pos[0] + d[0] * t, pos[1] + d[1] * t - 0.55 * t * t, pos[2] + d[2] * t], gq = G(q[0], q[1], q[2]); pts.push(q); if (t > 0.16 && gq <= rad * 0.6) { ok = true; break; } if ((t > 0.07 && gq < rad * 0.9 && t <= 0.16) || Math.abs(q[0]) > 1 || Math.abs(q[2]) > 1 || q[1] < -0.05) break; }
+            if (!ok || pts.length < 5 || room(pts[pts.length - 1], rx.length - 12) < 0.07) continue;
+            for (const q of pts) { rx.push(q); rr.push(girth(Math.min(1, prog / len))); rg.push(q); prog += ds * 0.3; } spans.push(pts.length); air++; flew = true;
+            const e = pts.length - 1; h = unit(pts[e].map((v, k) => v - pts[e - 1][k])); pos = pts[e]; break; }
+          if (flew) continue;
           for (let it = 0; it < 3; it++) { const gn = gradG(nx[0], nx[1], nx[2]), gv = G(nx[0], nx[1], nx[2]); nx = nx.map((v, k) => v + gn[k] * (want - gv)); }
           const steep = Math.abs(gradG(nx[0], nx[1], nx[2])[1]) < 0.6; prog += ds * (steep ? 0.3 : 1); pos = nx; rx.push(nx); rr.push(rad); rg.push(nx); }
         for (const q of rx) rootPts.push(q); Kr = rx.length;
@@ -123,7 +136,7 @@
         for (const i of mem) { if (i === lead) continue; const B = S[i], endB = B.K - 1 - B.root; let dv = 0; while (dv < Math.min(endL, endB) && ownerAt(L.limb, dv + 1) === ownerAt(B.limb, dv + 1)) dv++;
           const low = 2, top = Math.min(dv - 3, endL - 8, endB - 6); if (top <= low) continue; const m = low + Math.floor((top - low) * rd());
           // (the first carries the member's share up to a little past where it comes out, so the step down is hidden in the join)
-          for (let k = 0; k < Math.min(L.K, L.root + m + 4); k++) { const bi = k < L.root ? B.root : B.root + (k - L.root), fade = sstep(L.root + m + 4, L.root + m, k); add[k] += (B.rho[bi] * (k < L.root ? L.rho[k] / L.rho[L.root] : 1)) ** 2 * fade; }
+          for (let k = 0; k < Math.min(L.K, L.root + m + 4); k++) { const bi = k < L.root ? B.root : B.root + (k - L.root), fade = sstep(L.root + m + 4, L.root + m, k); add[k] += (B.rho[bi] * (k < L.root ? L.rho[k] / L.rho[L.root] * Math.pow(k / L.root, 1.5) : 1)) ** 2 * fade; }   // (out along the root the member's share dwindles: the root is a buttress at the foot and slender beyond)
           cuts.push([i, lead, m]); }
         for (let k = 0; k < L.K; k++) L.rho[k] = Math.sqrt(L.rho[k] ** 2 + add[k]); }
       for (const [i, lead, m] of cuts) { const B = S[i], k0 = B.root + m; B.X = B.X.slice(k0 * 3); B.goal = B.goal.slice(k0 * 3); B.rho = B.rho.slice(k0); B.hold = new Float64Array(B.K - k0); B.K -= k0; B.base = m; B.root = 0; B.stem = lead; B.po = S[lead].root + m; }

@@ -2847,3 +2847,52 @@ Wrong, or not there:
 - Where the tree stands is chosen by hand.
 - Roots still cross where two come down the same face; and one tree on
   level ground has a patch of crumbs where two roots run together.
+
+## Roots: slender, winding, and able to let go
+
+Said of page 11 (`sketch/page11-thick-roots-withdrawn.png`): some of the
+roots are way too thick. "And they genuinely have to snake, unlike
+branches roots can wind back on themselves, or take a detour through the
+air as long as they reach back to something to grip."
+
+Three changes to how a root is walked.
+
+- Slender. A root is heavy only where it leaves the foot. Its girth falls
+  off sooner along its length, and the share it carries for the strands
+  that divided off it (run 017) dwindles along it too, where before the
+  whole root was as heavy as the family. The buttress is at the foot.
+- Winding. In place of a swing from side to side about one line, the
+  heading has a curl that drifts at random and carries on. So a root
+  winds, and can come right round on itself. It never turns tighter than
+  about three of its own girths, and it keeps clear of its own earlier run
+  as well as of other roots.
+- Letting go. Where the ground falls away in front of it, and now and then
+  anywhere (`air`, 0.05 a step), a root tries leaving the surface: out and
+  a little up, sagging as it goes. If that comes down on ground again
+  within reach (0.6) it goes that way, through the air, and takes hold
+  where it lands. If it would not come down it stays on the surface. At
+  most twice a root, and only in the middle of its run.
+
+Predicted: thin crawling roots with loops; an arch off the boulder and off
+the cliff's lip; and roots through the air looking like wires if they are
+left straight.
+
+`sketch/page11.png`, `-other-side`, `-from-above`; level ground,
+`sketch/page9.png` and `-foot`.
+- The roots are a third of the thickness they were past the foot.
+- On the boulder one root leaves the stone and comes down to the ground
+  through the air, and another goes round the stone's shoulder. In the
+  cleft one coils right round. At the cliff one goes round the loose stone
+  on the ledge.
+- The arches sag, so they do not read as wires.
+- On level ground the roots are long and slender but wind least: there is
+  no slope, crease or stone to turn them, only the drifting curl.
+
+Wrong, or not there:
+- They are smooth and even, and with the taper they read as much like
+  tentacles as like roots. Nothing of the wood's flat-faced pieces shows
+  at this girth.
+- Still one line each: no forking.
+- Letting go is tried a little way ahead only. Nothing looks for the far
+  side of a wide gap.
+- The trunk still does not answer the ground.

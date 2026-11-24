@@ -92,9 +92,9 @@
       }
     }
     // where a strand is on the outside of the wood, and off the ground
-    const outer = (s, k) => k > s.root + 4 && k < s.K - 3 && s.far[k] > 1.1 * s.rho[k] && s.rho[k] > 0.03 && !wounds.some((v) => H(s.X[k * 3] - v.c[0], s.X[k * 3 + 1] - v.c[1], s.X[k * 3 + 2] - v.c[2]) < 2 * v.r);
+    const rhoTop = Math.max(...t.strands.map((q) => Math.max(...q.rho))), outer = (s, k) => k > s.root + 4 && k < s.K - 3 && s.far[k] > 1.1 * s.rho[k] && s.rho[k] > Math.min(0.03, 0.4 * rhoTop) && !wounds.some((v) => H(s.X[k * 3] - v.c[0], s.X[k * 3 + 1] - v.c[1], s.X[k * 3 + 2] - v.c[2]) < 2 * v.r);
     const stretch = (s, len) => { for (let go = 0; go < 6; go++) { const k0 = s.root + 4 + Math.floor(r() * Math.max(1, s.K - s.root - len - 8)), k1 = k0 + len; if (k1 < s.K - 2 && outer(s, k0) && outer(s, k1) && outer(s, (k0 + k1) >> 1)) return [k0, k1]; } return null; };
-    const thick = t.strands.filter((q) => !q.vine && !(q.inner && q.inner.some((v) => v)) && Math.max(...q.rho) > 0.045);
+    const thick = t.strands.filter((q) => !q.vine && !(q.inner && q.inner.some((v) => v)) && Math.max(...q.rho) > Math.min(0.045, 0.6 * rhoTop));   // (thick: for a small tree, by its own measure)
     if (!recipe.bare) for (const s of thick) for (let j = 0; j < 2; j++) {   // slivers
       const u = r(), len = 10 + Math.floor(18 * r()), side = (r() < 0.5 ? -1 : 1) * (0.25 + 0.5 * r()), lift = 0.3 + 0.7 * r(), wide = 0.3 + 0.25 * r(), high = 0.3 + 0.2 * r(), sd = 1 + Math.floor(r() * 1e6), rd = 0.8 * (r() - 0.5), eL = 0.1 + 0.6 * r(), eR = 0.1 + 0.6 * r(), st = u < 0.6 ? stretch(s, len) : null; if (!st) continue;
       const C = [], O = [], W = [], Hh = [], D = [];
@@ -131,7 +131,7 @@
       count.dropped++;
     };
     const want = recipe.bare ? 0 : recipe.plates === undefined ? 16 : recipe.plates, splitAt = [Math.floor(want * r()), Math.floor(want * r())];
-    for (let j = 0; j < want; j++) {
+    for (let j = 0; j < want && thick.length; j++) {
       const s = thick[Math.floor(r() * thick.length)], len = 12 + Math.floor(18 * r()), forward = r() < 0.9, side = 0.7 * (r() - 0.5), wide = 0.95 + 0.6 * r(), high = 0.2 + 0.1 * r(), e = r(), rd = 0.6 * (r() - 0.5), eL = 0.5 + 0.4 * r(), eR = 0.5 + 0.4 * r(), sd = 1 + Math.floor(r() * 1e6), u1 = r(), u2 = r(), u3 = r(), u4 = r(), st = stretch(s, len), split = splitAt.includes(j);
       if (!st) { count.dropped++; continue; }
       plate(s, st[0], st[1], forward, side, wide, high, split ? 'blunt' : e < 0.7 ? 'point' : 'blunt', { ridge: rd, eL, eR, split: split ? { fromEnd: true, s0: 0.42 + 0.2 * u1, s1: 1.001, u: 0.4 * (u2 - 0.5), wide: 0.2 + 0.12 * u3, lift: 0.5 + 0.5 * u4, depth: 9 } : null }, sd);
@@ -236,8 +236,9 @@
       if (C.length) { all.push({ f, C, reach, layer: 3 }); index(all.length - 1); }
     }
     // which layer the surface belongs to at a place: that of whichever piece is nearest there
-    const o = t.orb, f = (x, y, z) => solid(x, y, z);
-    f.layerAt = (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); let d = 9, l = 0; if (b) for (const i of b) { const v = all[i].f(x, y, z); if (v < d) { d = v; l = all[i].layer || 0; } } return l; };
+    // the ground the tree was given, if any, is part of what is shown: its own layer, and no part of the wood
+    const o = t.orb, gr = recipe.ground && !recipe.ground.level ? recipe.ground : null, f = gr ? (x, y, z) => Math.min(solid(x, y, z), gr(x, y, z)) : (x, y, z) => solid(x, y, z);
+    f.layerAt = (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); let d = 9, l = 0; if (b) for (const i of b) { const v = all[i].f(x, y, z); if (v < d) { d = v; l = all[i].layer || 0; } } if (gr && gr(x, y, z) < d) l = 5; return l; };
     f.orb = o && !o.empty ? o : null; f.marks = wounds; f.measure = t.measure; f.count = count; return f;
   }
   // the same four trees. bare: bands only, so the body can be judged by itself.

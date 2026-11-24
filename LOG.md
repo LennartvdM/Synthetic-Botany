@@ -2772,3 +2772,78 @@ enough to run into their neighbours, and now the neighbours are already
 in each other, so the grooves between strands close up and near-coincident
 faces show as marbling. The strands are there; the relief that showed
 them is not. Not mended: the drawn width needs to know about the overlap.
+
+## Run 019: ground that is not level
+
+Said: the heaviest tree's smooth trunk is something to avoid building, not
+to mend. Next, trees on highly uneven ground: boulders, ravines, cliffs,
+hills. The roots have to sell that the tree always belonged there and was
+not dropped. "The asset clearly being built separate from the place that
+asset will have to live in" is the thing to get away from.
+
+What the ground is. Any function of a place that says how far outside the
+ground it is. It is given: it is the place, not an organism. The test
+ground here is tilted planes and a few faceted stones (`sketch/page11.js`),
+throwaway.
+
+What the tree does about it, each one rule:
+- It stands at a `site` on the ground, and starts a little out of the
+  slope.
+- Its shoots keep off rock: "most open side" now counts rock as well as
+  other shoots, and no shoot grows within reach of the ground.
+- Every strand, trunk and limb as well as root, is pushed out of the
+  ground while the tree settles.
+- A root is not laid, it is walked. From the foot it goes the way its
+  strand faces, a step at a time over the surface, taking at each step, of
+  three ways, the one more downhill, more in a crease, and further from
+  the roots already there. It is kept its own girth's height off the
+  surface, so it goes over an edge and down a face and never through a
+  corner or clear of the ground. Going down a face counts little toward
+  its length, so a root that goes over an edge runs on until it comes to a
+  ledge. Most then go into the ground where they are.
+- A root faces away from the ground it lies on, whatever way that is.
+
+Four sites: on a slope, at a cliff edge, on a boulder, in a cleft between
+two stones.
+
+Predicted: roots hug the stone and run down the cliff; on the edge the
+roots inland stay short and those over the lip run long; roots wrapping a
+boulder cross each other at its foot; a root crossing a sharp lip cuts
+the corner; and the tree still looks placed if its foot does not answer.
+
+First (`sketch/page11-straight-roots-withdrawn.png`): the first two held
+at once. One root went over the lip and down the face to the ledge; roots
+poured down the boulder to the ground. No corner was cut. (The cleft's two
+stones had no gap between them and buried the tree; moved apart.)
+
+Said then: "Roots are far more crawly snaking and winding because they
+lend their strength varied directions in which a single root run."
+So a root snakes: its heading swings from side to side as it goes, by a
+different amount and over a different length for every root and every
+swing. First try (`sketch/page11-snaking-too-tight.png`): swings 0.16 to
+0.38 long on roots 0.1 thick. They ran into themselves and each other and
+came out as lumps and crumbs. A swing is now seven to fourteen girths
+long, roots keep further apart, and they are longer.
+
+Now (`sketch/page11.png`, `-other-side`, `-from-above`): on the slope the
+roots wind out over it; at the edge two go over the lip and one curls
+onto the ledge at the bottom; on the boulder they come down its faces and
+one runs on over the ground; in the cleft they come out of both ends
+along the ground. Grown trees on level ground have walked roots too
+(`sketch/page9.png`, `-foot`): the foot is winding roots where it was
+short legs.
+
+Wrong, or not there:
+- The trunk does not answer the ground. It starts a little out of the
+  slope and that is all: no sweep at the base, no lean away from a wall it
+  stands against. In the cleft it simply stands between the stones.
+- Roots do not fork. A root is one line from foot to end.
+- Nothing crosses a gap. A root that meets a ravine goes down its wall.
+- Every root is as likely to go uphill as down at the start: they leave
+  the way their strands face. A tree on an edge does not put more root to
+  the side that has to hold it.
+- The ground does not answer the tree. Nothing is lifted, cracked or
+  heaped against a root.
+- Where the tree stands is chosen by hand.
+- Roots still cross where two come down the same face; and one tree on
+  level ground has a patch of crumbs where two roots run together.

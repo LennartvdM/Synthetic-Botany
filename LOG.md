@@ -2434,3 +2434,65 @@ Wrong, or not there:
   even-forked tree (29 pairs over 0.15), 0.34 on the widest. The crowded
   crown is where; not looked into.
 - `up` does little: shoots are too short for turning to tell.
+
+## Run 014: elbows
+
+Said of page 9: the trees are disturbing, tense and stressed, because a
+branch can only bend slightly toward where it is going. Real trees relax
+by making stronger corners (`sketch/page9-tense-withdrawn.png`).
+
+Why the old branches were tense, in this model's own terms: every strand
+was pulled taut and stiff about a straight line, anchored at its root, and
+a limb was held to its line only along its far part. So the near part of
+every limb was a string drawn tight between two fixings, and any turn was
+spread evenly along the whole length. That is how a cable or a tendon
+hangs. And the lines themselves were grown by drifting a little at every
+step.
+
+Why wood corners, as far as I understand it, and what was taken from it:
+- Wood sets. Only the tip grows longer; what is behind it has hardened in
+  the shape it had. A change of direction is recorded where the tip was
+  when it happened, and is never shared out along the branch afterwards.
+- Growth is in bouts. A shoot runs straight for a season, and then often
+  it is not the same tip that goes on: the tip is lost, or flowers, or is
+  shaded, and a side bud takes over at an angle.
+So a branch is straight runs joined by corners.
+
+Two changes, both abstract:
+- `sprout` grows a shoot in bouts: straight for a stretch, then a corner
+  (`kink`: how sharp, 0.7 as set), choosing at each corner the way that is
+  more open and more upward. A heavy shoot runs further between corners
+  and turns less at each.
+- `grow` has `set` (0.8 for grown trees, 0 for page 7's, which come out
+  unchanged): a strand is taut and stiff about its line, corners and all,
+  and not about a straight one. What is pulled smooth is how far it lies
+  from its line. A limb is held to its line from near where it leaves.
+
+Predicted: runs joined by corners where there were whips; inner strands
+folding or overlapping at the trunk's corners; and limbs looking set on
+again where they leave, since their strands now follow the line from the
+fork.
+
+`runs/014-elbows/kink.png`, bare strands, one seed: as before; corners in
+the lines but strands still taut; corners 0.4, 0.7, 1.1 with the wood
+set; and a second seed.
+- Corners with taut strands is nearly as tense as before: tension rounds
+  every corner off. It is `set` that keeps them. Both changes are needed.
+- No folding at the trunk; worst overlap 0.11 to 0.18, no higher than
+  without corners. A heavy shoot turning less at each corner is probably
+  why.
+- Forks still read as strands parting.
+So the first prediction held and the other two did not.
+
+With the wood (`sketch/page9.png`, `-layers`, `-other-side`): crooked
+boughs with elbows. The fourth tree is now corners at 1.1 in place of
+shoots leaving wide.
+
+Not there:
+- A corner has no cause yet. In a tree most corners are where a leader
+  was lost and a side shoot took over, and the stub of the lost leader is
+  the knot. So corners and knots are one event, and the place to put a
+  snapped shoot is at a corner. Not built.
+- Roots are set in the shape they were first laid in, and have knuckles
+  where they dive.
+- Shoot ends are still long smooth points.

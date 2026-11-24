@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     const r = rng(P.seed), n = P.strands, ds = P.ds, trunk = line(P.trunk, ds), nT = trunk.length, R0 = trunk[0][3], rho0 = R0 * Math.sqrt(P.fill / n), turn = (i) => P.twist * TAU * i / nT;
     // every strand has a place in the bundle's section, and a girth of its own (mixed: most thin, a few heavy)
     const S = Array.from({ length: n }, (_, j) => { const d = Math.sqrt((j + 0.5) / n), a = j * GA + 0.5 * (r() - 0.5); return { a: d * Math.cos(a), b: d * Math.sin(a), fat: P.mixed ? 0.35 + 1.9 * Math.pow(r(), 2.5) : 1 + P.uneven * (r() - 0.5), limb: -1, give: r() < P.giving ? 1 : 0.25 * r() }; });
@@ -103,7 +103,7 @@
     S.forEach((s) => { for (let k = s.root; k < s.K; k++) { const i = k - s.root, ow = ownerAt(s.limb, i), key = (ow >= 0 ? 'limb' + ow : 'trunk') + ':' + i; let st = stations.get(key); if (!st) { const onL = ow >= 0, lb = onL ? limbs[ow] : null;
         // a limb is held to its line only along its far part: how it gets there from the trunk is its strands' business.
         // And the trunk, or a limb, is let go where a limb leaves it, so the parting can pull it about.
-        const h = limbs.reduce((v, q) => (q.parent === lb ? v * (1 - 0.9 * Math.exp(-(((i - q.fi) / 9) ** 2))) : v), onL ? sstep(0.35, 0.8, (i - lb.fi) / (lb.path.length - 1 - lb.fi)) : 1);
+        const h = limbs.reduce((v, q) => (q.parent === lb ? v * (1 - 0.9 * Math.exp(-(((i - q.fi) / 9) ** 2))) : v), onL ? sstep(P.set ? 0.05 : 0.35, P.set ? 0.3 : 0.8, (i - lb.fi) / (lb.path.length - 1 - lb.fi)) : 1);
         st = { goal: [s.goal[k * 3], s.goal[k * 3 + 1], s.goal[k * 3 + 2]], who: [], limb: onL, h }; stations.set(key, st); } st.who.push(s, k); (s.stn || (s.stn = []))[k] = st; } });
     const M = S.map((s) => new Float64Array(s.K * 3));
     S.forEach((s, i) => { s.parent = -1; s.fam = i; s.press = 0; s.on = new Uint8Array(s.K); });
@@ -132,8 +132,11 @@
     for (let pass = 0; pass < P.passes; pass++) {
       const grown = orb ? (SP ? Math.min(1, pass / (P.passes * 0.6)) : 1) : 0;   // an orb that splits what holds it grows; otherwise it is simply there
       S.forEach((s, i) => { const X = s.X, m = M[i], K = s.K; m.fill(0);   // taut, stiff, and kept to its bundle's line
-        for (let k = 0; k < K; k++) for (let q = 0; q < 3; q++) { const p = X[k * 3 + q]; let v = s.hold[k] * (s.goal[k * 3 + q] - p);
-          if (k > 1 && k < K - 2) { const a = X[(k - 2) * 3 + q], b = X[(k - 1) * 3 + q], d = X[(k + 1) * 3 + q], e = X[(k + 2) * 3 + q]; v += P.taut * ((b + d) / 2 - p) - s.bend * (a - 4 * b + 6 * p - 4 * d + e); } m[k * 3 + q] = v; }
+        // set: wood keeps the shape it grew in. A strand is then taut and stiff about its line, corners and all, and not
+        // about a straight one: what is pulled smooth is how far it lies from its line, so a corner in the line stays a corner.
+        const G = s.goal, w = s.child ? 0 : P.set;
+        for (let k = 0; k < K; k++) for (let q = 0; q < 3; q++) { const p = X[k * 3 + q]; let v = s.hold[k] * (G[k * 3 + q] - p);
+          if (k > 1 && k < K - 2) { const a = X[(k - 2) * 3 + q] - w * G[(k - 2) * 3 + q], b = X[(k - 1) * 3 + q] - w * G[(k - 1) * 3 + q], c = p - w * G[k * 3 + q], d = X[(k + 1) * 3 + q] - w * G[(k + 1) * 3 + q], e = X[(k + 2) * 3 + q] - w * G[(k + 2) * 3 + q]; v += P.taut * ((b + d) / 2 - c) - s.bend * (a - 4 * b + 6 * c - 4 * d + e); } m[k * 3 + q] = v; }
         for (let q = 0; q < K * 3; q++) X[q] += m[q]; });
       // stiffness by girth (lmax): a strand leaves the tree's line only gradually, over a stretch that rises with
       // its girth squared. A heavy strand pushed aside is pushed aside over a long way; a fine one just there.
@@ -235,39 +238,46 @@
     return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
   }
 
-  // The tree's lines, grown and not given. A shoot carries some of the tree's strands. It runs on, wandering and
-  // turning upward, for a length that goes with how many it carries. At intervals it forks: a share of what it
+  // The tree's lines, grown and not given. A shoot carries some of the tree's strands. It grows in bouts: it runs
+  // straight for a stretch, then turns a corner (`kink`: how sharp) and runs straight again, choosing at each
+  // corner the way that is more open and more upward. Its length goes with how many strands it carries. At intervals it forks: a share of what it
   // still carries leaves to one side as a shoot of its own, toward whichever side is most open, and the rest
   // is turned the other way by as much as it lost. A heavy shoot runs further between forks than a light one,
   // and a shoot down to one strand cannot fork. Nothing else: one
   // rule, and `share` is its main number (small: a leader with side shoots; a half: even forks and no leader).
   // Returns { strands, trunk, limbs } for grow(), and what it made (shoots, tips, deepest).
   function sprout(rule) {
-    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.14, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.11 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
+    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
     const length = (c) => Q.reach * (Q.twig + Math.sqrt(c / n)), inside = (p) => Math.abs(p[0]) < 0.9 && Math.abs(p[2]) < 0.9 && p[1] < 1.9 && p[1] > 0.3, laid = [];   // every point of every shoot so far
     const open = (p) => { let d = 9; for (const q of laid) d = Math.min(d, H(p[0] - q[0], p[1] - q[1], p[2] - q[2])); return d; };
     let shoots = 0, tips = 0, deepest = 0;
     const shoot = (p, d, c, len, depth, lead) => {
       const pts = [], kids = [], phase = TAU * r(); const gap = () => Q.every * (0.4 + 2.2 * Math.sqrt(c / n)) * (0.7 + 0.6 * r());   // a heavy shoot runs further between forks than a light one
-      let gone = 0, next = lead ? Q.first * len : gap(), w = [0, 0, 0], turnN = 0; shoots++; deepest = Math.max(deepest, depth);
+      const bout = () => Q.bout * (0.5 + 1.1 * Math.sqrt(c / n)) * (0.6 + 0.8 * r()), bend = () => Q.kink * (0.6 + 0.8 * r()) * (1 - 0.6 * Math.sqrt(c / n));   // a heavy shoot runs further between corners and turns less at each
+      let gone = 0, next = lead ? Q.first * len : gap(), w = [0, 0, 0], turnN = 0, node = Q.kink ? bout() : 0; shoots++; deepest = Math.max(deepest, depth);
       while (gone < len) {
         w = w.map((v) => 0.6 * v + 0.4 * (2 * r() - 1)); const al = dot(w, d), lift = Q.up * (lead ? 0.4 : 1);
-        d = unit(d.map((v, k) => v + st * (Q.wander * 1.6 * (w[k] - d[k] * al) + lift * (UP[k] - v * d[1]))));
+        d = unit(d.map((v, k) => v + st * (Q.wander * (Q.kink ? 0.25 : 1.6) * (w[k] - d[k] * al) + (Q.kink ? 0 : lift) * (UP[k] - v * d[1]))));
         const q = p.map((v, k) => v + d[k] * st); if (!inside(q) && pts.length >= 2) break; p = q; gone += st; pts.push(p); laid.push(p);
-        if (c >= 2 && gone >= next && len - gone > 0.15) {
+        if (c >= 2 && gone >= next && gone >= node && len - gone > 0.15) {
           const k = Math.max(1, Math.min(c - 1, Math.round(Q.share * c * (0.7 + 0.6 * r())))), kl = length(k), th = Q.spread * (0.75 + 0.5 * r()), T = d, N = unit(cross(T, Math.abs(T[1]) < 0.9 ? UP : [1, 0, 0])), B = cross(T, N);
           let best = null; for (let e = 0; e < 6; e++) { const ph = phase + turnN * GA + e * TAU / 6 + 0.5 * (r() - 0.5), side = N.map((v, j) => v * Math.cos(ph) + B[j] * Math.sin(ph)), dir = unit(T.map((v, j) => v * Math.cos(th) + side[j] * Math.sin(th))), probe = p.map((v, j) => v + dir[j] * kl * 0.6);
             const score = (inside(probe) ? 0 : -1) + open(probe) + 0.15 * dir[1]; if (!best || score > best.score) best = { score, side, dir }; }
-          turnN++; const part = th * k / c; d = unit(T.map((v, j) => v * Math.cos(part) - best.side[j] * Math.sin(part)));
+          turnN++; const part = Math.max(th * k / c, Q.kink ? 0.6 * bend() : 0); d = unit(T.map((v, j) => v * Math.cos(part) - best.side[j] * Math.sin(part)));
           const kid = shoot(p, best.dir, k, kl, depth + 1, false); if (kid.path.length >= 2) { kid.s = gone; kid.count = k; kids.push(kid); c -= k; }
-          next = gone + gap();
+          next = gone + gap(); if (Q.kink) node = gone + bout();
+        } else if (Q.kink && gone >= node && len - gone > 0.1) {   // a corner: the shoot goes on a new way
+          const a = bend(), T = d, N = unit(cross(T, Math.abs(T[1]) < 0.9 ? UP : [1, 0, 0])), B = cross(T, N), ph0 = TAU * r(); let best = null;
+          for (let e = 0; e < 6; e++) { const ph = ph0 + e * TAU / 6, side = N.map((v, j) => v * Math.cos(ph) + B[j] * Math.sin(ph)), dir = unit(T.map((v, j) => v * Math.cos(a) + side[j] * Math.sin(a))), probe = p.map((v, j) => v + dir[j] * Math.min(0.3, len - gone));
+            const score = (inside(probe) ? 0 : -1) + 0.5 * Math.min(0.4, open(probe)) + 0.5 * lift * dir[1] + 0.25 * r(); if (!best || score > best.score) best = { score, dir }; }
+          d = best.dir; node = gone + bout();
         }
       }
       tips++; return { path: pts, limbs: kids, total: gone };
     };
     const R0 = Q.foot, p0 = [0, 0.22, 0], d0 = unit([0.25 * (r() - 0.5), 1, 0.25 * (r() - 0.5)]), top = shoot(p0, d0, n, Q.tall, 0, true);
     const tidy = (sh) => sh.limbs.map((k) => ({ at: Math.min(0.97, k.s / sh.total), count: k.count, path: k.path, limbs: tidy(k) }));
-    return { strands: n, trunk: [[p0[0], p0[1], p0[2], R0]].concat(top.path.map((p, i) => [p[0], p[1], p[2], R0 * (1 - 0.5 * (i + 1) / top.path.length)])), limbs: tidy(top), made: { shoots, tips, deepest } };
+    return { strands: n, trunk: [[p0[0], p0[1], p0[2], R0]].concat(top.path.map((p, i) => [p[0], p[1], p[2], R0 * (1 - 0.5 * (i + 1) / top.path.length)])), limbs: tidy(top), set: Q.set, made: { shoots, tips, deepest } };
   }
 
   const api = { grow, sprout };

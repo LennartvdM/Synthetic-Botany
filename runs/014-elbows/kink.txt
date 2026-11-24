@@ -1,0 +1,6 @@
+as before: no corners, taut: {"shoots":9,"tips":9,"deepest":3} overlap 0.10 pairs over 0/767
+corners 0.7, still taut: {"shoots":14,"tips":14,"deepest":3} overlap 0.12 pairs over 0/707
+corners 0.4, set: {"shoots":14,"tips":14,"deepest":3} overlap 0.18 pairs over 1/886
+corners 0.7, set: {"shoots":14,"tips":14,"deepest":3} overlap 0.13 pairs over 0/910
+corners 1.1, set: {"shoots":14,"tips":14,"deepest":3} overlap 0.11 pairs over 0/978
+corners 0.7, set, seed 2: {"shoots":9,"tips":9,"deepest":3} overlap 0.22 pairs over 4/836

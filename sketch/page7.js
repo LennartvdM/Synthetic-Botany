@@ -5,7 +5,7 @@
 //            that snapped ends in a break, cut on the slant or stepped.
 //   slivers  narrow shards lying on the bands, pointed at both ends, their far ends standing off.
 //   shell    thin plates in a few places, a little broader than a strand, lying close.
-//   bark     the third layer: a few thin flat sheets, torn into tongues at their ends, peeling, split in places. Back sunk into the band, front lying on
+//   bark     the third layer: a few thin flat sheets, each with its own erratic outline, peeling in places. Back sunk into the band, front lying on
 //            top and ending in a point, a slant or a step; nearly all face toward the tip. No plate passes
 //            through another. One or two have split from the front.
 // Nothing is swept or blended. Throwaway like the other pages.
@@ -68,7 +68,7 @@
           : ending === 'step' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.2 * r()), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()) } : { skew: 0 };
         // a part that has torn from another is thickest on its far side and thins to a lip toward the tear
         const mid = (k0 + k1) >> 1, inn = s.inner && s.inner[mid], sg = inn ? dot(inn, unit(cross(tan(s, mid), s.O[mid]))) : 0, torn = Math.abs(sg) > 0.4 ? Math.sign(sg) : 0, e1 = 0.2 + 0.5 * r(), e2 = 0.2 + 0.5 * r(), rd = clamp(ridge0 + 0.4 * (r() - 0.5), -0.6, 0.6);
-        all.push(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? -0.4 * torn : rd, eL: torn < 0 ? 0.3 : torn > 0 ? 0.55 : e1, eR: torn > 0 ? 0.3 : torn < 0 ? 0.55 : e2, feather: torn, featherAmt: 0.78 }, s.thread ? { skew: 0 } : end)));
+        all.push(Object.assign(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? -0.4 * torn : rd, eL: torn < 0 ? 0.3 : torn > 0 ? 0.55 : e1, eR: torn > 0 ? 0.3 : torn < 0 ? 0.55 : e2, feather: torn, featherAmt: 0.78 }, s.thread ? { skew: 0 } : end)), { layer: fine || (s.inner && s.inner.some((v) => v)) ? 1 : 0 }));
         count[fine ? 'fine' : 'bands'] = (count[fine ? 'fine' : 'bands'] || 0) + 1; k = k1; first = false;
       }
     }
@@ -81,7 +81,7 @@
       const C = [], O = [], W = [], Hh = [], D = [];
       for (let k = st[0]; k <= st[1]; k++) { const q = (k - st[0]) / len, o = s.O[k], sv = unit(cross(tan(s, k), o)), rho = s.rho[k], fine = Math.min(1, q / 0.3, (1 - q) / 0.5), p = at(s, k);
         C.push([0, 1, 2].map((i) => p[i] + o[i] * rho * (0.5 + lift * q * q) + sv[i] * rho * side)); O.push(o); W.push(Math.max(0.004, rho * wide * fine)); Hh.push(rho * high * (0.5 + 0.5 * fine)); D.push(rho * 0.5); }
-      all.push(shard({ C, O, W, Hh, D, deep: Math.max(...D), seed: sd, wiggle: 1, ridge: rd, eL, eR, skew: 0 })); count.slivers++;
+      all.push(Object.assign(shard({ C, O, W, Hh, D, deep: Math.max(...D), seed: sd, wiggle: 1, ridge: rd, eL, eR, skew: 0 }), { layer: 2 })); count.slivers++;
     }
     // the shell
     const shell = [], room = 0.012, rigid = 0.5;
@@ -104,7 +104,7 @@
         const K = makePlate(s, k0, k1, forward, ...rest); if (!K) break; const n = K.C.length, hit = new Uint8Array(n);
         for (let k = 0; k < n; k++) { const T = unit([0, 1, 2].map((i) => K.C[Math.min(n - 1, k + 1)][i] - K.C[Math.max(0, k - 1)][i])), sv = unit(cross(T, K.O[k])), up = cross(sv, T);
           for (let a = -3; a <= 3 && !hit[k]; a++) for (const v of [0, K.Hh[k] * 0.6]) { const pt = [0, 1, 2].map((i) => K.C[k][i] + sv[i] * K.W[k] * a * 0.31 + up[i] * v); if (shell.some((A) => A.f(pt[0], pt[1], pt[2]) < room)) { hit[k] = 1; break; } } }
-        if (!hit.some((h) => h)) { const sh = shard(K); all.push(sh); shell.push(sh); count.plates++; if (go) count.cut++; return; }
+        if (!hit.some((h) => h)) { const sh = Object.assign(shard(K), { layer: 2 }); all.push(sh); shell.push(sh); count.plates++; if (go) count.cut++; return; }
         let best = [0, -1], from = 0; for (let k = 0; k <= n; k++) if (k === n || hit[k]) { if (k - 1 - from > best[1] - best[0]) best = [from, k - 1]; from = k + 1; }
         const a = best[0] + (best[0] > 0 ? 1 : 0), b = best[1] - (best[1] < n - 1 ? 1 : 0); if (b - a < 6) break;
         if (forward) { const z = k0; k0 = z + a; k1 = z + b; } else { const z = k1; k1 = z - a; k0 = z - b; }
@@ -119,7 +119,7 @@
     }
     // Bark: the third layer. A few sheets to a tree, lying over the strands and spanning the grooves between
     // them, none over an orb. What a sheet is like is said at `sheet` below.
-    const barkCount = recipe.bare ? 0 : recipe.bark === undefined ? 5 : recipe.bark, barks = [], rb = rng((recipe.seed || 1) + 123), wcell = 0.1, wgrid = new Map(), wkey = (x, y, z) => (Math.floor(x / wcell) + 512) * 1048576 + (Math.floor(y / wcell) + 512) * 1024 + Math.floor(z / wcell) + 512;
+    const barkCount = recipe.bare ? 0 : recipe.bark === undefined ? 7 : recipe.bark, barks = [], rb = rng((recipe.seed || 1) + 123), wcell = 0.1, wgrid = new Map(), wkey = (x, y, z) => (Math.floor(x / wcell) + 512) * 1048576 + (Math.floor(y / wcell) + 512) * 1024 + Math.floor(z / wcell) + 512;
     for (const q of t.strands) if (!q.thread) for (let i = 0; i < q.K; i++) { const p = [q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i]], k = wkey(p[0], p[1], p[2]), b = wgrid.get(k); if (b) b.push(p); else wgrid.set(k, [p]); }
     // how far a place is outside the wood, taken softly so that the grooves between strands are bridged
     const soft = 0.02, envelope = (x, y, z) => { let sum = 0; for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let c = -2; c <= 2; c++) { const g = wgrid.get(wkey(x + a * wcell, y + b * wcell, z + c * wcell)); if (!g) continue; for (const p of g) { const d = H(x - p[0], y - p[1], z - p[2]) - 0.95 * p[3]; if (d < 0.2) sum += Math.exp(-d / soft); } } return sum > 0 ? -soft * Math.log(sum) : 0.2; };
@@ -128,32 +128,31 @@
     const vnoise = (x, y, z, n) => { const i = Math.floor(x), j = Math.floor(y), k = Math.floor(z), u = x - i, v = y - j, w = z - k, su = u * u * (3 - 2 * u), sv = v * v * (3 - 2 * v), sw = w * w * (3 - 2 * w), L = (a, b, t) => a + (b - a) * t;
       return L(L(L(hash3(i, j, k, n), hash3(i + 1, j, k, n), su), L(hash3(i, j + 1, k, n), hash3(i + 1, j + 1, k, n), su), sv), L(L(hash3(i, j, k + 1, n), hash3(i + 1, j, k + 1, n), su), L(hash3(i, j + 1, k + 1, n), hash3(i + 1, j + 1, k + 1, n), su), sv), sw); };
     // A sheet of bark: thin, flat-faced, of one thickness right up to where it stops, so its edge is a cliff.
-    // It is torn along the grain: bark comes away in strips, and each strip ends where it happens to, so the two
-    // ends of a sheet are shredded into tongues of unlike length, while its sides run straighter. Some tongues
-    // have peeled: they stand off the wood with a gap under them. And a sheet may have split open along the
-    // grain in a long tear, pointed at both ends, with the wood showing in it.
+    // Its outline is erratic and its own: a few points of very unlike length with deep notches between them,
+    // joined by straight runs of edge, no two sheets alike. No fringe. Here and there along the edge it has
+    // peeled and stands off the wood with a gap under it.
+    const outlineOf = (A, B) => { const m = 4 + Math.floor(3 * rb()), V = [], turn = 0.5 * (rb() - 0.5), long = Math.floor(rb() * m); let th0 = rb() * 6.3;
+      for (let i = 0; i < m; i++) { const step = 6.283 / m, a1 = th0 + step * (i + 0.5 * (rb() - 0.5)), a2 = a1 + step * (0.35 + 0.3 * rb()), r1 = (0.55 + 0.55 * rb()) * (i === long ? 1.5 : 1), r2 = 0.12 + 0.3 * rb();
+        for (const [a, r] of [[a1, r1], [a2, r2]]) { const x = A * r * Math.cos(a), y = B * r * Math.sin(a); V.push([x * Math.cos(turn) - y * Math.sin(turn), x * Math.sin(turn) + y * Math.cos(turn)]); } }
+      return V; };
+    const inside = (V, px, py) => { let d = 1e9, inn = false; for (let i = 0, j = V.length - 1; i < V.length; j = i++) { const a = V[j], b = V[i], ex = b[0] - a[0], ey = b[1] - a[1], wx = px - a[0], wy = py - a[1], q = Math.max(0, Math.min(1, (wx * ex + wy * ey) / (ex * ex + ey * ey))); d = Math.min(d, H(wx - ex * q, wy - ey * q)); if ((b[1] > py) !== (a[1] > py) && px < (a[0] - b[0]) * (py - b[1]) / (a[1] - b[1]) + b[0]) inn = !inn; } return inn ? d : -d; };
     const sheet = (a, o, T, A, B, th) => {
-      const side = cross(T, o), g0 = 0.02, R1 = H(1.2 * A, B) + 0.04, n = Math.ceil(2 * R1 / g0) + 2, lo = a.map((v) => v - R1 - g0), E = new Float32Array(n * n * n).fill(0.2), C = [], reach = [], seed = 1 + Math.floor(rb() * 1e6), strip = 0.05 + 0.02 * rb();
-      const tear = rb() < 0.7 ? { u: B * 0.9 * (rb() - 0.5), s: A * 0.5 * (rb() - 0.5), half: A * (0.35 + 0.35 * rb()), wide: 0.03 + 0.03 * rb() } : null, peel = th * (0.8 + 1.4 * rb());
-      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) { const x = lo[0] + i * g0, y = lo[1] + j * g0, z = lo[2] + k * g0, dx = x - a[0], dy = y - a[1], dz = z - a[2], ps = dx * T[0] + dy * T[1] + dz * T[2]; if (Math.abs(ps) > 1.2 * A + 0.04 || H(dx - T[0] * ps, dy - T[1] * ps, dz - T[2] * ps) > B + 0.06) continue;
+      const side = cross(T, o), V = outlineOf(A, B), R1 = Math.max(...V.map((v) => H(v[0], v[1]))) + 0.05, g0 = 0.02, n = Math.ceil(2 * R1 / g0) + 2, lo = a.map((v) => v - R1 - g0), E = new Float32Array(n * n * n).fill(0.2), C = [], reach = [], seed = 1 + Math.floor(rb() * 1e6), peel = th * (0.7 + 1.3 * rb());
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) { const x = lo[0] + i * g0, y = lo[1] + j * g0, z = lo[2] + k * g0, dx = x - a[0], dy = y - a[1], dz = z - a[2], pv = dx * o[0] + dy * o[1] + dz * o[2]; if (pv < -0.16 || pv > 0.22 || H(dx, dy, dz) > R1 + 0.03) continue;
         const e = envelope(x, y, z); E[(i * n + j) * n + k] = e; if (Math.abs(e) < 0.06 && (i + j + k) % 2 === 0) { C.push([x, y, z]); reach.push(0.06 + th + peel); } }
-      if (C.length < 30) return null;
-      const f = (x, y, z) => { const dx = x - a[0], dy = y - a[1], dz = z - a[2], ps = dx * T[0] + dy * T[1] + dz * T[2], qx = dx - T[0] * ps, qy = dy - T[1] * ps, qz = dz - T[2] * ps, ql = H(qx, qy, qz); if (Math.abs(ps) > 1.2 * A || ql > B + 0.03) return Math.max(0.02, Math.abs(ps) - 1.2 * A, ql - B - 0.03);
-        // which strip this is depends only on where it lies across the grain; the two ends of a strip are torn separately
-        const end = ps > 0 ? 0 : 7.3, n1 = vnoise(qx / strip + end, qy / strip, qz / strip, seed), n2 = vnoise(qx / 0.14 + end, qy / 0.14, qz / 0.14, seed + 1), ridge = 1 - Math.abs(2 * n1 - 1), len = A * (0.4 + 0.35 * n2 + 0.45 * ridge * ridge), along = len - Math.abs(ps);
-        const across = B * (0.8 + 0.2 * vnoise(ps / 0.11, 0.5, 0.5, seed + 2)) - ql; let edge = Math.min(along, across); if (edge < -0.03) return 0.03;
+      if (C.length < 20) return null;
+      const f = (x, y, z) => { const dx = x - a[0], dy = y - a[1], dz = z - a[2], dl = H(dx, dy, dz); if (dl > R1) return Math.max(0.02, dl - R1);
+        const ps = dx * T[0] + dy * T[1] + dz * T[2], pu = dx * side[0] + dy * side[1] + dz * side[2], pv = dx * o[0] + dy * o[1] + dz * o[2]; let edge = Math.min(inside(V, ps, pu), pv + 0.12); if (edge < -0.03) return 0.03;
         if (t.orb) edge = Math.min(edge, H(x - t.orb.c[0], y - t.orb.c[1], z - t.orb.c[2]) - t.orb.room * 1.4);
-        if (tear) { const pu = qx * side[0] + qy * side[1] + qz * side[2], w = tear.wide * (1 - ((ps - tear.s) / tear.half) ** 2); if (w > 0 && qx * o[0] + qy * o[1] + qz * o[2] > -0.08) edge = Math.min(edge, Math.abs(pu - tear.u) - w); }
         const fi = (x - lo[0]) / g0, fj = (y - lo[1]) / g0, fk = (z - lo[2]) / g0, i = Math.max(0, Math.min(n - 2, Math.floor(fi))), j = Math.max(0, Math.min(n - 2, Math.floor(fj))), k = Math.max(0, Math.min(n - 2, Math.floor(fk))), wi = fi - i, wj = fj - j, wk = fk - k, at3 = (ii, jj, kk) => E[(ii * n + jj) * n + kk];
         const e = ((at3(i, j, k) * (1 - wk) + at3(i, j, k + 1) * wk) * (1 - wj) + (at3(i, j + 1, k) * (1 - wk) + at3(i, j + 1, k + 1) * wk) * wj) * (1 - wi) + ((at3(i + 1, j, k) * (1 - wk) + at3(i + 1, j, k + 1) * wk) * (1 - wj) + (at3(i + 1, j + 1, k) * (1 - wk) + at3(i + 1, j + 1, k + 1) * wk) * wj) * wi;
-        // peeling: on some strips, toward the torn end, the whole thickness stands off the wood
-        const up = n2 > 0.45 ? peel * sstep(0.16, 0, along) : 0, rough = 0.004 * (vnoise(x / 0.03, y / 0.03, z / 0.03, seed + 3) - 0.5);
-        return Math.max(e - th - up - rough, -0.035 + (0.035 + up * 0.85) * (up > 0 ? 1 : 0) * sstep(0.16, 0, along) - e, -edge * 0.8); };
-      return { f, C, reach, a, R0: A }; };
-    for (let tries = 0; barks.length < barkCount && tries < 80 && thick.length; tries++) {
-      const s = thick[Math.floor(rb() * thick.length)], k = s.root + 6 + Math.floor(rb() * Math.max(1, s.K - s.root - 14)), A = 0.26 + 0.22 * rb(), B = 0.2 + 0.14 * rb(), th = 0.026 + 0.008 * rb(); if (!outer(s, k)) continue;
-      const a = at(s, k), o = s.O[k]; if (t.orb && H(a[0] - t.orb.c[0], a[1] - t.orb.c[1], a[2] - t.orb.c[2]) < t.orb.room * 2.0) continue;
-      if (barks.some((b) => H(b.a[0] - a[0], b.a[1] - a[1], b.a[2] - a[2]) < 0.8 * (b.R0 + A))) continue;
+        const near = sstep(0.07, 0, edge) * sstep(0.5, 0.62, vnoise(ps / 0.16, pu / 0.16, 0.5, seed)), up = peel * near;   // peeled in places along the edge
+        return Math.max(e - th - up, -0.035 + (0.035 + up * 0.85) * near - e, -edge * 0.9); };
+      return { f, C, reach, a, R0: R1, layer: 3 }; };
+    for (let tries = 0; barks.length < barkCount && tries < 120 && thick.length; tries++) {
+      const s = thick[Math.floor(rb() * thick.length)], k = s.root + 6 + Math.floor(rb() * Math.max(1, s.K - s.root - 14)), big = rb(), A = 0.14 + 0.3 * big * big + 0.06 * rb(), B = A * (0.4 + 0.45 * rb()), th = 0.028 + 0.01 * rb(); if (!outer(s, k)) continue;
+      const a = at(s, k), o = s.O[k]; if (t.orb && H(a[0] - t.orb.c[0], a[1] - t.orb.c[1], a[2] - t.orb.c[2]) < t.orb.room * 1.8) continue;
+      if (barks.some((b) => H(b.a[0] - a[0], b.a[1] - a[1], b.a[2] - a[2]) < 0.6 * (b.R0 + A))) continue;
       let T = tan(s, k); const al = dot(T, o); T = unit(T.map((v, c) => v - o[c] * al));
       const bp = sheet(a, o, T, A, B, th); if (bp) { barks.push(bp); all.push(bp); }
     }
@@ -163,6 +162,8 @@
     all.forEach((s, i) => { const seen = new Set(); s.C.forEach((c, j) => { const m = s.reach[j] + 0.06;
       for (let x = Math.floor((c[0] - m) / cell); x <= Math.floor((c[0] + m) / cell); x++) for (let y = Math.floor((c[1] - m) / cell); y <= Math.floor((c[1] + m) / cell); y++) for (let z = Math.floor((c[2] - m) / cell); z <= Math.floor((c[2] + m) / cell); z++) { const k = key(x, y, z); if (seen.has(k)) continue; seen.add(k); const b = grid.get(k); if (b) b.push(i); else grid.set(k, [i]); } }); });
     const o = t.orb, f = (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); let d = 0.1; if (b) for (const i of b) d = Math.min(d, all[i].f(x, y, z)); return d; };
+    // which layer the surface belongs to at a place: that of whichever piece is nearest there
+    f.layerAt = (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); let d = 9, l = 0; if (b) for (const i of b) { const v = all[i].f(x, y, z); if (v < d) { d = v; l = all[i].layer || 0; } } return l; };
     f.orb = o; f.measure = t.measure; f.count = count; return f;
   }
   // the same four trees. bare: bands only, so the body can be judged by itself.
@@ -172,5 +173,5 @@
     ['holding an orb', tree({ bare, seed: 3, strands: 12, uneven: 0.9, lmax: 0.9, settle: 60, trunk: [[0, 0.22, 0, 0.3], [0, 0.6, 0, 0.28], [0.1, 1.0, 0, 0.23], [0.3, 1.4, 0.1, 0.18], [0.55, 1.7, 0.2, 0.13]], limbs: [{ at: 0.6, share: 0.3, path: [[-0.3, 1.3, -0.1], [-0.6, 1.5, -0.1], [-0.8, 1.35, 0]] }], orb: { at: 0.27, r: 0.13, room: 0.4, off: 0.75, split: { at: 1.2 } } }), 0.0065],
     ['forked low', tree({ bare, seed: 4, strands: 10, twist: 0.3, trunk: [[0, 0.22, 0, 0.3], [-0.05, 0.6, 0, 0.28], [-0.2, 0.98, -0.05, 0.22], [-0.45, 1.35, -0.1, 0.17], [-0.5, 1.72, 0, 0.13]], limbs: [{ at: 0.3, share: 0.4, path: [[0.35, 0.9, 0.1], [0.55, 1.25, 0.2], [0.5, 1.6, 0.1]] }, { at: 0.62, share: 0.25, path: [[-0.6, 1.1, 0.25], [-0.85, 1.2, 0.35]] }] })],
   ];
-  window.Fantastic = { names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), measures: S.map((s) => s[1].measure), counts: S.map((s) => s[1].count), build: (i) => mesh(S[i][1], S[i][0], S[i][2] || 0.0095, 2.05), mesh, kit: Fantastic.kit };
+  window.Fantastic = { names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), measures: S.map((s) => s[1].measure), counts: S.map((s) => s[1].count), build: (i) => { const g = mesh(S[i][1], S[i][0], S[i][2] || 0.0095, 2.05), n = g.pos.length / 3; g.layer = new Uint8Array(n); for (let q = 0; q < n; q++) g.layer[q] = S[i][1].layerAt(g.pos[q * 3] - g.nrm[q * 3] * 0.004, g.pos[q * 3 + 1] - g.nrm[q * 3 + 1] * 0.004, g.pos[q * 3 + 2] - g.nrm[q * 3 + 2] * 0.004); return g; }, mesh, kit: Fantastic.kit };
 })();

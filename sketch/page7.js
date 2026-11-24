@@ -68,7 +68,7 @@
           : ending === 'step' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.2 * r()), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()) } : { skew: 0 };
         // a part that has torn from another is thickest on its far side and thins to a lip toward the tear
         const mid = (k0 + k1) >> 1, inn = s.inner && s.inner[mid], sg = inn ? dot(inn, unit(cross(tan(s, mid), s.O[mid]))) : 0, torn = Math.abs(sg) > 0.4 ? Math.sign(sg) : 0, e1 = 0.2 + 0.5 * r(), e2 = 0.2 + 0.5 * r(), rd = clamp(ridge0 + 0.4 * (r() - 0.5), -0.6, 0.6);
-        all.push(Object.assign(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? -0.4 * torn : rd, eL: torn < 0 ? 0.3 : torn > 0 ? 0.55 : e1, eR: torn > 0 ? 0.3 : torn < 0 ? 0.55 : e2, feather: torn, featherAmt: 0.78 }, s.thread ? { skew: 0 } : end)), { layer: fine || (s.inner && s.inner.some((v) => v)) ? 1 : 0 }));
+        all.push(Object.assign(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? -0.4 * torn : rd, eL: torn < 0 ? 0.3 : torn > 0 ? 0.55 : e1, eR: torn > 0 ? 0.3 : torn < 0 ? 0.55 : e2, feather: torn, featherAmt: 0.78 }, s.thread ? { skew: 0 } : end)), { layer: fine || torn || (s.gap && s.gap[mid] > 0) ? 1 : 0 }));
         count[fine ? 'fine' : 'bands'] = (count[fine ? 'fine' : 'bands'] || 0) + 1; k = k1; first = false;
       }
     }
@@ -132,7 +132,7 @@
     // joined by straight runs of edge, no two sheets alike. No fringe. Here and there along the edge it has
     // peeled and stands off the wood with a gap under it.
     const outlineOf = (A, B) => { const m = 4 + Math.floor(3 * rb()), V = [], turn = 0.5 * (rb() - 0.5), long = Math.floor(rb() * m); let th0 = rb() * 6.3;
-      for (let i = 0; i < m; i++) { const step = 6.283 / m, a1 = th0 + step * (i + 0.5 * (rb() - 0.5)), a2 = a1 + step * (0.35 + 0.3 * rb()), r1 = (0.55 + 0.55 * rb()) * (i === long ? 1.5 : 1), r2 = 0.12 + 0.3 * rb();
+      for (let i = 0; i < m; i++) { const step = 6.283 / m, a1 = th0 + step * (i + 0.5 * (rb() - 0.5)), a2 = a1 + step * (0.3 + 0.4 * rb()), r1 = (0.75 + 0.45 * rb()) * (i === long ? 1.45 : 1), r2 = 0.42 + 0.3 * rb();   // a broad body, with points off it
         for (const [a, r] of [[a1, r1], [a2, r2]]) { const x = A * r * Math.cos(a), y = B * r * Math.sin(a); V.push([x * Math.cos(turn) - y * Math.sin(turn), x * Math.sin(turn) + y * Math.cos(turn)]); } }
       return V; };
     const inside = (V, px, py) => { let d = 1e9, inn = false; for (let i = 0, j = V.length - 1; i < V.length; j = i++) { const a = V[j], b = V[i], ex = b[0] - a[0], ey = b[1] - a[1], wx = px - a[0], wy = py - a[1], q = Math.max(0, Math.min(1, (wx * ex + wy * ey) / (ex * ex + ey * ey))); d = Math.min(d, H(wx - ex * q, wy - ey * q)); if ((b[1] > py) !== (a[1] > py) && px < (a[0] - b[0]) * (py - b[1]) / (a[1] - b[1]) + b[0]) inn = !inn; } return inn ? d : -d; };

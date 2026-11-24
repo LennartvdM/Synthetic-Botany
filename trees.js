@@ -98,7 +98,7 @@
     // rejoin beyond it. Either may divide again. So the most pressed end up the finest, and a fine strand is
     // what is left of a heavy one. (Run 012: this one rule gave thin strands over a body, forks, crossings,
     // and the thinnest nearest.)
-    const SP = orb && P.orb.split ? Object.assign({ at: 0.5, every: 40, floor: 0.012, most: 160, neck: 0.6, least: 0.009, strings: 2 }, P.orb.split === true ? {} : P.orb.split) : null; let forks = 0;
+    const SP = orb && P.orb.split ? Object.assign({ at: 0.5, every: 40, floor: 0.012, most: 160, neck: 1.0, least: 0.009, strings: 1 }, P.orb.split === true ? {} : P.orb.split) : null; let forks = 0;
     const divide = (i) => { const s = S[i], n = s.K; let a = -1, b = -1; for (let k = Math.max(1, s.root); k < n - 1; k++) if (s.on[k]) { if (a < 0) a = k; b = k; } if (a < 0) return;
       const ka = Math.max(1, s.root, a - 6), kb = Math.min(n - 2, b + 6); if (kb - ka < 8) return; for (let k = ka; k <= kb; k++) if (s.rho[k] / Math.SQRT2 < SP.floor) return;
       const nc = kb - ka + 1, X = new Float64Array(nc * 3), rr = new Float64Array(nc);
@@ -160,7 +160,8 @@
     // Pulled apart like string cheese. What has split is still one body drawn apart, and three things show it.
     // Each part knows which way its other part lies (inner), so it can be drawn with a torn face toward it.
     // It necks: the further a part has been drawn from what it split from, the thinner it is there.
-    // And near where a split closes, a few fine threads still hang on across the gap, on a slant.
+    // And near where a split closes, a fine thread may still hang on across the gap, on a slant: drawn out,
+    // thickest where it is rooted and thinnest in its middle.
     const threads = [];
     if (SP) {
       const rt = rng(P.seed + 91), fams = new Map(), pt = (o, k) => [o.X[k * 3], o.X[k * 3 + 1], o.X[k * 3 + 2]];
@@ -178,11 +179,11 @@
             for (const o of S) { if (o === q || o === par || !clear) continue; for (let e = 0; e < o.K; e++) { const px = o.X[e * 3] - a[0], py = o.X[e * 3 + 1] - a[1], pz = o.X[e * 3 + 2] - a[2], t = Math.max(0, Math.min(1, (px * (b[0] - a[0]) + py * (b[1] - a[1]) + pz * (b[2] - a[2])) / (d * d))); if (H(px - (b[0] - a[0]) * t, py - (b[1] - a[1]) * t, pz - (b[2] - a[2]) * t) < tr + o.rho[e]) { clear = false; break; } } }
             if (!clear) continue; const X = [], O = [], mid = [(a[0] + b[0]) / 2 - orb.c[0], (a[1] + b[1]) / 2 - orb.c[1], (a[2] + b[2]) / 2 - orb.c[2]], ax = unit([b[0] - a[0], b[1] - a[1], b[2] - a[2]]), dm = mid[0] * ax[0] + mid[1] * ax[1] + mid[2] * ax[2], face = unit([mid[0] - ax[0] * dm, mid[1] - ax[1] * dm, mid[2] - ax[2] * dm]);
             for (let e = 0; e < 7; e++) { X.push(a[0] + (b[0] - a[0]) * e / 6, a[1] + (b[1] - a[1]) * e / 6, a[2] + (b[2] - a[2]) * e / 6); O.push(face); }
-            threads.push({ X: Float64Array.from(X), rho: new Float64Array(7).fill(tr), O, far: new Array(7).fill(0), K: 7, root: 0, limb: -1, give: 1, snapped: false, vine: true, thread: true, inner: null }); made++; m += dir * (2 + Math.floor(3 * rt())); } } });
+            threads.push({ X: Float64Array.from(X), rho: Float64Array.from([1.7, 1.15, 0.8, 0.7, 0.8, 1.15, 1.7], (v) => v * tr), O, far: new Array(7).fill(0), K: 7, root: 0, limb: -1, give: 1, snapped: false, vine: true, thread: true, inner: null }); made++; m += dir * (2 + Math.floor(3 * rt())); } } });
     }
     // (where a split strand joins the one it came from the two are one, so those places are not counted)
     let worst = 0, over = 0, pairs = 0; each((i, k, j, l, dx, dy, dz, d, want) => { if ((S[i].child && (k < 11 || k >= S[i].K - 11)) || (S[j].child && (l < 11 || l >= S[j].K - 11))) return; const v = (want - d) / want; worst = Math.max(worst, v); pairs++; if (v > 0.15) over++; });
-    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, vine: !!s.child, inner: s.inner || null, fam: s.fam })).concat(threads), orb, measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
+    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
   }
 
   const api = { grow };

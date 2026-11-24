@@ -65,7 +65,9 @@
       // may be cut on the slant, or stepped: one side of it ending short of the other.
       const dp = K.D ? lerp(K.D[bi], K.D[bi + 1], bt) : K.deep;   // how far it goes down below its line: one depth, or one for each step of it
       const cut = K.skew * u + (K.step && (u - K.step.u * w) * K.step.side > 0 ? K.step.a : 0);
-      let d = Math.max(((u + w) * lx + (vv - yl) * ly) / H(lx, ly), ((u - xm) * rx + (vv - h) * ry) / H(rx, ry), -u - w, u - w, -vv - dp, -s, s - L[n - 1] + cut, pre ? -1 : Math.abs(along) - 0.03);   // and never out past a fold in its own line
+      // feather: toward one edge the piece thins, above and below, to a lip (a torn edge is drawn thin, not cut square)
+      const thin = K.feather ? 1 - K.featherAmt * clamp(K.feather * u / w, 0, 1) : 1, roofH = u < xm ? yl + (u + w) * (h - yl) / (xm + w) : yr + (w - u) * (h - yr) / (w - xm), vf = vv + roofH * (1 - thin);
+      let d = Math.max(((u + w) * lx + (vf - yl) * ly) / H(lx, ly), ((u - xm) * rx + (vf - h) * ry) / H(rx, ry), -u - w, u - w, -vv - dp * thin, -s, s - L[n - 1] + cut, pre ? -1 : Math.abs(along) - 0.03);   // and never out past a fold in its own line
       if (gap) d = Math.max(d, Math.min(gap - Math.abs(u - cu), v + sp.depth * K.deep));
       return d;
     };

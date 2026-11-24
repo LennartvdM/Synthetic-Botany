@@ -27,11 +27,13 @@
     // on that side (another strand, or an orb's room), so that nothing is made to pass through anything. Where
     // the bend is a split's join, the inside is the other half of the same body, and the fill is the crotch.
     const gain = recipe.elbow === undefined ? 3 : recipe.elbow, pts = []; t.strands.forEach((q, qi) => { if (!q.thread) for (let i = 0; i < q.K; i++) pts.push([q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i], qi, q.fam]); });
+    const roomToward = (p, n, want, rho, qi, fam) => { for (const o of pts) { if (o[4] === qi || (fam !== undefined && o[5] === fam)) continue; const d = [o[0] - p[0], o[1] - p[1], o[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dl > want + rho + o[3] + 0.02 || dot(d, n) < 0.3 * dl) continue; want = Math.min(want, Math.max(0, dl - rho - o[3] - 0.012)); }
+      if (t.orb) { const d = [t.orb.c[0] - p[0], t.orb.c[1] - p[1], t.orb.c[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dot(d, n) > 0.3 * dl) want = Math.min(want, Math.max(0, dl - t.orb.room - rho)); } return want; };
     const ease = t.strands.map((q, qi) => { const K = q.K, g = new Float64Array(K), dir = new Array(K).fill(null), room = new Float64Array(K).fill(9); if (q.thread || !gain || K < 7) return { g, dir };
       for (let i = 2; i < K - 2; i++) { const p = at(q, i), a = at(q, i - 2), b = at(q, i + 2), h = (H(b[0] - p[0], b[1] - p[1], b[2] - p[2]) + H(a[0] - p[0], a[1] - p[1], a[2] - p[2])) / 2 || 1e-9, T = tan(q, i);
         let kv = [0, 1, 2].map((j) => (a[j] + b[j] - 2 * p[j]) / (h * h)); const al = dot(kv, T); kv = kv.map((v, j) => v - T[j] * al); const kap = H(kv[0], kv[1], kv[2]), rho = q.rho[i]; if (kap * rho < 0.06) continue;
         const n = kv.map((v) => v / kap); dir[i] = n; let want = rho * Math.min(1.5, gain * (kap * rho - 0.06));
-        for (const o of pts) { if (o[4] === qi || (q.fam !== undefined && o[5] === q.fam)) continue;   // toward its own kin it may fill: that is wood not yet parted
+        for (const o of pts) { if (o[4] === qi || (q.fam !== undefined && o[5] === q.fam)) continue;
           const d = [o[0] - p[0], o[1] - p[1], o[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dl > want + rho + o[3] + 0.02 || dot(d, n) < 0.3 * dl) continue; want = Math.min(want, Math.max(0, dl - rho - o[3] - 0.012)); }
         if (t.orb) { const d = [t.orb.c[0] - p[0], t.orb.c[1] - p[1], t.orb.c[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dot(d, n) > 0.3 * dl) want = Math.min(want, Math.max(0, dl - t.orb.room - rho)); }
         g[i] = want; room[i] = want; }
@@ -46,13 +48,16 @@
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
           const lift = first ? proud * q * q : -0.28 * (1 - sstep(0, 0.3, q)) + proud * q * q, no = nearOrb(base), front = ending === 'point' ? Math.pow(Math.min(1, (1 - q) / 0.3), 0.7) : 1, back = first ? 1 : 0.7 + 0.3 * sstep(0, 0.3, q), w = Math.min(wide, 1.05 + (wide - 1.05) * (1 - no));
-          const eg = ease[si].g[i], en = ease[si].dir[i], sv = eg ? unit(cross(tan(s, i), s.O[i])) : null, gu = eg ? eg * dot(en, sv) : 0, gv = eg ? eg * dot(en, s.O[i]) : 0;   // the elbow's fill, across the strand and through it
-          C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * gu / 2 : 0))); O.push(s.O[i]); W.push(Math.max(0.006, rho * w * front * back + Math.abs(gu) / 2)); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(rho * 0.95 + Math.max(0, -gv)); }
+          const eg = ease[si].g[i], en = ease[si].dir[i], inn = s.inner && s.gap && s.gap[i] > 0 ? s.inner[i] : null, sv = eg || inn ? unit(cross(tan(s, i), s.O[i])) : null, gu = eg ? eg * dot(en, sv) : 0, gv = eg ? eg * dot(en, s.O[i]) : 0;   // the elbow's fill, across the strand and through it
+          // a tear's lip: toward what it tore from, a part reaches a little under half way across the gap, so that
+          // where the gap is narrow the two lips all but meet (a web with a slit), and where it is wide they stand apart
+          let lipU = 0; if (inn) { const sg = dot(inn, sv); if (Math.abs(sg) > 0.4) lipU = Math.sign(sg) * roomToward(base, sv.map((v) => v * Math.sign(sg)), Math.min(0.45 * s.gap[i], 1.3 * rho), rho, si, s.fam); }
+          C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * (gu + lipU) / 2 : 0))); O.push(s.O[i]); W.push(Math.max(0.006, rho * w * front * back + (Math.abs(gu) + Math.abs(lipU)) / 2)); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(rho * 0.95 + Math.max(0, -gv)); }
         const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (0.6 + 1.0 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
           : ending === 'step' ? { skew: 0.4 * (r() - 0.5), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.0 + 1.2 * r()) } : { skew: 0 };
-        // a part that has split from another has a torn face toward it: a steep wall on that side, the ridge near it
+        // a part that has torn from another is thickest on its far side and thins to a lip toward the tear
         const mid = (k0 + k1) >> 1, inn = s.inner && s.inner[mid], sg = inn ? dot(inn, unit(cross(tan(s, mid), s.O[mid]))) : 0, torn = Math.abs(sg) > 0.4 ? Math.sign(sg) : 0, e1 = 0.2 + 0.5 * r(), e2 = 0.2 + 0.5 * r(), rd = clamp(ridge0 + 0.4 * (r() - 0.5), -0.6, 0.6);
-        all.push(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? 0.6 * torn : rd, eL: torn < 0 ? 0.95 : torn > 0 ? 0.12 : e1, eR: torn > 0 ? 0.95 : torn < 0 ? 0.12 : e2 }, s.thread ? { skew: 0 } : end)));
+        all.push(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? -0.4 * torn : rd, eL: torn < 0 ? 0.3 : torn > 0 ? 0.55 : e1, eR: torn > 0 ? 0.3 : torn < 0 ? 0.55 : e2, feather: torn, featherAmt: 0.78 }, s.thread ? { skew: 0 } : end)));
         count[fine ? 'fine' : 'bands'] = (count[fine ? 'fine' : 'bands'] || 0) + 1; k = k1; first = false;
       }
     }

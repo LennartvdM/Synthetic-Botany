@@ -1899,3 +1899,36 @@ the surface and the cause is still there underneath.
 
 Also seen: where two threads and a strand meet near the orb they make a
 small ladder, which reads as built.
+
+**Tearing.** "Same logic for the splitting, it really needs to feel like
+tissue tearing." The split's "torn face" was a steep flat wall toward the
+other half, which is what a knife leaves. Withdrawn. Tissue stretches
+thin and then parts.
+
+Changed:
+
+- A torn edge is a lip. A part that has torn from another is thickest on
+  its far side and thins toward the tear, above and below, to about a
+  fifth of its thickness. (Page 5's shard gained one thing for this: it
+  can feather toward one edge.)
+- The lip reaches. Toward what it tore from, a part extends a little
+  under half way across the gap (at most 1.3 girths, and only into free
+  room). Where the gap is narrow the two lips all but meet; where it is
+  wide they stand apart. So a tear closes as a web with a slit.
+- Necking is stronger (a part drawn a girth away from its other half is
+  about 30% thinner; was about 20%).
+- A thread is drawn out: 1.7 times its girth where rooted, 0.7 in its
+  middle. One to a tear's end, not two; that also ends the ladders.
+
+`sketch/page7-orb-torn.png`. Openings round the orb now have curved thin
+lips and read as tears in one body, almond-shaped, where before they were
+gaps between cords with flat sides. 23 threads. Nothing overlaps.
+
+Wrong, or not there:
+
+- Lips are ragged in places: at a fifth of a part's thickness they are
+  near what the mesh can hold.
+- The webs at a tear's tips are hard to find in the pictures; I cannot
+  say from them that the lips meet there as intended.
+- Threads are still hard to see at this size.
+- Still nothing peels free at one end.

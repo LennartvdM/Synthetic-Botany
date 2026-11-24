@@ -1863,3 +1863,39 @@ Wrong, or not there:
 - Some parted halves end in square plank corners.
 - Nothing peels: every split rejoins at both ends. A strip attached at
   one end and lifting at the other is not there.
+
+**Elbows.** Shown, on the string-cheese tree, one strand turning a corner
+at one width like a mitred plank, with wedges drawn fanning round the
+corner: "the bend is a good idea, but its width can't remain even around
+the bend, the inner curve needs to ease so more surface in the elbow."
+
+Rule added to page 7's surface: where a strand bends it fills in on the
+inside of the bend, in proportion to how sharp the bend is, eased in
+before the corner and out after it. It fills only as far as there is free
+room on that side, so nothing is made to pass through anything.
+
+First try changed nothing visible. Measured why: the sharpest turns in
+the tree (90 to 139 degrees over four steps) are all two points from the
+end of a split-off part, where it rejoins what it split from. The elbow
+shown is a split's join. And at a join the thing in the way of the fill is
+the other half, so it filled nothing.
+
+Second try, two changes:
+
+- The fill is allowed toward a strand's own kin (the same strand before
+  it split). Between two halves of one body it is the crotch, wood not yet
+  parted, not an intersection. It still stops short of anything else.
+- In `trees.js`, split halves were meant to part gradually: full giving
+  way to each other only from ten points beyond the join, not three.
+
+`sketch/page7-orb-elbows.png`. The corner shown now turns as a broad arc,
+widest at the elbow, inner edge on an easier curve; openings round the orb
+have rounded corners.
+
+What did not work: the second change. The sharpest turns in the strands'
+own lines are no gentler (158, 128, 122 degrees now). The halves still
+hook back to their joins; the fill covers it. So the look is mended at
+the surface and the cause is still there underneath.
+
+Also seen: where two threads and a strand meet near the orb they make a
+small ladder, which reads as built.

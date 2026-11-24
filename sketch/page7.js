@@ -21,7 +21,24 @@
     // of the strand, and is too stiff for the strand's line, so the chain bends in knees. Its back is sunk under
     // the piece before it; its front lies a little proud and ends in a point, a slant or a step. All face the tip.
     const chain = recipe.chain === undefined ? 1 : recipe.chain;
-    for (const s of t.strands) {
+    // Elbows. A strand does not keep one width round a bend: the inside of the bend fills in, so it is broadest
+    // at the elbow and its inner edge goes round on an easier curve than its middle. The sharper the bend the
+    // more it fills, eased in before the corner and out after it, and never further than there is free room
+    // on that side (another strand, or an orb's room), so that nothing is made to pass through anything. Where
+    // the bend is a split's join, the inside is the other half of the same body, and the fill is the crotch.
+    const gain = recipe.elbow === undefined ? 3 : recipe.elbow, pts = []; t.strands.forEach((q, qi) => { if (!q.thread) for (let i = 0; i < q.K; i++) pts.push([q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i], qi, q.fam]); });
+    const ease = t.strands.map((q, qi) => { const K = q.K, g = new Float64Array(K), dir = new Array(K).fill(null), room = new Float64Array(K).fill(9); if (q.thread || !gain || K < 7) return { g, dir };
+      for (let i = 2; i < K - 2; i++) { const p = at(q, i), a = at(q, i - 2), b = at(q, i + 2), h = (H(b[0] - p[0], b[1] - p[1], b[2] - p[2]) + H(a[0] - p[0], a[1] - p[1], a[2] - p[2])) / 2 || 1e-9, T = tan(q, i);
+        let kv = [0, 1, 2].map((j) => (a[j] + b[j] - 2 * p[j]) / (h * h)); const al = dot(kv, T); kv = kv.map((v, j) => v - T[j] * al); const kap = H(kv[0], kv[1], kv[2]), rho = q.rho[i]; if (kap * rho < 0.06) continue;
+        const n = kv.map((v) => v / kap); dir[i] = n; let want = rho * Math.min(1.5, gain * (kap * rho - 0.06));
+        for (const o of pts) { if (o[4] === qi || (q.fam !== undefined && o[5] === q.fam)) continue;   // toward its own kin it may fill: that is wood not yet parted
+          const d = [o[0] - p[0], o[1] - p[1], o[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dl > want + rho + o[3] + 0.02 || dot(d, n) < 0.3 * dl) continue; want = Math.min(want, Math.max(0, dl - rho - o[3] - 0.012)); }
+        if (t.orb) { const d = [t.orb.c[0] - p[0], t.orb.c[1] - p[1], t.orb.c[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dot(d, n) > 0.3 * dl) want = Math.min(want, Math.max(0, dl - t.orb.room - rho)); }
+        g[i] = want; room[i] = want; }
+      for (let pass = 0; pass < 3; pass++) { const c = Float64Array.from(g); for (let i = 1; i < K - 1; i++) g[i] = Math.max(c[i] * 0.5 + 0.25 * (c[i - 1] + c[i + 1]), 0); }   // eased in and out along the strand
+      for (let i = 0; i < K; i++) { if (!dir[i]) { let j = 1; while (j < 4 && !(dir[i - j] || dir[i + j])) j++; dir[i] = dir[i - j] || dir[i + j] || null; if (!dir[i]) g[i] = 0; else room[i] = Math.min(room[Math.max(0, i - j)], room[Math.min(K - 1, i + j)], 9) === 9 ? 0 : Math.min(room[i - j] === undefined ? 9 : room[i - j], room[i + j] === undefined ? 9 : room[i + j]); } g[i] = Math.min(g[i], room[i]); }
+      return { g, dir }; });
+    for (const [si, s] of t.strands.entries()) {
       const K = s.K, fine = !!s.vine, ridge0 = 0.7 * (r() - 0.5); let k = 0, first = true;
       while (k < K - 1) {
         const rho0 = s.rho[Math.min(K - 1, k + 2)], want = chain && !s.thread ? Math.max(7, Math.round((7 + 10 * r()) * Math.max(rho0, 0.02) / 0.035)) : K; let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
@@ -29,7 +46,8 @@
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
           const lift = first ? proud * q * q : -0.28 * (1 - sstep(0, 0.3, q)) + proud * q * q, no = nearOrb(base), front = ending === 'point' ? Math.pow(Math.min(1, (1 - q) / 0.3), 0.7) : 1, back = first ? 1 : 0.7 + 0.3 * sstep(0, 0.3, q), w = Math.min(wide, 1.05 + (wide - 1.05) * (1 - no));
-          C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift)); O.push(s.O[i]); W.push(Math.max(0.006, rho * w * front * back)); Hh.push(rho * high * (0.6 + 0.4 * front)); D.push(rho * 0.95); }
+          const eg = ease[si].g[i], en = ease[si].dir[i], sv = eg ? unit(cross(tan(s, i), s.O[i])) : null, gu = eg ? eg * dot(en, sv) : 0, gv = eg ? eg * dot(en, s.O[i]) : 0;   // the elbow's fill, across the strand and through it
+          C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * gu / 2 : 0))); O.push(s.O[i]); W.push(Math.max(0.006, rho * w * front * back + Math.abs(gu) / 2)); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(rho * 0.95 + Math.max(0, -gv)); }
         const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (0.6 + 1.0 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
           : ending === 'step' ? { skew: 0.4 * (r() - 0.5), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.0 + 1.2 * r()) } : { skew: 0 };
         // a part that has split from another has a torn face toward it: a steep wall on that side, the ridge near it

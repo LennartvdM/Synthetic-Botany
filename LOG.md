@@ -2255,3 +2255,107 @@ Wrong, or not there:
   teeth, not the large points of the sketch given earlier.
 - Swathes favour limbs, because a limb is where a spreading swathe can
   wrap right round and find most neighbours.
+
+## Bark as a creased sheet; three faults found under it
+
+The smooth sleeve was the fault to mend. Chasing it turned up three others
+that were not the bark's.
+
+**Strands faced the wrong way on limbs.** The ragged patch that had sat on
+the one-limb tree's limb for many rounds was still there with the chain,
+the mass and every outer layer switched off, so it was in the structure.
+A strand's outward side was taken as "away from the middle of all the wood
+near it". On a limb the wood near it is mostly the same limb further
+along, so a strand faced along its own length. Now each strand faces away
+from the middle of its own bundle at that step, square to its own
+direction. All limbs came out as clean bundles of blades.
+
+**Pieces left holes where their fronts were cut.** A mesh of each tree,
+split into separate bodies, showed two roots and a shell plate that
+touched nothing (`holding an orb`: a root 0.25 long lying on the ground
+beside the tree; `a loop`: the same). A slanted front, since it was made
+to cut back into its piece and not out past it, runs back by twice its
+skew times the width: up to 0.5 on a thick strand. The next piece started
+only three steps (0.1) back. In the trunk the mass hid the hole. A root
+has nothing beside it. Now the next piece starts as far back as the front
+before it is cut away. No separate body larger than a chip remains on any
+of the four. (The count is a check to look with, not a judge: the largest
+bodies left are hollows shut inside the trunk, which it cannot tell from
+loose pieces.)
+
+**Crumbs under the orb.** Three causes, one after another.
+- Tears all started at one height. Stopping them at the roots had made a
+  ring at the feet; my mend for that pushed them into a band just under
+  the orb instead. A tear now starts anywhere between the foot and where
+  the strand is pressed.
+- The fine threads across closing splits (16 to 25 a tree, 0.01 to 0.02
+  thick) are thinner than the mesh can draw and came out as grit. They are
+  off (`strings: 0`). The thread idea is not withdrawn, only not drawable
+  at this size.
+- A torn part's lip thinned to less than the mesh, and its two ends lay
+  level with what it tore from, the two surfaces running through each
+  other. The lip keeps a thickness of 0.018; the ends go in from
+  underneath and bend back into the parent.
+Less remains than before, not none: `sketch/page7-orb-under-close.png`
+still has rough spots at two joins below the orb.
+
+**The bark.** Two tries.
+
+Withdrawn first (`sketch/page7-bark-skin-withdrawn.png`): the sheet
+followed a smoothed surface over the strands. Thinner and tighter it was
+still a melted skin, and it erased the flat faces of the wood under it.
+
+Withdrawn second (`sketch/page7-bark-scales-withdrawn.png`): each cell one
+flat plate resting on the highest wood under it. Flat faces, but every
+plate separate with a crack round it. Scales again.
+
+Kept: the plates, joined. Each cell that is on is a flat plate facing out
+from the middle of the wood and resting on the highest wood under it (the
+drawn wood, shell and slivers included, so nothing pokes through). Between
+two plates the sheet passes from one to the other over a narrow band: a
+crease where they meet at an angle, a ramp where one rests higher. A plate
+on the border is hinged and lifts toward the open side, a little
+everywhere; a share of them (`peel`, 0.18) lift far and are cut free along
+their sides, as flakes. At the border the sheet is its own thickness
+(0.02) and no more, so it is seen to lie on the wood.
+
+Also:
+- Every place bark could border on has a cell, and cells where bark may
+  not lie are barred: the foot, strands buried in the middle, thin wood, a
+  limb or tip under 0.4 of the tree's greatest breadth, and anything within
+  reach of an orb's room. So every border is a boundary between two cells.
+  Before, bark beside the orb was cut on a round, and a cell with nothing
+  beyond it ended on a round; where there is still no cell beyond, a cell
+  now ends eight-sided.
+- Cells are larger (0.075, 1.6 times as long along the grain), 140 to 250
+  a tree. `cover` 0.4 of the cells that are free.
+- A swathe starts on broad wood and spreads over broad wood sooner than
+  out along a limb.
+
+What it does (`sketch/page7.png`, `sketch/page7-layers.png`,
+`sketch/page7-other-side.png`; `sketch/page8.png`,
+`sketch/page8-layers.png`): bark is one to three angular sheets a tree, on
+the trunk and the thick of the limbs, creased in flat faces, with an edge
+that has thickness and stands off the wood in places. The strands show
+beside it and the limbs are left bare. On page 8 the four spreads now
+differ plainly: compact is one solid patch, reaching has arms and holes in
+it, many-and-small is three patches, most-of-the-tree wraps the trunk.
+
+Surprised me: resting each plate on the wood, and not on a smoothed
+surface, is what made the bark read as a separate thing. A plate over a
+groove shows the groove at its edge.
+
+Wrong, or not there:
+- `a loop` is the busiest: where the trunk twists hard the plates differ
+  most in tilt and the sheet looks like loose tiles.
+- A sheet's inside can dip into the wood where the wood is hollow along
+  its length (inside of a bend, a crotch): the plates are flat and the
+  surface is not.
+- The orb tree's worst overlap between two strands rose from 0.26 to 0.46
+  of their joined girth at one place when the tears were spread. A longer
+  clearing phase does not change it. Not looked into.
+- Light caps at some limb tips with a hard line under them: the last piece
+  of the chain is wide enough to wrap the limb, and its start shows as a
+  step all the way round.
+- Nothing peels free at one end and hangs. Knots, hollows and notches are
+  still not begun.

@@ -279,7 +279,7 @@
   // rule, and `share` is its main number (small: a leader with side shoots; a half: even forks and no leader).
   // Returns { strands, trunk, limbs } for grow(), and what it made (shoots, tips, deepest).
   function sprout(rule) {
-    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
+    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
     const length = (c) => Q.reach * (Q.twig + Math.sqrt(c / n)), inside = (p) => Math.abs(p[0]) < 0.9 && Math.abs(p[2]) < 0.9 && p[1] < 1.9 && p[1] > 0.3, laid = [];   // every point of every shoot so far
     const open = (p) => { let d = 9; for (const q of laid) d = Math.min(d, H(p[0] - q[0], p[1] - q[1], p[2] - q[2])); return d; };
     let shoots = 0, tips = 0, deepest = 0;
@@ -308,14 +308,29 @@
       tips++; return { path: pts, limbs: kids, total: gone };
     };
     const R0 = Q.foot, p0 = [0, 0.22, 0], d0 = unit([0.25 * (r() - 0.5), 1, 0.25 * (r() - 0.5)]), top = shoot(p0, d0, n, Q.tall, 0, true);
-    const tidy = (sh) => sh.limbs.map((k) => ({ at: Math.min(0.97, k.s / sh.total), count: k.count, path: k.path, from: k.from, dir: k.dir, limbs: tidy(k) }));
+    const tidy = (sh, par) => sh.limbs.map((k) => { const o = { at: Math.min(0.97, k.s / sh.total), count: k.count, path: k.path, from: k.from, dir: k.dir, s: k.s, host: sh, par, own: k, depth: par ? par.depth + 1 : 1 }; o.limbs = tidy(k, o); return o; });
     // Snapping. `snap` of the side shoots break off close to where they left: ones carrying at least `least` strands and
     // at most `most` of the tree's, so the wound is worth seeing and the tree is still a tree. All that grew from one goes with it, and its strands end at the break. Each is one of three ages (`as`, or mixed).
-    const limbs = tidy(top), every = [], walk = (Ls, fn) => Ls.forEach((l) => { fn(l); walk(l.limbs, fn); }); walk(limbs, (l) => every.push(l)); let snapped = 0;
+    const limbs = tidy(top, null), every = [], walk = (Ls, fn) => Ls.forEach((l) => { fn(l); walk(l.limbs, fn); }); walk(limbs, (l) => every.push(l)); let snapped = 0;
     for (let e = 0; e < Q.snap; e++) { const holds = (l) => { let any = false; walk(l.limbs, (q) => { if (q.stub) any = true; }); return any; }, el = every.filter((l) => !l.stub && !l.gone && l.count >= Q.least && l.count <= Math.max(Q.least, Math.round(Q.most * n)) && !holds(l)); if (!el.length) break; let pick = r() * el.reduce((v, l) => v + l.count ** 1.5, 0), L = el[0]; for (const l of el) { pick -= l.count ** 1.5; if (pick <= 0) { L = l; break; } }
       const kind = Q.as === 'mixed' ? ['hollow', 'knot', 'fresh'][e % 3] : Q.as;
-      walk(L.limbs, (l) => (l.gone = true)); L.limbs = []; L.stub = kind; snapped++; }
-    return { strands: n, trunk: [[p0[0], p0[1], p0[2], R0]].concat(top.path.map((p, i) => [p[0], p[1], p[2], R0 * (1 - 0.5 * (i + 1) / top.path.length)])), limbs, set: Q.set, made: { shoots, tips, deepest, snapped } };
+      walk(L.limbs, (l) => (l.gone = true)); L.lost = [L].concat((() => { const a = []; walk(L.limbs, (l) => a.push(l)); return a; })()); L.limbs = []; L.stub = kind; snapped++; }
+    // Making up for it. A tree that loses a shoot grows another: for each one snapped, one new shoot leaves the same
+    // parent a little further on (or a little before, if that is the parent's end), toward whichever side is most open
+    // now that the lost one is out of the way, carrying as many strands as were lost. Those strands are new: the lost
+    // ones are still in the wood below the break, so the tree is heavier for it, not lighter. One pass, after all the
+    // snapping is done, so nothing grown here is ever snapped.
+    let extra = 0, regrown = 0;
+    if (Q.regrow) for (const L of every.filter((l) => l.stub)) { const dead = new Set(); L.lost.forEach((l) => l.path.slice(l === L ? 2 : 0).forEach((q) => dead.add(q))); for (let i = laid.length - 1; i >= 0; i--) if (dead.has(laid[i])) laid.splice(i, 1);
+      const pts = L.host.path, i0 = Math.round(L.s / st) - 1, i1 = i0 + 2 <= pts.length - 2 ? i0 + 2 : Math.max(0, i0 - 2), p = pts[i1], T = i1 > 0 ? unit(p.map((v, j) => v - pts[i1 - 1][j])) : unit(pts[1].map((v, j) => v - p[j])), k = L.count;
+      const th = Q.spread * (0.75 + 0.5 * r()), N = unit(cross(T, Math.abs(T[1]) < 0.9 ? UP : [1, 0, 0])), B = cross(T, N), ph0 = TAU * r(), kl = length(k); let best = null;
+      for (let e = 0; e < 6; e++) { const ph = ph0 + e * TAU / 6, side = N.map((v, j) => v * Math.cos(ph) + B[j] * Math.sin(ph)), dir = unit(T.map((v, j) => v * Math.cos(th) + side[j] * Math.sin(th))), probe = p.map((v, j) => v + dir[j] * kl * 0.6), score = (inside(probe) ? 0 : -1) + open(probe) + 0.15 * dir[1]; if (!best || score > best.score) best = { score, dir }; }
+      const kid = shoot(p, best.dir, k, kl, L.depth, false); if (kid.path.length < 2) continue;
+      const o = { at: Math.min(0.97, (i1 + 1) * st / L.host.total), count: k, path: kid.path, from: p, dir: best.dir, extra: true, par: L.par, depth: L.depth }; o.limbs = tidy(kid, o);
+      (L.par ? L.par.limbs : limbs).push(o); for (let q = L.par; q; q = q.par) q.count += k; extra += k; regrown++; }
+    walk(limbs, (l) => { delete l.host; delete l.par; delete l.own; delete l.lost; });
+    const Rn = R0 * Math.sqrt((n + extra) / n);   // the foot is as much broader as the tree has more strands, so that no strand is thinner for it
+    return { strands: n + extra, trunk: [[p0[0], p0[1], p0[2], Rn]].concat(top.path.map((p, i) => [p[0], p[1], p[2], Rn * (1 - 0.5 * (i + 1) / top.path.length)])), limbs, set: Q.set, made: { shoots, tips, deepest, snapped, regrown, strands: n + extra } };
   }
 
   const api = { grow, sprout };

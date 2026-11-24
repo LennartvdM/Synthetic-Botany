@@ -1,0 +1,6 @@
+nothing snapped: {"shoots":16,"tips":16,"deepest":3,"snapped":0,"regrown":0,"strands":18} overlap 0.11 pairs over 0/872
+3 snapped, not made up: {"shoots":16,"tips":16,"deepest":3,"snapped":3,"regrown":0,"strands":18} overlap 0.19 pairs over 3/652
+3 snapped, made up: {"shoots":25,"tips":25,"deepest":3,"snapped":3,"regrown":3,"strands":27} overlap 0.36 pairs over 30/1409
+seed 3: nothing snapped: {"shoots":12,"tips":12,"deepest":3,"snapped":0,"regrown":0,"strands":18} overlap 0.19 pairs over 1/1078
+seed 3: not made up: {"shoots":12,"tips":12,"deepest":3,"snapped":3,"regrown":0,"strands":18} overlap 0.21 pairs over 2/766
+seed 3: made up: {"shoots":21,"tips":21,"deepest":3,"snapped":3,"regrown":3,"strands":27} overlap 0.34 pairs over 25/1782

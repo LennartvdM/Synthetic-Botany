@@ -2613,3 +2613,45 @@ Wrong, or not there:
 - It stands a little proud of the wood. Nothing of the wood laps over it.
 - The fresh break is as it was: small.
 - Still one such place a tree, and still only on the test trunk.
+
+## Run 016: making up for a snapped shoot
+
+Said: every snapped branch is a branch missing from the tree, but a tree
+makes up for what it loses by growing more. Failed shoots must not make
+the tree smaller. No hormones or balances: for each snapped shoot add one
+extra shoot, see that it does not snap either, one pass.
+
+Built so, in `Trees.sprout` (`regrow`, on unless turned off). After all
+the snapping is done, each snapped shoot gets one new shoot. It leaves the
+same parent two steps further on (two steps before, at the parent's end),
+toward whichever side is most open once the lost shoot is out of the way,
+and grows by the same rule as any other, forks and corners included. It
+carries as many strands as were lost, and they are new strands: the lost
+ones are still in the wood below the break. So the tree has more strands
+than it began with, and its foot is broader by the root of that, so that
+no strand is thinner for it. Nothing grown in this pass is ever
+considered for snapping, because snapping is over by then.
+
+Predicted: the crown comes back to about what it was; the trunk is
+heavier; and the new shoots, growing into a crown that is already there,
+crowd it.
+
+`runs/016-making-up/regrow.png` (bare strands, two seeds: nothing snapped,
+three snapped and left, three snapped and made up) and
+`sketch/page9-made-up.png` (with the wood: the same tree untouched, and
+with three snapped and made up).
+- Left as they were, three snapped shoots take a third of the crown: 16
+  shoots still counted, but 18 strands of which 9 end at breaks.
+- Made up: 18 strands become 27, 16 shoots become 25 on one seed and 12
+  become 21 on the other. The crown is as full as the untouched tree's or
+  fuller, and the trunk is visibly heavier.
+- Crowding held too: the worst overlap between two strands goes from 0.19
+  to 0.36 of their joined girth, and pairs over 0.15 from 3 to 30.
+
+Wrong, or not there:
+- That overlap. Half again as many strands in the same crown, and nothing
+  yet gives the crown more room for them.
+- 27 strands are 27 roots: the skirt at the foot is bigger still.
+- The new shoot leaves at a fixed two steps from the break. It could as
+  well leave from the wound's own collar; not tried.
+- The wounds themselves still cannot be seen on a grown tree.

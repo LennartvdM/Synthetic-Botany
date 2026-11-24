@@ -64,7 +64,7 @@
       // inside all of: the two faces of the roof, the two side walls, a floor below, and the two ends. The front end
       // may be cut on the slant, or stepped: one side of it ending short of the other.
       const dp = K.D ? lerp(K.D[bi], K.D[bi + 1], bt) : K.deep;   // how far it goes down below its line: one depth, or one for each step of it
-      const cut = K.skew * u + (K.step && (u - K.step.u * w) * K.step.side > 0 ? K.step.a : 0);
+      const cut = (K.inset ? Math.abs(K.skew) * (w + Math.sign(K.skew) * u) : K.skew * u) + (K.step && (u - K.step.u * w) * K.step.side > 0 ? K.step.a : 0);
       // feather: toward one edge the piece thins, above and below, to a lip (a torn edge is drawn thin, not cut square)
       const thin = K.feather ? 1 - K.featherAmt * clamp(K.feather * u / w, 0, 1) : 1, roofH = u < xm ? yl + (u + w) * (h - yl) / (xm + w) : yr + (w - u) * (h - yr) / (w - xm), vf = vv + roofH * (1 - thin);
       let d = Math.max(((u + w) * lx + (vf - yl) * ly) / H(lx, ly), ((u - xm) * rx + (vf - h) * ry) / H(rx, ry), -u - w, u - w, -vv - dp * thin, -s, s - L[n - 1] + cut, pre ? -1 : Math.abs(along) - 0.03);   // and never out past a fold in its own line

@@ -1999,3 +1999,46 @@ What it cost, measured:
   and 147 degrees) that they did not have. Not understood.
 - With every part long and along the grain it is closer to a sheaf of
   strips again, which is the look called ribbony three steps ago.
+
+**Strands may overlap; the fault is the bundle of strings.** "Strands can
+overlap, right now the challenge is making it look less like a bundle of
+strings." So the two overlapping pairs above are not a fault, and the
+clearing phase is cut back (200 passes to 60).
+
+Why it was strings, as read here: every strand was cleared fully from its
+neighbours and drawn no wider than itself, so each was a separate cord
+with air round it; and each was a shallow strip, with nothing behind it.
+
+Changed in page 7's surface (mass): away from any tear, a strand is drawn
+wide enough to run into its neighbours (1.55 to 1.95 girths, was about
+1.2) and deep enough to reach the middle of the wood round it. Where it
+has torn from another, passes an orb, or runs alone as a limb, it is drawn
+at its own girth. So the only gaps left are tears.
+
+Three things went wrong on the way, all showing as flat planks and fins
+standing off the trees (`sketch/page7-mass-with-planks.png`):
+
+1. Blamed the bark first. I had also made the plates broad enough to lie
+   over several strands; narrowed them again and laid them closer. The
+   fins did not change. The broad plates stay withdrawn anyway.
+2. Blamed the widening where a strand runs alone. Limited it to bundles.
+   The fins did not change.
+3. The cause: the long slanted ends introduced for "nothing square" two
+   entries up. A slant was centred on the strand's end, so one side of
+   every cut ran out past the end as a straight blade, up to 0.26 long.
+   A slant now only cuts back into its piece. (Page 5's shard has an
+   option for this; page 5 itself is unchanged.)
+
+`sketch/page7.png` (all four), `sketch/page7-orb-mass.png`. Trunks are
+solid and ridged, limbs are heavy, and the orb's openings read as tears
+in a body.
+
+Wrong, or not there:
+
+- Ragged crumbs where roots meet the ground on three trees, and a ragged
+  patch on the one-limb tree's limb.
+- On the orb tree the lower half is still strandy: those are torn parts,
+  drawn at their own girth, and there are many of them.
+- The orb shows through one opening from the front, not several.
+- Bark is back to a few narrow plates. Nothing ties the surface across
+  strands except their running into each other.

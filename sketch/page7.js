@@ -158,11 +158,11 @@
       const g0 = 0.02, memo = new Map(), Eat = (i, j, k) => { const key = (i + 512) * 1048576 + (j + 512) * 1024 + k + 512; let v = memo.get(key); if (v === undefined) { v = envelope(i * g0, j * g0, k * g0); memo.set(key, v); } return v; };
       const th = BK.thick, peel = th * 1.4, seed = 1 + Math.floor(rb() * 1e6);
       const f = (x, y, z) => { let d1 = 9, d0 = 9; nearSeeds(x, y, z, (i) => { const d = H(x - P[i][0], y - P[i][1], z - P[i][2]); if (on[i]) { if (d < d1) d1 = d; } else if (d < d0) d0 = d; });
-        if (d1 > 2 * sp) return 0.03; let edge = Math.min((d0 - d1) / 2, 1.3 * sp - d1); if (edge < -0.03) return 0.03;   // the boundary between a cell that is on and one that is off
+        if (d1 > 2 * sp) return 0.03; const border = (d0 - d1) / 2; let edge = Math.min(border, 1.6 * sp - d1); if (edge < -0.03) return 0.03;   // border: how far inside the boundary between a cell that is on and one that is off
         if (t.orb) edge = Math.min(edge, H(x - t.orb.c[0], y - t.orb.c[1], z - t.orb.c[2]) - t.orb.room * 1.35);
         const fi = x / g0, fj = y / g0, fk = z / g0, i = Math.floor(fi), j = Math.floor(fj), k = Math.floor(fk), wi = fi - i, wj = fj - j, wk = fk - k;
         const e = ((Eat(i, j, k) * (1 - wk) + Eat(i, j, k + 1) * wk) * (1 - wj) + (Eat(i, j + 1, k) * (1 - wk) + Eat(i, j + 1, k + 1) * wk) * wj) * (1 - wi) + ((Eat(i + 1, j, k) * (1 - wk) + Eat(i + 1, j, k + 1) * wk) * (1 - wj) + (Eat(i + 1, j + 1, k) * (1 - wk) + Eat(i + 1, j + 1, k + 1) * wk) * wj) * wi;
-        const near = sstep(0.06, 0, edge) * sstep(0.52, 0.64, vnoise(x / 0.2, y / 0.2, z / 0.2, seed)), up = peel * near;   // peeled in places along the edge
+        const near = sstep(0.05, 0, border) * sstep(0.52, 0.64, vnoise(x / 0.2, y / 0.2, z / 0.2, seed)), up = peel * near;   // peeled in places, and only along a real border
         return Math.max(e - th - up, -0.035 + (0.035 + up * 0.85) * near - e, -edge * 0.9); };
       const C = [], reach = []; for (let i = 0; i < N; i++) if (on[i]) { C.push(P[i]); reach.push(sp * 1.1 + th + peel); }
       if (C.length) all.push({ f, C, reach, layer: 3 });

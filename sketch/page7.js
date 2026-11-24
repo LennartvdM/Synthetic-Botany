@@ -163,7 +163,7 @@
             e = Math.min(e, H(x - a[0] - bx * tt, y - a[1] - by * tt, z - a[2] - bz * tt) - (a[3] + (b[3] - a[3]) * tt)); } dd = smin(dd, e, 0.012); }
         return Math.max(dd, H(x - c[0], y - c[1], z - c[2]) - R * 0.99, (x - c[0]) * d[0] + (y - c[1]) * d[1] + (z - c[2]) * d[2] - 0.6 * R); };
       all.push({ f, C: [c], reach: [R + 0.02], layer: 4 }); count.scars++; }
-    const BK = recipe.bare || recipe.bark === 0 ? null : Object.assign({ cell: 0.075, stretch: 1.6, cover: 0.4, percolate: 0.985, cohere: 0.6, least: 10, thick: 0.02, peel: 0.18 }, recipe.bark || {}), rb = rng((recipe.seed || 1) + 123);
+    const BK = recipe.bare || recipe.bark === 0 ? null : Object.assign({ cell: 0.075, stretch: 1.6, cover: 0.4, percolate: 0.985, cohere: 0.6, least: 10, thick: 0.02, peel: 0.08 }, recipe.bark || {}), rb = rng((recipe.seed || 1) + 123);
     // which pieces are near which place, so that only those are asked
     const cell = 0.12, grid = new Map(), key = (x, y, z) => (x + 64) * 16384 + (y + 64) * 128 + z + 64;
     const index = (i) => { const s = all[i], seen = new Set(); s.C.forEach((c, j) => { const m = s.reach[j] + 0.06;
@@ -203,31 +203,36 @@
       // swathe is hinged: it lifts toward the open side, a little everywhere and far in places (peel: the share
       // of border plates that have come away), and at the border the sheet is its own thickness and no more, so
       // that it is seen to lie on the wood and not to be the wood.
-      const th = BK.thick, sit = 0.003, plates = new Array(N).fill(null);
-      for (let i = 0; i < N; i++) if (on[i]) { const p = P[i], T = [p[3], p[4], p[5]], n = [p[7], p[8], p[9]], u = cross(T, n); let h = -1;
-        for (const a of [-1, 0, 1]) for (const b of [-1, 0, 1]) { const q = [0, 1, 2].map((c) => p[c] + T[c] * a * 0.4 * sp * st + u[c] * b * 0.4 * sp), at = (tt) => solid(q[0] + n[0] * tt, q[1] + n[1] * tt, q[2] + n[2] * tt);
-          if (at(0.1) < 0) continue; let tt = 0.094; while (tt > -0.08 && at(tt) >= 0) tt -= 0.006; if (tt <= -0.08) continue;
-          let lo = tt, hi = tt + 0.006; for (let s = 0; s < 4; s++) { const m = (lo + hi) / 2; if (at(m) < 0) lo = m; else hi = m; } h = Math.max(h, hi); }
-        if (h === -1) h = 0;
+      // (Sunk, since: a plate is laid to the slope of the wood under it, not held level on its highest point, and it is as
+      // thick as it takes to cover whatever stands proud of that slope, so no strand shows through. It is solid down to
+      // the wood right to its border, which is then a step and not a sheet held clear. Only a few plates still lift.)
+      const skin = BK.thick * 0.4, la = 0.4 * sp * st, lb = 0.4 * sp, plates = new Array(N).fill(null);
+      for (let i = 0; i < N; i++) if (on[i]) { const p = P[i], T = [p[3], p[4], p[5]], n = [p[7], p[8], p[9]], u = cross(T, n), hs = []; let sum = 0, cnt = 0;
+        for (const a of [-1, 0, 1]) for (const b of [-1, 0, 1]) { const q = [0, 1, 2].map((c) => p[c] + T[c] * a * la + u[c] * b * lb), at = (tt) => solid(q[0] + n[0] * tt, q[1] + n[1] * tt, q[2] + n[2] * tt);
+          if (at(0.1) < 0) { hs.push(null); continue; } let tt = 0.094; while (tt > -0.08 && at(tt) >= 0) tt -= 0.006; if (tt <= -0.08) { hs.push(null); continue; }
+          let lo = tt, hi = tt + 0.006; for (let s = 0; s < 4; s++) { const m = (lo + hi) / 2; if (at(m) < 0) lo = m; else hi = m; } hs.push(hi); sum += hi; cnt++; }
+        const t0 = cnt ? sum / cnt : 0; let ga = 0, gb = 0, e = 0; for (const a of [-1, 0, 1]) for (const b of [-1, 0, 1]) { const h = hs[e++]; ga += a * (h === null ? t0 : h) / 6; gb += b * (h === null ? t0 : h) / 6; }
+        ga = clamp(ga, -0.03, 0.03); gb = clamp(gb, -0.03, 0.03); let cover = 0; e = 0; for (const a of [-1, 0, 1]) for (const b of [-1, 0, 1]) { const h = hs[e++]; if (h !== null) cover = Math.max(cover, h - (t0 + ga * a + gb * b)); }
         const off = nb[i].filter((j) => !on[j]); let bd = null, slope = 0;
         if (off.length) { let v = [0, 0, 0]; for (const j of off) { const d = unit([P[j][0] - p[0], P[j][1] - p[1], P[j][2] - p[2]]); v = v.map((x, c) => x + d[c]); } const al = dot(v, n); v = v.map((x, c) => x - n[c] * al);
-          if (H(v[0], v[1], v[2]) > 0.2) { bd = unit(v); slope = rb() < BK.peel ? 0.45 + 0.5 * rb() : 0.08 + 0.14 * rb(); } }
-        plates[i] = { n, h: h + sit, bd, slope }; }
-      // Between two plates the sheet does not break: over a narrow band it passes from one to the other, a crease
-      // where they meet at an angle and a ramp where one rests higher. Only a plate that has peeled is cut free of
-      // its neighbours along its sides, and stands as a flake.
-      const tau = 0.1 * sp, got = [];
+          if (H(v[0], v[1], v[2]) > 0.2) { bd = unit(v); const u1 = rb(), u2 = rb(); slope = u1 < BK.peel ? 0.45 + 0.4 * u2 : 0; } }
+        plates[i] = { n, T, u, t0, ga: ga / la, gb: gb / lb, top: Math.min(0.05, cover) + skin, bd, slope }; }
+      // Between two plates the sheet does not break: over a band it passes from one to the other, a crease where
+      // they meet at an angle and a ramp where one lies higher. Only a plate that has peeled is cut free of its
+      // neighbours along its sides, and stands as a flake.
+      const tau = 0.2 * sp, got = [];
       const f = (x, y, z) => { let d1 = 9, d0 = 9, i1 = -1; got.length = 0; nearSeeds(x, y, z, (i) => { const d = dist(P[i], x, y, z); if (on[i]) { if (d < 2.2 * sp) got.push(i, d); if (d < d1) { d1 = d; i1 = i; } } else if (d < d0) d0 = d; });
         if (d1 > 2 * sp) return 0.03; const border = (d0 - d1) / 2, pc = P[i1], vx = x - pc[0], vy = y - pc[1], vz = z - pc[2], al = Math.abs(vx * pc[3] + vy * pc[4] + vz * pc[5]), ac = Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al));
         let edge = Math.min(border, 1.5 * sp - Math.max(al / st, ac, 0.75 * (al / st + ac))); if (edge < -0.03) return 0.03;   // border: how far inside the boundary between a cell that is on and one that is off; with no cell beyond it, a cell ends eight-sided, not round
         for (const o of rooms) edge = Math.min(edge, away(o, x, y, z) - o.room * 1.35);
         const flake = plates[i1].slope > 0.4; let sv = 0, sl = 0, sw = 0;
-        for (let a = 0; a < got.length; a += 2) { const i = got[a], q = plates[i]; if (i !== i1 && (flake || q.slope > 0.4 || got[a + 1] > d1 + 5 * tau)) continue; const p = P[i], w = Math.exp(-(got[a + 1] - d1) / tau);
-          sv += w * ((x - p[0]) * q.n[0] + (y - p[1]) * q.n[1] + (z - p[2]) * q.n[2] - q.h); sw += w;
-          if (q.bd) sl += w * Math.min(0.07, q.slope * Math.max(0, (x - p[0]) * q.bd[0] + (y - p[1]) * q.bd[1] + (z - p[2]) * q.bd[2] + 0.25 * sp)); }
-        const v = sv / sw, lift = sl / sw, thin = Math.max(sstep(0.003, 0.012, lift), sstep(0.03, 0.005, border)), bottom = -0.035 + (0.035 + lift) * thin;
-        return Math.max(v - lift - th, bottom - v, -edge * 0.9); };
-      const C = [], reach = []; for (let i = 0; i < N; i++) if (on[i]) { C.push(P[i].slice(0, 3)); reach.push(sp * st * 0.9 + th + 0.08 + plates[i].h); }
+        for (let a = 0; a < got.length; a += 2) { const i = got[a], q = plates[i]; if (i !== i1 && (flake || q.slope > 0.4 || got[a + 1] > d1 + 5 * tau)) continue; const p = P[i], w = Math.exp(-(got[a + 1] - d1) / tau), ex = x - p[0], ey = y - p[1], ez = z - p[2];
+          sv += w * (ex * q.n[0] + ey * q.n[1] + ez * q.n[2] - q.t0 - q.ga * (ex * q.T[0] + ey * q.T[1] + ez * q.T[2]) - q.gb * (ex * q.u[0] + ey * q.u[1] + ez * q.u[2]) - q.top); sw += w;
+          if (q.bd) sl += w * Math.min(0.07, q.slope * Math.max(0, ex * q.bd[0] + ey * q.bd[1] + ez * q.bd[2] + 0.25 * sp)); }
+        // v: how far above the sheet's top. Under the top it is solid for 0.07, well into the wood, unless it has lifted: then it is a sheet.
+        const v = sv / sw, lift = sl / sw, thin = sstep(0.003, 0.012, lift), bottom = -0.07 + (0.07 + lift - BK.thick) * thin;
+        return Math.max(v - lift, bottom - v, -edge * 0.9); };
+      const C = [], reach = []; for (let i = 0; i < N; i++) if (on[i]) { C.push(P[i].slice(0, 3)); reach.push(sp * st * 0.9 + 0.08 + Math.abs(plates[i].t0) + plates[i].top); }
       if (C.length) { all.push({ f, C, reach, layer: 3 }); index(all.length - 1); }
     }
     // which layer the surface belongs to at a place: that of whichever piece is nearest there

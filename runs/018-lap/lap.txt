@@ -1,0 +1,6 @@
+no overlap: {"shoots":14,"tips":14,"deepest":3,"snapped":0,"regrown":0,"strands":18} overlap 0.09 pairs over 0/188
+overlap 0.15: {"shoots":14,"tips":14,"deepest":3,"snapped":0,"regrown":0,"strands":18} overlap 0.23 pairs over 203/660
+overlap 0.3: {"shoots":14,"tips":14,"deepest":3,"snapped":0,"regrown":0,"strands":18} overlap 0.38 pairs over 620/916
+overlap 0.45: {"shoots":14,"tips":14,"deepest":3,"snapped":0,"regrown":0,"strands":18} overlap 0.53 pairs over 879/1374
+seed 2: no overlap: {"shoots":17,"tips":17,"deepest":4,"snapped":0,"regrown":0,"strands":18} overlap 0.15 pairs over 1/245
+seed 2: overlap 0.3: {"shoots":17,"tips":17,"deepest":4,"snapped":0,"regrown":0,"strands":18} overlap 0.44 pairs over 768/1160

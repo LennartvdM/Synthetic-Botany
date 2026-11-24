@@ -2721,3 +2721,54 @@ Wrong, or not there:
   wood should keep a root of its own, or none, is not looked at.
 - With broader wood on the trunk the bark has more room, and it is the
   loose tiles again on the two heaviest trees.
+
+## Bark sunk and thickened; run 018: strands that overlap
+
+Two things said of the last pages. The bark is loose: it should sink
+deeper, and be thicker for it so that no cable shows through. And the
+rope of branches and roots could be tightened by letting the strands lie
+somewhat in each other.
+
+**Bark.** Loose because of three things I had built in: each plate was
+held level on the highest wood under it, so it stood clear of everything
+lower; at its border the sheet was its own thickness and no more, so the
+gap under it showed; and every border plate lifted a little. Now:
+- a plate is laid to the slope of the wood under it (the slope that best
+  fits the nine places it is felt at), not level on the highest;
+- it is as thick as it takes to cover whatever stands proud of that slope,
+  plus a skin (0.008), so nothing shows through; never more than 0.05;
+- it is solid down into the wood right to its border, which is then a
+  step and not a sheet held clear;
+- only a few border plates still lift (`peel` 0.08, was 0.18), and the
+  rest not at all;
+- the band over which one plate passes into the next is twice as wide.
+`sketch/page7-bark-sunk.png` (two trees of page 7, two spreads of page 8):
+the sheets lie in the wood with an angular stepped edge. No loose tiles.
+What it cost: the sheet is smoother than it was, and "most of the tree" on
+page 8 is nearer the smooth sleeve withdrawn earlier than I would like.
+The outline still says sheet; the face says less.
+
+**Run 018, overlap** (`lap`; 0.3 for grown trees, 0 for page 7's, which
+are unchanged in their strands). Two strands give way to each other only
+once they are closer than their girths less that share.
+
+Predicted: trunk and boughs draw in, the crown's lines stay where they
+are, and past about a third the strands stop reading as separate.
+
+`runs/018-lap/lap.png` (bare strands at 0, 0.15, 0.3, 0.45, and a second
+seed at 0 and 0.3); `sketch/page9-tight.png`, `-layers`, `-foot` with the
+wood.
+- The trunk draws in at every step; the crown does not move. Held.
+- Measured against whole girths, the worst overlap between two strands is
+  the share allowed plus about 0.08: 0.23, 0.38, 0.53. At 0.3 that is
+  about a quarter of a strand's section shared with its neighbour, which
+  is the limit this work was given; 0.45 is over it.
+- With the wood, the trees are slimmer and read more as trees than as
+  bundles.
+
+Broke: on the heaviest tree (three snapped and made up, 28 strands on 8
+roots) the trunk has gone smooth and mottled. The pieces are drawn wide
+enough to run into their neighbours, and now the neighbours are already
+in each other, so the grooves between strands close up and near-coincident
+faces show as marbling. The strands are there; the relief that showed
+them is not. Not mended: the drawn width needs to know about the overlap.

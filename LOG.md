@@ -3793,3 +3793,43 @@ Wrong, or not there:
 
       page 9's lines, from here   d32867d9a7 802cb84e69 436e4cee59 53b34326a7 30ac9d0ac6
       page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f
+
+## Withdrawn: the heavier roots of the entry above
+
+"Now the excessive huge girths have returned." They had, and the entry
+above put them there. Two mistakes, one of them worse than it looks.
+
+**`grip` 0.62 -> 0.8 was too much.** It was chosen because the roots read
+as wiry, and it was checked against the budget, which it passed: 0.81 of
+the trunk's section at the most loaded ring, nearer the pipe model than the
+0.45 it had been. The number was right and the tree was wrong. What the
+budget cannot see is that the beams of the same round lifted the roots off
+the ground, so more of each root shows than before at the same girth: the
+same number now looks half again as thick. A measure taken before a change
+does not carry across it.
+
+**And it broke an invariant that was written down.** The comment on the
+collar says `collar` x `grip` is about 1, the two set together: a root
+leaves the trunk at its own share of the section and is down to its running
+girth within `flare`. I changed one and not the other, so the product went
+to 1.28 and every root left the trunk 28% over its share. That is exactly
+the "they start about 70% too thick" fault from the roots entries, come
+back by a different door. A number with a stated relation to another is
+not free to move on its own, and I read the comment, wrote the change
+underneath it, and did not apply it.
+
+So: `grip` 0.5, `collar` 2, product 1.0 again, chosen by picture against
+0.42, 0.5, 0.55, 0.62 and 0.8. Mass where a tree carries it -- the foot
+spreads into broad buttresses -- and slim along the root, which is the
+proportion the heavier setting had inverted.
+
+      heaviest root, against the trunk's radius   0.24   (0.34 at grip 0.8)
+      roots crossing a ring, at most              0.40 of the trunk's section
+
+The knuckles are kept at full strength: tested at 0.3 and 0.55, and the
+smaller one takes away the character without taking away any bulk worth
+having. The girth was never in the knuckles.
+
+
+      page 9's lines, from here   b1cb17889f 0736abf4f0 89ee38b16e 561483e938 b15cb8ba77
+      page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f

@@ -3253,3 +3253,58 @@ Wrong, or not there:
 - Between forks a root is a smooth tube. The flat-faced pieces are there
   but at that girth they hardly show.
 - A root ends where its length runs out, not for any reason in the ground.
+
+## The foot stands high; roots come away in bunches
+
+Given: a bonsai rooted over a rock, and a tree on a bank the rain has cut
+away. Said: the clustering is wanted; and the floor of the tree has its
+weight too low. In a bonsai, and in a tree on eroded soil, the start of
+the tree is higher up, which makes it feel lighter and more alive — the
+soil it sprouted in has sagged away and the roots have followed it down.
+
+Taken as the rule: the foot is not where the ground is. The trunk begins
+`perch` of its own foot radius above the ground (1.9, where it was 0.6),
+and the roots run down to the ground from there. What holds the tree up
+is the descent, not a flat plate.
+
+Four things that took:
+- `perch` 1.9. The trunk's base now stands 0.38 above the ground on a
+  foot 0.4 across: about a trunk's width up, as in the bank photograph.
+- The descent lengthens with the height: `dive` plus `slant` (0.75) for
+  every bit the foot stands above the ground, so a perched tree comes
+  down on a slope (54 degrees) and not a cliff.
+- Roots leave in bunches, not evenly all round. `clumps` (3) ways out of
+  the foot, and a root is pulled `cling` (0.88) of the way to the nearest.
+- The families that own the roots are cut at uneven places round the
+  bundle, so the foot has a few heavy legs and some slight ones: girths
+  0.079 down to 0.039 on one tree, where they were all much of a size.
+
+Broke twice on the way, both the same kind of error — a length counted in
+the wrong units.
+- The descent came out at 73 degrees instead of the 45 asked for: a step
+  was counted as `ds` toward the distance walked when it also dropped, so
+  the walk thought it had gone less far than it had and forced the height
+  down harder. Counted as real distance now.
+- With the foot raised, the roots forked while still in the air and the
+  tree stood on a palisade of straws (32 of them). A root now does not
+  divide until it is down, and its descent counts little toward its
+  length, as going down a face already did. 8 legs, parting into 6 to 10
+  once they are in the ground.
+
+`sketch/page9.png`, `-foot`, `-from-above`; `sketch/page11.png`,
+`-other-side`, `-foot`. Withdrawn:
+`sketch/page9-foot-low-withdrawn.png`. Page 7 unchanged.
+
+      roots crossing a ring, at most   0.32 to 0.39 of the trunk
+
+What it does: on level ground the trunk stands on legs that arch down and
+spread, heavy on two or three sides. On the boulder it straddles the
+stone as the bonsai does.
+
+Wrong, or not there:
+- In the bank photograph the roots are flattened plates that are one mass
+  at the trunk and divide only lower down. Mine part at the flare and
+  stay parted: there is no skirt.
+- Nothing has sagged. The tree is perched because it is told to be, not
+  because anything was taken from under it.
+- The legs still arch in much the same way as each other.

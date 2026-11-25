@@ -1,4 +1,4 @@
-seed 1: trunk 0.1107 at y=0.28; 8 roots at the foot 0.0930 = 0.84x, parting into 24 more; most crossing a ring 0.23x
-seed 2: trunk 0.1104 at y=0.24; 8 roots at the foot 0.0892 = 0.81x, parting into 22 more; most crossing a ring 0.29x
-seed 3: trunk 0.0973 at y=0.20; 8 roots at the foot 0.0792 = 0.81x, parting into 24 more; most crossing a ring 0.26x
-seed 1, no flare, all showing: trunk 0.1124 at y=0.28; 8 roots at the foot 0.0928 = 0.83x, parting into 25 more; most crossing a ring 0.54x
+seed 1: trunk 0.1090 at y=0.44; 8 roots at the foot 0.0899 = 0.82x, parting into 6 more; most crossing a ring 0.34x
+seed 2: trunk 0.1110 at y=0.50; 8 roots at the foot 0.0922 = 0.83x, parting into 9 more; most crossing a ring 0.32x
+seed 3: trunk 0.0968 at y=0.44; 8 roots at the foot 0.0845 = 0.87x, parting into 10 more; most crossing a ring 0.39x
+seed 1, no flare, all showing: trunk 0.1085 at y=0.44; 8 roots at the foot 0.0948 = 0.87x, parting into 8 more; most crossing a ring 0.59x

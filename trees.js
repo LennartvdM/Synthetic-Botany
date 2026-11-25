@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 0.5, snake: 1, air: 0.18, reach: 0.6, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.62, collar: 1.6, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 0.5, snake: 1, air: 0.18, reach: 0.6, hang: 0.12, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.62, collar: 1.6, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -71,8 +71,13 @@
         let tt = h.map((v, k) => v - nn[k] * dot(h, nn)); const dn = UP.map((v, k) => -(v - nn[k] * nn[1])), dl = H(dn[0], dn[1], dn[2]); if (H(tt[0], tt[1], tt[2]) < 0.2) tt = dl > 1e-6 ? dn : cross(nn, [1, 0, 0]); tt = unit(tt);
         curl = Math.max(-kmax, Math.min(kmax, curl * 0.9 + P.snake * 0.34 * kmax * (2 * r() - 1))); { const sd = cross(nn, tt); tt = unit(tt.map((v, k) => v * Math.cos(curl) + sd[k] * Math.sin(curl))); }
         const side = cross(nn, tt), out = unit([pos[0] - trunk[0][0], 0, pos[2] - trunk[0][2]]); let best = null;   // (out: away from the foot. A root goes somewhere; it does not come back under the tree.)
+        // A root wants ground it can lie in, so it keeps off a face it would only hang on. Without this, downhill
+        // is rewarded without limit and a cliff is irresistible: every root on that side goes over the lip and
+        // runs straight down the rock in parallel strands, which is a potato looking for water and not a tree.
+        // `hang`: how willing it is to take a steep face at all.
         for (const a of [-0.3, 0, 0.3]) { const c = tt.map((v, k) => v * Math.cos(a) + side[k] * Math.sin(a)), pr = pos.map((v, k) => v + c[k] * 0.07);
-          const score = 0.7 * dot(c, out) + P.down * dot(c, dn) - P.crease * Math.min(1, Math.max(0, G(pr[0] + nn[0] * 0.07, pr[1] + nn[1] * 0.07, pr[2] + nn[2] * 0.07)) / 0.07) + 2.4 * room(pr, rx.length - 12) / 0.22 + (a === 0 ? 0.15 : 0) + 0.1 * r(); if (!best || score > best.score) best = { score, c }; }
+          const lie = 1 - Math.abs(gradG(pr[0], pr[1], pr[2])[1]);
+          const score = 0.7 * dot(c, out) + P.down * dot(c, dn) - (1 - P.hang) * 2.2 * lie * lie - P.crease * Math.min(1, Math.max(0, G(pr[0] + nn[0] * 0.07, pr[1] + nn[1] * 0.07, pr[2] + nn[2] * 0.07)) / 0.07) + 2.4 * room(pr, rx.length - 12) / 0.22 + (a === 0 ? 0.15 : 0) + 0.1 * r(); if (!best || score > best.score) best = { score, c }; }
         h = best.c; let nx = pos.map((v, k) => v + h[k] * ds);
         // it lets go only where the ground itself drops away ahead of it, and never while it is still coming down
         const ahead = pos.map((v, k) => v + h[k] * 0.16), falls = G(ahead[0], ahead[1], ahead[2]) - G(pos[0], pos[1], pos[2]) > 0.1;
@@ -95,8 +100,9 @@
         if (flew) continue;
         for (let it = 0; it < 3; it++) { const gn = gradG(nx[0], nx[1], nx[2]), gv = G(nx[0], nx[1], nx[2]); nx = nx.map((v, k) => v + gn[k] * (want - gv)); }
         if (Math.abs(nx[0]) > 0.92 || Math.abs(nx[2]) > 0.92) break;   // a root stays on the ground it was given
-        // coming down counts little toward its length, as going down a face does: a root's length is the run it has once it is in the ground
-        const steep = Math.abs(gradG(nx[0], nx[1], nx[2])[1]) < 0.6, coming = G(nx[0], nx[1], nx[2]) > 3 * rad; prog += ds * (steep || coming ? 0.3 : 1); gone += H(nx[0] - pos[0], nx[1] - pos[1], nx[2] - pos[2]); pos = nx; rx.push(nx); rr.push(rad); }   // (gone is real distance: counted as ds while the step also drops, the descent comes out far steeper than `slant` asks)
+        // coming down to the ground counts little toward its length. Going down a face is not free any more: it was,
+        // and a root that went over a lip then ran on to the bottom of the cliff however far that was.
+        const coming = G(nx[0], nx[1], nx[2]) > 3 * rad; prog += ds * (coming ? 0.3 : 1); gone += H(nx[0] - pos[0], nx[1] - pos[1], nx[2] - pos[2]); pos = nx; rx.push(nx); rr.push(rad); }   // (gone is real distance: counted as ds while the step also drops, the descent comes out far steeper than `slant` asks)
       return { rx, rr }; } : null;
     // every strand has a place in the bundle's section, and a girth of its own (mixed: most thin, a few heavy)
     const S = Array.from({ length: n }, (_, j) => { const d = Math.sqrt((j + 0.5) / n), a = j * GA + 0.5 * (r() - 0.5); return { a: d * Math.cos(a), b: d * Math.sin(a), fat: P.mixed ? 0.35 + 1.9 * Math.pow(r(), 2.5) : 1 + P.uneven * (r() - 0.5), limb: -1, give: r() < P.giving ? 1 : 0.25 * r() }; });

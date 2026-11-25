@@ -3362,3 +3362,41 @@ Wrong, or not there:
 - The skirt webs between legs that are far apart on one of the four,
   where it should have given up and left them separate.
 - A root still ends where its length runs out.
+
+## A cliff is not an invitation
+
+Said of the cliff tree: it looks weird, that is how potatoes grow — known
+for their aggressive root journeys when no moisture is found.
+(`sketch/page11-potato-roots-withdrawn.png`.) Five roots went over the
+lip and ran straight down the rock in parallel strands to the bottom.
+
+Two rules were wrong, and both said the same thing: nothing in the walk
+knew the difference between ground a root can lie in and rock it can only
+hang on.
+
+- A root scored a step partly by how far downhill it went. On a vertical
+  face every step is maximally downhill, so a cliff was irresistible: not
+  a choice between ways, a sink that took every root on that side. It now
+  also scores how flat the ground is where it would put its next step,
+  and strongly: `hang` (0.12) is all that is left of a face's appeal.
+- Going down a face cost a root almost nothing of its length — the rule
+  that lets a root cross a step in the ground and carry on. Over a cliff
+  it meant a root ran to the bottom however far that was. A face now
+  costs what any other ground costs. Only coming down to the ground from
+  the foot is still free.
+
+And the site put the tree on the very lip, where its roots had nowhere
+else to be. It stands back from it now, by two of its own foot widths.
+
+`sketch/page11.png`, `-other-side`, `-foot` (five sites). The tree at the
+cliff keeps its roots on the flat and sends two over the edge. The one on
+the boulder still comes down the stone, which was the thing to be careful
+of: the stone's sides are not sheer and the ground is close under them,
+so a root there is never far from somewhere to lie. Page 9's trees and
+page 7's are untouched — on level ground neither rule can fire.
+
+Wrong, or not there:
+- The two roots that do go over the lip still hang nearly straight. A
+  root on a face ought to work across it, finding ledges.
+- Nothing prefers the lip itself, where in a real cliff-edge tree the
+  heaviest roots run along the edge like a hem.

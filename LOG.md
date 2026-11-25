@@ -3308,3 +3308,57 @@ Wrong, or not there:
 - Nothing has sagged. The tree is perched because it is told to be, not
   because anything was taken from under it.
 - The legs still arch in much the same way as each other.
+
+## A skirt, legs that differ, and a reason to be perched
+
+Kept going on my own list rather than coming back: the foot had no skirt,
+the legs all arched alike, and the tree was perched because it was told
+to be.
+
+**The skirt.** Where a root leaves the trunk it is not a cord but part of
+a cone. Over its first ten steps a root is now drawn wide enough to meet
+the legs either side of it (how far that is, found the same way the mass
+rule finds its neighbour), and a step or two out it is its own girth
+again. So the foot is one flaring body that divides lower down, as the
+bank photograph's is.
+
+First try, which did not work and is worth writing down: I let the trunk's
+mass rule run down into the root's first steps, expecting it to fill
+between the legs. It filled downward instead. The mass rule reaches along
+the way a strand faces away from its own bundle, and a root on the ground
+faces up, so "toward the middle" is into the soil. It had to be done
+across the root, not under it.
+
+**The legs.** Each comes down at its own steepness now (0.55 to 1.45 of
+`slant`), so one drops and the next runs out shallow.
+
+**The surface.** A root's drawn pieces are half as long as a trunk's. At a
+root's girth the old length was eight times the width, which is a smooth
+tube with no flat faces on it.
+
+**The reason.** The perch had no cause: the tree stood high because a
+number said so. Page 11 has a fifth site, `on a bank the rain has cut
+away`: the ground is a slope with a hollow taken out of it under the
+tree. The ground vocabulary gained `cut(ground, shape)` — what is left of
+the ground once that shape has been taken out — which is the first thing
+in this work that takes something away rather than adding it. The tree
+stands on the lip with its roots reaching over the cut.
+
+      roots crossing a ring, at most   0.24 to 0.42 of the trunk
+
+`sketch/page9.png`, `-foot`, `-from-above`; `sketch/page11.png`,
+`-other-side`, `-foot` (five sites). Withdrawn:
+`sketch/page9-foot-no-skirt-withdrawn.png`. Page 7 unchanged.
+
+A note on method. Putting a comment at the end of a line that still has
+code after it has silently deleted that code five times in this work, and
+cost a render each time (three minutes, and once a whole wrong reading of
+a picture). There is now a check for it, `runs/021-girth/lint.js`, run
+before each render.
+
+Wrong, or not there:
+- The hollow on the bank is a clean round bowl. It reads as a crater, not
+  as something water did.
+- The skirt webs between legs that are far apart on one of the four,
+  where it should have given up and left them separate.
+- A root still ends where its length runs out.

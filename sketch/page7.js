@@ -71,26 +71,36 @@
       const fine = !!s.vine, ridge0 = 0.7 * (r() - 0.5); let kA = 0, kB = s.K - 1; if (fine && !s.thread) { while (kA < kB && s.rho[kA] < 0.02) kA++; while (kB > kA && s.rho[kB] < 0.02) kB--; if (kB - kA < 5) continue; }
       const K = kB + 1; let k = kA, first = true, backBy = 3;
       while (k < K - 1) {
-        const rho0 = s.rho[Math.min(K - 1, k + 2)], want = chain && !s.thread ? Math.max(7, Math.round((7 + 10 * r()) * Math.max(rho0, 0.02) / 0.035)) : K; let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
+        const rho0 = s.rho[Math.min(K - 1, k + 2)]; let want = chain && !s.thread ? Math.max(7, Math.round((7 + 10 * r()) * Math.max(rho0, 0.02) / 0.035)) : K;
+        // a root is slender: at its girth a long piece is a smooth tube and none of the flat faces show
+        if (k < s.root && chain) want = Math.max(4, Math.round(want * 0.5)); let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
         // a root that doubles back is drawn a run at a time: a piece ends at the turn, and does not lie across it
         let turned = false; if (k < s.root) { if (k1 > s.root) k1 = s.root;   // a piece never runs from root into trunk: they are different stuff, and tapered differently
           const sg = (j) => unit([0, 1, 2].map((c) => s.X[(j + 1) * 3 + c] - s.X[j * 3 + c])), d0 = sg(Math.min(K - 2, k + 1)); for (let j = k + 3; j < Math.min(k1, s.root); j++) if (dot(sg(j), d0) < 0.3) { k1 = j; turned = true; break; } }
         const k0 = first ? kA : Math.max(kA, k - backBy), n = k1 - k0, last = k1 === K - 1, wide = (fine ? 0.95 : 1.15) + 0.2 * r(), high = (fine ? 0.8 : 0.62) + 0.25 * r(), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, massW = 1.55 + 0.4 * r(), e = r(), ending = last ? 'own' : turned ? 'turn' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
-          const no = nearOrb(base), tornHere = s.gap && s.inner && s.inner[i] ? Math.min(1, s.gap[i] / (1.2 * rho)) : 0, alone = 1 - sstep(0.9, 2.0, s.far[i] / rho), free = s.thread ? 1 : Math.max(no, tornHere, alone, 1 - sstep(s.root, s.root + 8, i)), body = mass * (1 - free),   // a strand running alone is a limb, not part of a mass
+          const no = nearOrb(base), tornHere = s.gap && s.inner && s.inner[i] ? Math.min(1, s.gap[i] / (1.2 * rho)) : 0, alone = 1 - sstep(0.9, 2.0, s.far[i] / rho), free = s.thread ? 1 : Math.max(no, tornHere, alone, s.rootOf >= 0 ? 1 : 1 - sstep(s.root - 7, s.root - 2, i)),   // the flare is still the body, and a root leaves it: mass runs down into a root's first steps and is gone a little further out
+           body = mass * (1 - free),   // a strand running alone is a limb, not part of a mass
           toMid = body > 0.01 ? Math.max(0.95 * rho, meet(base, [-s.O[i][0], -s.O[i][1], -s.O[i][2]], rho, si, Math.min(s.far[i] * 0.9, (s.limb >= 0 ? 1.5 : 3.2) * rho))) : 0.95 * rho;   // a limb is thin: reaching for its middle must not come out of its other side
           // (so does a strand that divided off another, where it comes out of it)
           // (a torn part leaves and rejoins what it tore from from underneath: laid level with it there, the two surfaces run through each other and come out pitted)
           const lift = (first ? (fine || s.stem >= 0 ? -0.9 * (1 - sstep(0, 0.35, q)) : 0) : -0.28 * (1 - sstep(0, 0.3, q))) + proud * q * q - ((fine || s.rootOf >= 0) && last ? 0.9 * sstep(0.65, 1, q) : 0), front = ending === 'point' ? Math.pow(Math.min(1, (1 - q) / 0.3), 0.7) : 1, back = first && !(s.stem >= 0) ? 1 : 0.7 + 0.3 * sstep(0, 0.3, q), w = Math.min(wide, 1.05 + (wide - 1.05) * (1 - no)) + body * (massW - 1.05);
           let deepHere = rho * 0.95 + body * (toMid - rho * 0.95); for (const o of rooms) deepHere = Math.max(rho * 0.5, Math.min(deepHere, away(o, base[0], base[1], base[2]) - o.room - 0.01));
           let wCap = 9; for (const o of rooms) if (!o.orb) wCap = Math.min(wCap, Math.max(0.6 * rho, away(o, base[0], base[1], base[2]) - o.room));   // nor is it drawn so wide that its edge stands in a hollow   // never into an orb's room
-          const eg = ease[si].g[i], en = ease[si].dir[i], inn = s.inner && s.gap && s.gap[i] > 0 ? s.inner[i] : null, sv = eg || inn ? unit(cross(tan(s, i), s.O[i])) : null, gu = eg ? eg * dot(en, sv) : 0, gv = eg ? eg * dot(en, s.O[i]) : 0;   // the elbow's fill, across the strand and through it
+          const eg = ease[si].g[i], en = ease[si].dir[i], inn = s.inner && s.gap && s.gap[i] > 0 ? s.inner[i] : null, sv = eg || inn || (s.rootOf < 0 && i < s.root) ? unit(cross(tan(s, i), s.O[i])) : null, gu = eg ? eg * dot(en, sv) : 0, gv = eg ? eg * dot(en, s.O[i]) : 0;   // the elbow's fill, across the strand and through it
           // a tear's lip: toward what it tore from, a part reaches a quarter of the way across the gap, so that
           // where the gap is narrow the two lips all but meet (a web with a slit), and where it is wide they stand apart
           let lipU = 0; if (inn) { const sg = dot(inn, sv); if (Math.abs(sg) > 0.4) lipU = Math.sign(sg) * roomToward(base, sv.map((v) => v * Math.sign(sg)), Math.min(0.25 * s.gap[i], 1.0 * rho), rho, si, s.fam); }
           const home = fine && !s.thread && s.inner && s.inner[i] ? (first ? 1 - sstep(0, 0.35, q) : 0) + (last ? sstep(0.65, 1, q) : 0) : 0, hm = home ? home * (s.gap[i] + 0.6 * rho) : 0;   // its two ends bend back into what it tore from, so that it is never left hanging
-          C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * (gu + lipU) / 2 : 0) + (hm ? s.inner[i][j] * hm : 0))); O.push(s.O[i]); W.push(Math.max(0.006, Math.min(wCap, rho * w * front * back + (Math.abs(gu) + Math.abs(lipU)) / 2))); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(deepHere + Math.max(0, -gv)); }
+          // The skirt. Where a root leaves the trunk it is not a cord but part of a cone: over its first few steps
+          // it is wide enough to meet the legs either side of it, so the foot is one flaring body that divides
+          // lower down, as a tree's is. A step or two out it is its own girth again.
+          let skirt = 0;
+          if (sv && s.rootOf < 0 && i < s.root) { const near = sstep(s.root - 10, s.root - 1, i);
+            if (near > 0.02) { const lft = meet(base, sv, rho, si, 3.5 * rho), rgt = meet(base, [-sv[0], -sv[1], -sv[2]], rho, si, 3.5 * rho);
+              skirt = near * Math.max(0, Math.min(lft, rgt) - 0.95 * rho); } }
+          C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * (gu + lipU) / 2 : 0) + (hm ? s.inner[i][j] * hm : 0))); O.push(s.O[i]); W.push(Math.max(0.006, Math.min(wCap, rho * w * front * back + (Math.abs(gu) + Math.abs(lipU)) / 2 + skirt))); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(deepHere + Math.max(0, -gv)); }
         const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
           : ending === 'turn' ? { skew: 0.6 * (r() - 0.5) } : ending === 'step' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.2 * r()), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()) } : { skew: 0 };
         // The next piece starts under this one's front, as far back as the front is cut away: a point takes the last

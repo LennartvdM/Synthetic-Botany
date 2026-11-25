@@ -3559,3 +3559,117 @@ Wrong, or not there:
   along the edge like a hem.
 - How many roots are bold is a fixed share, and so is how many eyes a
   tree has. Neither answers to the tree or the place.
+
+## Roots answer to the ground: a lip to run along, a seam to take, and boldness that answers to the place
+
+The three faults left standing in the entry above, all agreed. Each one was
+the same complaint in a different place: the root was deciding things that
+the ground should decide.
+
+**A lip to run along.** A root now feels around itself for ground that has
+gone from under it: a ring of eight feelers at 0.11 and 0.24. Where the
+ground falls away near by but not underfoot, that is a brink, and a root
+that is not going over turns and runs along it. The heavier the root the
+more it prefers to: `brink` carries the root's girth squared, so the slight
+ones go over the edge and the heavy ones hem it. Two things were needed
+beyond the preference itself, and without them the rule did nothing at all
+(the first two attempts moved the paths by less than the eye could tell):
+the brink has to damp the root's urge to get away from the tree, which
+otherwise simply carries it over; and a root at a brink may turn hard, the
+wide fan of directions it already had on a face, so that it corners onto
+the lip instead of curving over it.
+
+**A seam to take.** Where a root bit into rock it made a wave of its own
+length and nothing more. Now its depth is set by how hollow the ground is
+under it, which is the ground's business and not the root's: in a hollow it
+sinks, over a rib it rides proud, and two roots crossing the same seam dip
+in the same place because the seam is the rock's.
+
+Seeking one took four tries and is the most instructive thing in this
+round.
+
+- Curvature, measured by sampling the surface around a place. It works
+  under the root, for depth. For seeking it is worse than useless: read
+  from the flat *beside* a crack, a crack reads as a ridge, so every root
+  shied away from the cracks it should have taken. The sign was right and
+  the meaning was backwards.
+- A seam is better found the way the lip is found: ground gone from under a
+  place out that way, which comes back. A drop that goes on and on is a
+  lip; a dip with rock beyond it is a seam. Same eight feelers, no extra
+  cost.
+- What counts as a seam was a fixed size (a dip over 0.045). Only cracks of
+  about that one width were ever taken. It is the root's own girth now, so
+  a slight root takes a crack a heavy one cannot feel and could not have
+  lain in anyway.
+- And it steers by the ring, not by a reading 0.07 ahead that no two
+  candidate directions could tell apart.
+
+`runs/022-seams/` has the experiment: one crack across a slab, the rule off
+and on, over twelve seeds.
+
+      crack radius 0.036    root length on the crack   5.7% -> 9.5%
+      crack radius 0.070                               8.6% -> 13.8%
+
+About two thirds more, with the spread between seeds as big as the gain.
+Over a wood you would see it; on any one tree you may not. That is the
+honest size of it, and it is smaller than the pictures first suggested.
+
+Two measures were wrong before that one, both of them quiet about it:
+
+- How much root lay *inside* the groove read 1-4% whichever way the rule
+  was set, while the pictures plainly differed. A root running along a
+  crack rides on it; it is not in it.
+- The first ground was a slab with three crossing cracks. Their own width
+  covered a fifth of it, so a root was within 0.06 of a crack by chance,
+  and the measure sat at 22% with the rule off. Nothing could have shown
+  there. The test ground has one crack now, where the baseline is 5%.
+
+I believed, from those pictures, that roots were plainly following the
+cracks, and said so to myself twice before the baseline said otherwise. The
+picture is the judge of whether a thing looks right. It is not the judge of
+whether a rule did anything: for that it has to be the same picture with
+the rule off, and a count.
+
+**Boldness that answers to the place.** How many of a tree's roots will
+risk a face was a flat 35%, the same on a lawn as on a boulder. A tree now
+looks at what it has: a ring about the foot, how much of it is ground it
+could lie in rather than hang off, and how much of that is not far below.
+Where there is soil, few roots take a face; where there is not, most must.
+On these sites it comes out at 81% good ground on the cut bank, 63% on the
+slope, 56% at the cliff edge, 50% on the boulder, 44% in the cleft. And it
+is the slight roots that go over, since a heavy one is held back by the
+same weighting that puts it on the lip.
+
+**An eye costs a root a fifth of its section**, so only a root that can
+spare it gets one: the chance now rises with the root's girth against the
+trunk's, and the slight ones have none. Page 9's trees have fewer eyes
+than they had, on heavier wood. Their roots and limbs are unmoved -- the
+lines fingerprint exactly as before -- and page 7's four are untouched.
+
+A sixth site, `on cracked rock`: a tilted slab with three cracks cut into
+it. The other five have almost nothing concave in them, being faceted rocks
+and tilted planes, so there was nothing for a seam rule to find; the new
+rules only have something to answer to where the ground has something to
+say. That is not a fault of the rule but it is a limit on where it shows.
+
+Two things I had to undo on the way:
+
+- A perfect plane read as hollow by 1e-17 of float noise, which was enough
+  to move every root a little and make a fingerprint useless. Below
+  anything real, it is flat now.
+- The measurement script read one step past the end of a strand and
+  reported a not-a-number in the wood. There was none. Before believing a
+  fault in the thing, check the instrument.
+
+      roots crossing a ring, at most   0.15 to 0.45 of the trunk
+      seam felt, by site               2% slope, 4% bank, 11% boulder, 19% cracked rock, 37% cleft
+
+Wrong, or not there:
+- A root takes a seam, but nothing about the rock's own grain: a crack is
+  wherever the ground happens to be hollow, and the rock has no bedding, no
+  direction, nothing a seam ought to run with.
+- The hem is a preference for a brink, not for a particular brink. A tree
+  on a spur hems both sides equally; it has no sense of the shape of what
+  it is standing on.
+- A bold root goes over a face. It still has no sense of what is at the
+  bottom, and reaches it only because the ground happens to be there.

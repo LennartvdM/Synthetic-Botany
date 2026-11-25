@@ -16,6 +16,10 @@
   // cut(ground, shape): what is left of the ground once that shape has been taken out of it. A hollow scooped
   // under a tree is the soil it sprouted in, gone; the tree is left standing on what its roots had reached.
   const cut = (a, b) => (x, y, z) => Math.max(a(x, y, z), -b(x, y, z));
+  // groove(a, b, R): a round channel cut from a to b. Taken out of a slab it is a crack in the rock.
+  const groove = (a, b, R) => (x, y, z) => { const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], w = [x - a[0], y - a[1], z - a[2]];
+    const t = Math.max(0, Math.min(1, (w[0] * d[0] + w[1] * d[1] + w[2] * d[2]) / (d[0] * d[0] + d[1] * d[1] + d[2] * d[2])));
+    return H(w[0] - d[0] * t, w[1] - d[1] * t, w[2] - d[2] * t) - R; };
   const bowl = (c, R, squash = [1, 1, 1]) => (x, y, z) => H((x - c[0]) / squash[0], (y - c[1]) / squash[1], (z - c[2]) / squash[2]) - R;
   const SITES = [
     ['on a slope', all(under([0.38, 1, 0.1], [0, 0.42, 0]), rock([0.42, 0.3, 0.3], 0.24, 3), rock([-0.5, 0.62, -0.35], 0.2, 5)), [0, 0], 1],
@@ -23,6 +27,8 @@
     ['on a boulder', all(under([0.05, 1, -0.05], [0, 0.1, 0]), rock([0, 0.32, 0], 0.4, 11, [1.1, 0.85, 1])), [0.03, 0.02], 3],
     ['in a cleft', all(under([0, 1, 0.06], [0, 0.08, 0]), rock([-0.5, 0.3, 0.02], 0.36, 13, [1, 1.1, 1.2]), rock([0.5, 0.28, -0.04], 0.36, 17, [1, 1.05, 1.2])), [0, 0], 4],
     ['on a bank the rain has cut away', cut(all(under([0.1, 1, 0.3], [0, 0.46, 0]), rock([0.55, 0.12, -0.5], 0.18, 19)), bowl([0.2, 0.18, 0.34], 0.52, [1, 0.75, 1])), [-0.1, -0.06], 6],
+    ['on cracked rock', cut(all(under([0.05, 1, 0.04], [0, 0.34, 0]), rock([0.6, 0.18, 0.5], 0.22, 23)),
+      all(groove([-0.95, 0.335, -0.3], [0.85, 0.30, 0.2], 0.036), groove([-0.25, 0.335, -0.9], [0.2, 0.315, 0.85], 0.027), groove([0.1, 0.33, -0.1], [0.75, 0.33, -0.75], 0.031))), [-0.2, 0.2], 23],
   ];
   const quick = typeof location !== 'undefined' ? +new URLSearchParams(location.search).get('h') : 0;   // ?h=0.013 for a quick look
   const S = SITES.map(([name, ground, site, seed]) => [name, tree(Object.assign({ seed }, Trees.sprout({ seed, strands: 14, feet: 6, foot: 0.16, tall: 0.8, reach: 0.85, twig: 0.2, ground, site, roots: 0.85 })))]);

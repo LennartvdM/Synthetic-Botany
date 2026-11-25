@@ -30,10 +30,21 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 0.5, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.62, collar: 1.6, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.62, collar: 1.6, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
+    // How hollow the ground is at a place: positive in a groove, negative over a rib, zero on anything flat or
+    // evenly sloped. Taken from the ground alone, so every root that crosses the same seam finds the same seam.
+    const nook = G ? (p, nn) => { const e = 0.05, t1 = unit(cross(nn, Math.abs(nn[1]) < 0.85 ? UP : [1, 0, 0])), t2 = cross(nn, t1); let a = 4 * G(p[0], p[1], p[2]);
+      for (const t of [t1, t2]) for (const q of [1, -1]) a -= G(p[0] + t[0] * e * q, p[1] + t[1] * e * q, p[2] + t[2] * e * q);
+      // A perfect plane reads as hollow by 1e-17 of float noise, which is enough to move every root a
+      // little and leave no two runs of the same tree alike. Below anything real, it is flat.
+      const v = a / (4 * e);
+      return Math.abs(v) < 1e-12 ? 0 : v; } : null;
+    // Where the ground is good to lie in, around the foot: the share of a ring about the tree that is neither
+    // steep nor far below it. It decides how many of this tree's roots will risk a face (below).
+    let lieShare = -1;
     const r = rng(P.seed), n = P.strands, ds = P.ds, trunk = line(P.trunk, ds), nT = trunk.length, R0 = trunk[0][3], rho0 = R0 * Math.sqrt(P.fill / n), turn = (i) => P.twist * TAU * i / nT;
     // A root on ground. It is not laid, it is walked: from where it starts it goes out a step at a time over the
     // surface, and what it does on the way is the ground's doing as much as its own.
@@ -66,7 +77,17 @@
       // Whether this root is one that will go over an edge at all. Most turn and run along the lip, where the
       // soil is; a `bold` one commits to the face, and once on it braces rather than hangs. A rule that tells
       // every root the same thing gives either a cliff no root will touch or a cliff every root pours down.
-      const bold = rw() < P.bold ? 0.12 : 1;
+      // How many roots are bold is not a share fixed in advance. On ground a tree can lie in, few need to risk a
+      // face; on a boulder or a lip with little soil left, most must. And it is the slight roots that go over: a
+      // heavy one stays where it can be held, which is what puts the heaviest wood along the brink.
+      if (lieShare < 0) { let good = 0, tot = 0;
+        for (let j = 0; j < 16; j++) { const a2 = TAU * j / 16;
+          for (const rr2 of [0.3, 0.6]) { let q = [trunk[0][0] + Math.cos(a2) * rr2, p0[1] + 0.35, trunk[0][2] + Math.sin(a2) * rr2];
+            for (let it = 0; it < 14; it++) { const gn = gradG(q[0], q[1], q[2]); q = [0, 1, 2].map((c) => q[c] - gn[c] * G(q[0], q[1], q[2])); }
+            tot++; if (Math.abs(gradG(q[0], q[1], q[2])[1]) > 0.72 && q[1] > p0[1] - 0.32) good++; } }
+        lieShare = good / tot; }
+      const heavy = Math.max(0, Math.min(1, (rho0 / P.trunk[0][3] - 0.07) / 0.2));
+      const bold = rw() < Math.min(0.9, P.bold * (0.3 + 1.9 * (1 - lieShare)) * (1.4 - 0.9 * heavy)) ? 0.12 : 1;
       const hookAt = 0.5 + 0.38 * rw();
       let braceWay = rw() < 0.5 ? 1 : -1, braceLeft = 0, hooked = 0;
       const steepness = 0.55 + 0.9 * rw();   // no two legs come down alike: one drops, the next runs out shallow
@@ -77,7 +98,7 @@
       // `flare`, under half a trunk's width. (A long smooth cone from trunk to tip is a carrot, not a root.)
       const girth = (g, far) => rho0 * (collar ? P.grip * (1 + (P.collar - 1) * Math.pow(Math.max(0, 1 - far / P.flare), 1.6)) : 1) * (1 - P.waste * g) * (dives ? 1 : Math.pow(Math.min(1, (1 - g) / 0.22), 0.7) * 0.9 + 0.1);
       const room = (pr, own) => { if (Math.abs(pr[0]) > 0.97 || Math.abs(pr[2]) > 0.97) return 0; let near = 0.22; for (const q of rootPts) near = Math.min(near, H(pr[0] - q[0], pr[1] - q[1], pr[2] - q[2])); for (let e = 0; e < own; e++) near = Math.min(near, H(pr[0] - rx[e][0], pr[1] - rx[e][1], pr[2] - rx[e][2])); return near; };
-      for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = girth(g, gone), nn = gradG(pos[0], pos[1], pos[2]), hug = rad * (0.4 + 0.22 * Math.sin(wob + TAU * gone / wl)) - rad * P.bite * Math.max(0, 1 - Math.abs(nn[1]) - 0.45) / 0.3 * Math.max(hooked, Math.max(0, Math.sin(wob * 2 + TAU * gone / (wl * 0.55)))), want = c0 + (hug - c0) * sstep(0, P.dive + P.slant * steepness * Math.max(0, c0), gone) - (dives ? 0.3 * sstep(0.72, 1, g) : 0);
+      for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = girth(g, gone), nn = gradG(pos[0], pos[1], pos[2]), nk = Math.min(1.4, nook(pos, nn) * P.seams), hug = rad * (0.4 + 0.22 * Math.sin(wob + TAU * gone / wl)) - rad * P.seam * Math.max(0, nk) + rad * 0.5 * Math.max(0, Math.min(1, -nk)) - rad * P.bite * Math.max(0, 1 - Math.abs(nn[1]) - 0.45) / 0.3 * Math.max(hooked, Math.max(0, Math.min(1, nk)), 0.5 * Math.max(0, Math.sin(wob * 2 + TAU * gone / (wl * 0.55)))), want = c0 + (hug - c0) * sstep(0, P.dive + P.slant * steepness * Math.max(0, c0), gone) - (dives ? 0.3 * sstep(0.72, 1, g) : 0);
         let tt = h.map((v, k) => v - nn[k] * dot(h, nn)); const dn = UP.map((v, k) => -(v - nn[k] * nn[1])), dl = H(dn[0], dn[1], dn[2]); if (H(tt[0], tt[1], tt[2]) < 0.2) tt = dl > 1e-6 ? dn : cross(nn, [1, 0, 0]); tt = unit(tt);
         curl = Math.max(-kmax, Math.min(kmax, curl * 0.9 + P.snake * 0.34 * kmax * (2 * r() - 1))); { const sd = cross(nn, tt); tt = unit(tt.map((v, k) => v * Math.cos(curl) + sd[k] * Math.sin(curl))); }
         // On a face it cannot lie on, a root does not hang down it: it braces. It works across the fall line in
@@ -91,14 +112,33 @@
         // dangling off it. (This is the whole of "revert back into the cliff": the end is where it shows.)
         const hook = onFace > 0.5 ? Math.max(0, Math.min(1, (g - hookAt) / 0.16)) : 0;
         const grip = unit([0, 1, 2].map((k) => acr[k] * (0.62 - 0.3 * hook) + fall[k] * 0.62 * (1 - 2.1 * hook)));
+        // The lip of a drop. Where the ground falls away close by but not underfoot, a root that is not going
+        // over turns and runs along the brink: that is where the soil is, and a tree on a cliff edge hems the
+        // edge with its heaviest wood. Found by feeling around the surface, so it tracks a lip of any shape.
+        let lipAmt = 0, lipWay = null, seamAmt = 0, seamWay = null;
+        { const t2 = cross(nn, tt), g0 = G(pos[0], pos[1], pos[2]);
+          for (let j = 0; j < 8; j++) { const a2 = TAU * j / 8, d = unit([0, 1, 2].map((k) => tt[k] * Math.cos(a2) + t2[k] * Math.sin(a2)));
+            // how far the ground has gone from under a place out that way: positive is ground missing.
+            const away = (far) => G(pos[0] + d[0] * far, pos[1] + d[1] * far, pos[2] + d[2] * far) - g0;
+            const beyond = Math.max(0, away(0.3));
+            if (onFace < 0.5) for (const far of [0.11, 0.24]) { const dv = away(far) * 0.13 / far; if (dv > lipAmt) { lipAmt = dv; lipWay = d; } }
+            // A seam is ground gone that comes back: a dip with rock beyond it. A drop that goes on and on is a
+            // lip, not a seam. (Curvature cannot tell them apart from the outside: a crack read from the flat
+            // beside it looks like a ridge, which had every root shying away from the cracks it should take.)
+            let dip = 0; for (const far of [0.08, 0.14, 0.2]) dip = Math.max(dip, away(far) - 0.7 * beyond);
+            const v = Math.min(1.4, dip / Math.max(0.022, 1.15 * rad)) * (0.62 + 0.38 * dot(d, tt));
+            if (v > seamAmt) { seamAmt = v; seamWay = d; } } }
+        const brink = Math.max(0, Math.min(1, (lipAmt - 0.035) / 0.075)) * heavy * heavy * (bold > 0.5 ? 1 : 0);
+        let hemDir = null;
+        if (brink > 0) { const pp = cross(nn, lipWay), sg = dot(pp, tt) >= 0 ? 1 : -1; hemDir = unit([0, 1, 2].map((k) => pp[k] * sg + lipWay[k] * 0.3)); }
         const side = cross(nn, tt), out = unit([pos[0] - trunk[0][0], 0, pos[2] - trunk[0][2]]); let best = null;   // (out: away from the foot. A root goes somewhere; it does not come back under the tree.)
         // A root wants ground it can lie in, so it keeps off a face it would only hang on. Without this, downhill
         // is rewarded without limit and a cliff is irresistible: every root on that side goes over the lip and
         // runs straight down the rock in parallel strands, which is a potato looking for water and not a tree.
         // `hang`: how willing it is to take a steep face at all.
-        for (const a of (onFace > 0.5 ? [-1.3, -0.7, -0.3, 0, 0.3, 0.7, 1.3] : [-0.3, 0, 0.3])) { const c = tt.map((v, k) => v * Math.cos(a) + side[k] * Math.sin(a)), pr = pos.map((v, k) => v + c[k] * 0.07);
+        for (const a of (onFace > 0.5 || brink > 0.35 || (P.crease > 0 && seamAmt > 0.5) ? [-1.3, -0.7, -0.3, 0, 0.3, 0.7, 1.3] : [-0.3, 0, 0.3])) { const c = tt.map((v, k) => v * Math.cos(a) + side[k] * Math.sin(a)), pr = pos.map((v, k) => v + c[k] * 0.07);
           const lie = 1 - Math.abs(gradG(pr[0], pr[1], pr[2])[1]);
-          const score = (1 - onFace) * (0.7 * dot(c, out) + P.down * dot(c, dn)) + onFace * 3.2 * dot(c, grip) - bold * (1 - P.hang) * 2.2 * lie * lie * (1 - onFace) - P.crease * Math.min(1, Math.max(0, G(pr[0] + nn[0] * 0.07, pr[1] + nn[1] * 0.07, pr[2] + nn[2] * 0.07)) / 0.07) + 2.4 * room(pr, rx.length - 12) / 0.22 + (a === 0 ? 0.15 : 0) + 0.1 * r(); if (!best || score > best.score) best = { score, c }; }
+          const score = (hemDir ? P.hem * brink * dot(c, hemDir) : 0) + (1 - onFace) * (1 - 0.5 * brink) * (0.7 * dot(c, out) + P.down * dot(c, dn)) + onFace * 3.2 * dot(c, grip) - bold * (1 - P.hang) * 2.2 * lie * lie * (1 - onFace) + (seamWay ? P.crease * seamAmt * dot(c, seamWay) : 0) + 2.4 * room(pr, rx.length - 12) / 0.22 + (a === 0 ? 0.15 : 0) + 0.1 * r(); if (!best || score > best.score) best = { score, c }; }
         h = best.c; let nx = pos.map((v, k) => v + h[k] * ds);
         // it lets go only where the ground itself drops away ahead of it, and never while it is still coming down
         const ahead = pos.map((v, k) => v + h[k] * 0.16), falls = G(ahead[0], ahead[1], ahead[2]) - G(pos[0], pos[1], pos[2]) > 0.1;
@@ -258,7 +298,7 @@
       for (let i = 0; i < made; i++) { const par = S[i];
         if (par.rootOf !== undefined || par.stem !== undefined || par.child) continue;
         // (index 0 is a root's far tip and par.root is at the foot, so a root's eye is placed from its outer end up)
-        if (G && par.root >= 11 && re() < P.eyes) { const kb = Math.max(2, Math.round(par.root * (0.14 + 0.26 * re()))), sp = Math.min(6 + Math.round(6 * re()), par.root - 3 - kb);
+        if (G && par.root >= 11 && re() < P.eyes * Math.max(0, Math.min(1.2, (par.rho[par.root - 3] / P.trunk[0][3] - 0.06) / 0.14))) { const kb = Math.max(2, Math.round(par.root * (0.14 + 0.26 * re()))), sp = Math.min(6 + Math.round(6 * re()), par.root - 3 - kb);
           if (sp >= 5) eye(i, kb + sp, kb, true, re); }
         // A limb's eye goes on a bough: out far enough that the strands have parted and the limb is its own body,
         // but still thick enough to be worth looking at. Nearer the trunk the wood is one mass and swallows it;

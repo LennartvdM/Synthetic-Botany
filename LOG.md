@@ -3743,3 +3743,53 @@ the section the eye took, so no two are alike.
 
       page 9's lines, from here   1f56c8eb6f 4cf2326b26 88b7a470c3 9c164ef91a 1a82562001
       page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f
+
+## A root is a beam, not a strap
+
+"The starting shape is a ribbon. That makes the root a ribbon. What happens
+if you place a ribbon on a surface? It drapes over it." Which was right,
+and was a fault in the wood and in the walk, not in the line. The last
+round made the line stiff; the stuff on it was still a strap.
+
+Two things made it a strap, and they were both deliberate once.
+
+**The pieces were cut short.** A root's pieces were halved in length,
+because at a root's girth a long flat-faced prism laid along a curve shows
+no face: it cuts the curve and has to be sliced to follow it. But the line
+is not a curve any more. A piece can now be a whole run of it: a long
+prism, ended at the corner, so a root is a chain of beams meeting at
+knuckles. This is the first thing that reads as material with any stiffness
+in it, because a face is at last long enough to catch the light along.
+
+**It was laid to the ground at every step.** That is what draping *is*.
+A stiff thing is planted where it corners -- that is what a knuckle is for
+-- and between knuckles it holds its line: it stands on the high places and
+spans the low ones, as far off the ground as a couple of its own
+thicknesses and no further. It holds on the way down as well, so a root
+does not slide down to the ground but comes down in steps, on its knuckles,
+with the spans between riding high.
+
+Tried first and withdrawn: giving a root its own section, narrow and tall
+instead of wide and flat, on the thought that a blade standing on edge
+resists what a strap lying flat does not. At a root's girth, and with the
+surface smoothed as it is, a near-square section reads as a *tube* -- it
+lost the flat faces entirely and came out rounder and limper than the strap
+it replaced. The section was not the thing. The length of the faces and
+whether they touch the ground were.
+
+Page 7's four are untouched: a tree given no ground has no walked root, so
+what is below its foot keeps the short pieces it always had, and the
+gate is on the ground, not on the strand. I checked this by picture after
+finding that the kernel fingerprint would not have caught it -- it
+fingerprints the lines, and this round changes only the wood on them.
+
+Wrong, or not there:
+- The beam spans a hollow and stands off the ground, but nothing is holding
+  it there. It is stiff in the way a laid plank is stiff; there is no sense
+  of it being sprung against anything.
+- A knuckle is where the root touches, and a span is where it does not, but
+  the wood is the same stuff in both. A real one is scuffed and flattened
+  where it bears.
+
+      page 9's lines, from here   d32867d9a7 802cb84e69 436e4cee59 53b34326a7 30ac9d0ac6
+      page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f

@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.8, collar: 1.6, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.8, collar: 1.6, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -173,7 +173,18 @@
           for (const q of span) { rx.push(q); rr.push(girth(Math.min(1, prog / len), gone)); prog += ds * 0.3; gone += ds; } air++; flew = true;
           const e = span.length - 1; h = unit(span[e].map((v, k) => v - span[e - 1][k])); pos = span[e]; break; }
         if (flew) continue;
-        for (let it = 0; it < 3; it++) { const gn = gradG(nx[0], nx[1], nx[2]), gv = G(nx[0], nx[1], nx[2]); nx = nx.map((v, k) => v + gn[k] * (want - gv)); }
+        // A stiff thing laid on uneven ground does not drape over it. It is planted where it corners -- that is
+        // what a knuckle is for -- and between knuckles it holds its line: it stands on the high places and
+        // spans the low ones, as far off the ground as a couple of its own thicknesses and no further. Laid to
+        // the ground at every step instead, it takes the ground's every shape and has no stiffness of its own,
+        // whatever its line does in plan. That is a ribbon on a surface.
+        // (this holds on the way down as well: a root does not slide down to the ground, it comes down in steps,
+        //  on its knuckles, with the spans between them riding high)
+        { const plant = turning || since <= 1, stand = want + P.bridge * rad;
+          for (let it = 0; it < 3; it++) { const gn = gradG(nx[0], nx[1], nx[2]), gv = G(nx[0], nx[1], nx[2]);
+            const to = plant ? want : gv < want ? want : gv > stand ? stand : gv;
+            if (to === gv) break;
+            nx = nx.map((v, k) => v + gn[k] * (to - gv)); } }
         if (Math.abs(nx[0]) > 0.92 || Math.abs(nx[2]) > 0.92) break;   // a root stays on the ground it was given
         // coming down to the ground counts little toward its length. Going down a face is not free any more: it was,
         // and a root that went over a lip then ran on to the bottom of the cliff however far that was.

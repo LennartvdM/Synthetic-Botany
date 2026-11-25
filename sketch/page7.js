@@ -18,7 +18,7 @@
   const OVER = typeof location !== 'undefined' && new URLSearchParams(location.search).get('set') ? JSON.parse(new URLSearchParams(location.search).get('set')) : null;
   function tree(recipe) {
     if (OVER) recipe = Object.assign({}, recipe, OVER);
-    const t = Trees.grow(recipe), r = rng((recipe.seed || 1) + 50), all = [], count = { bands: 0, fine: 0, slivers: 0, plates: 0, cut: 0, dropped: 0 };
+    const t = Trees.grow(recipe), walked = !!recipe.ground, r = rng((recipe.seed || 1) + 50), all = [], count = { bands: 0, fine: 0, slivers: 0, plates: 0, cut: 0, dropped: 0 };
     const at = (s, k) => [s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]], tan = (s, k) => unit([0, 1, 2].map((q) => s.X[Math.min(s.K - 1, k + 1) * 3 + q] - s.X[Math.max(0, k - 1) * 3 + q]));
     // Room kept clear in the wood: round an orb, and where a snapped shoot has rotted out. And every wound, hollow or not,
     // is left quiet: no bark, shell or slivers near it, so that it is not one more detail among the others.
@@ -72,11 +72,12 @@
       const K = kB + 1; let k = kA, first = true, backBy = 3;
       while (k < K - 1) {
         const rho0 = s.rho[Math.min(K - 1, k + 2)]; let want = chain && !s.thread ? Math.max(7, Math.round((7 + 10 * r()) * Math.max(rho0, 0.02) / 0.035)) : K;
-        // a root is slender: at its girth a long piece is a smooth tube and none of the flat faces show
-        if (k < s.root && chain) want = Math.max(4, Math.round(want * 0.5)); let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
+        if (k < s.root && chain) want = walked ? Math.max(6, Math.round(want * 1.6)) : Math.max(4, Math.round(want * 0.5));
+        let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
         // a root that doubles back is drawn a run at a time: a piece ends at the turn, and does not lie across it
         let turned = false; if (k < s.root) { if (k1 > s.root) k1 = s.root;   // a piece never runs from root into trunk: they are different stuff, and tapered differently
-          const sg = (j) => unit([0, 1, 2].map((c) => s.X[(j + 1) * 3 + c] - s.X[j * 3 + c])), d0 = sg(Math.min(K - 2, k + 1)); for (let j = k + 3; j < Math.min(k1, s.root); j++) if (dot(sg(j), d0) < 0.3) { k1 = j; turned = true; break; } }
+          const sg = (j) => unit([0, 1, 2].map((c) => s.X[(j + 1) * 3 + c] - s.X[j * 3 + c])), d0 = sg(Math.min(K - 2, k + 1));
+          for (let j = k + (walked ? 4 : 3); j < Math.min(k1, s.root); j++) { const t = dot(sg(j), d0); if (t < (walked ? 0.955 : 0.3)) { k1 = j; turned = t < 0.3; break; } } }
         const k0 = first ? kA : Math.max(kA, k - backBy), n = k1 - k0, last = k1 === K - 1, wide = (fine ? 0.95 : 1.15) + 0.2 * r(), high = (fine ? 0.8 : 0.62) + 0.25 * r(), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, massW = 1.55 + 0.4 * r(), e = r(), ending = last ? 'own' : turned ? 'turn' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);

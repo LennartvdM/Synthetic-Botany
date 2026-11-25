@@ -73,7 +73,8 @@
       while (k < K - 1) {
         const rho0 = s.rho[Math.min(K - 1, k + 2)], want = chain && !s.thread ? Math.max(7, Math.round((7 + 10 * r()) * Math.max(rho0, 0.02) / 0.035)) : K; let k1 = Math.min(K - 1, k + want); if (K - 1 - k1 < 6) k1 = K - 1;
         // a root that doubles back is drawn a run at a time: a piece ends at the turn, and does not lie across it
-        let turned = false; if (k < s.root) { const sg = (j) => unit([0, 1, 2].map((c) => s.X[(j + 1) * 3 + c] - s.X[j * 3 + c])), d0 = sg(Math.min(K - 2, k + 1)); for (let j = k + 3; j < Math.min(k1, s.root); j++) if (dot(sg(j), d0) < 0.3) { k1 = j; turned = true; break; } }
+        let turned = false; if (k < s.root) { if (k1 > s.root) k1 = s.root;   // a piece never runs from root into trunk: they are different stuff, and tapered differently
+          const sg = (j) => unit([0, 1, 2].map((c) => s.X[(j + 1) * 3 + c] - s.X[j * 3 + c])), d0 = sg(Math.min(K - 2, k + 1)); for (let j = k + 3; j < Math.min(k1, s.root); j++) if (dot(sg(j), d0) < 0.3) { k1 = j; turned = true; break; } }
         const k0 = first ? kA : Math.max(kA, k - backBy), n = k1 - k0, last = k1 === K - 1, wide = (fine ? 0.95 : 1.15) + 0.2 * r(), high = (fine ? 0.8 : 0.62) + 0.25 * r(), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, massW = 1.55 + 0.4 * r(), e = r(), ending = last ? 'own' : turned ? 'turn' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);

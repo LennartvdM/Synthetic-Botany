@@ -3163,3 +3163,39 @@ Wrong, or not there:
 - The trunk's strands pull in tight at the foot now that nothing holds
   them out. The flare is the roots leaving, not the trunk spreading.
 - A few roots still arc through the air in smooth even loops.
+
+## Where a root starts: the colouring was lying
+
+Said, over the coloured picture, with the heavy blocks at the foot ringed
+in red: we clearly disagree on where the roots start; those are what I
+consider roots; and if we don't control those we can't taper them.
+
+We did not disagree. Those blocks are the kernel's roots — the first
+three or four steps of the walk, at the strand's full girth, before the
+collar has narrowed. The colouring said trunk because a drawn piece runs
+over several steps and I tagged it by its far end, so the one piece that
+spans the root/trunk line was tagged trunk — and that piece is the whole
+flare. I had been handed the right evidence and labelled it wrong, then
+reported to the person who was right that they were looking at trunk.
+
+Two changes:
+- A drawn piece never runs from root into trunk. They are different stuff
+  and tapered differently, so a piece now ends at the line. The colouring
+  is then true, and `sketch/page9-roots.png` shows the root beginning
+  where it was ringed.
+- The collar taper runs over `flare` 0.18 instead of 0.06. At 0.06 it was
+  under two steps: the root was at the trunk's girth, then abruptly thin
+  — a block with a wire out of it, which is what was being ringed. Over
+  0.18 the girth falls 0.060, 0.055, 0.043, 0.032, 0.023, 0.016, 0.011
+  along the first seven steps: a cone out of the trunk.
+
+      roots crossing a ring, at most   0.26 to 0.29 of the trunk
+
+Page 7's four trees unchanged to the last digit.
+
+Wrong, or not there:
+- The flare is still the only thing that widens the trunk's foot. The
+  trunk's own strands pull in tight; nothing spreads them.
+- Where a root ends is still its own length running out, not anything
+  about the ground it is in.
+- A few roots arc through the air in smooth even loops.

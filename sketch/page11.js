@@ -19,13 +19,13 @@
   const bowl = (c, R, squash = [1, 1, 1]) => (x, y, z) => H((x - c[0]) / squash[0], (y - c[1]) / squash[1], (z - c[2]) / squash[2]) - R;
   const SITES = [
     ['on a slope', all(under([0.38, 1, 0.1], [0, 0.42, 0]), rock([0.42, 0.3, 0.3], 0.24, 3), rock([-0.5, 0.62, -0.35], 0.2, 5)), [0, 0], 1],
-    ['at a cliff edge', all(both(under([0, 1, 0.05], [0, 0.62, 0]), under([1, 0.18, 0], [0.14, 0.3, 0])), under([-0.08, 1, 0], [0, 0.07, 0]), rock([0.55, 0.1, -0.4], 0.2, 7)), [-0.17, 0.02], 2],
+    ['at a cliff edge', all(both(under([0, 1, 0.05], [0, 0.62, 0]), under([1, 0.18, 0], [0.14, 0.3, 0])), under([-0.08, 1, 0], [0, 0.07, 0]), rock([0.55, 0.1, -0.4], 0.2, 7)), [-0.04, 0.02], 2],
     ['on a boulder', all(under([0.05, 1, -0.05], [0, 0.1, 0]), rock([0, 0.32, 0], 0.4, 11, [1.1, 0.85, 1])), [0.03, 0.02], 3],
     ['in a cleft', all(under([0, 1, 0.06], [0, 0.08, 0]), rock([-0.5, 0.3, 0.02], 0.36, 13, [1, 1.1, 1.2]), rock([0.5, 0.28, -0.04], 0.36, 17, [1, 1.05, 1.2])), [0, 0], 4],
     ['on a bank the rain has cut away', cut(all(under([0.1, 1, 0.3], [0, 0.46, 0]), rock([0.55, 0.12, -0.5], 0.18, 19)), bowl([0.2, 0.18, 0.34], 0.52, [1, 0.75, 1])), [-0.1, -0.06], 6],
   ];
   const quick = typeof location !== 'undefined' ? +new URLSearchParams(location.search).get('h') : 0;   // ?h=0.013 for a quick look
-  const S = SITES.map(([name, ground, site, seed]) => [name, tree(Object.assign({ seed }, Trees.sprout({ seed, strands: 14, feet: 6, foot: 0.16, tall: 0.8, reach: 0.85, twig: 0.2, ground, site, roots: 0.65 })))]);
+  const S = SITES.map(([name, ground, site, seed]) => [name, tree(Object.assign({ seed }, Trees.sprout({ seed, strands: 14, feet: 6, foot: 0.16, tall: 0.8, reach: 0.85, twig: 0.2, ground, site, roots: 0.85 })))]);
   if (typeof location !== 'undefined') { const only = new URLSearchParams(location.search).get('only'); if (only) { const keep = only.split(',').map(Number).map((i) => S[i]).filter(Boolean); S.length = 0; S.push(...keep); } }   // ?only=2 builds just that one
   window.Fantastic = { grounds: SITES.map((s) => s[1]), fields: S.map((s) => s[1]), names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), counts: S.map((s) => s[1].count), build: (i) => { const g = mesh(S[i][1], S[i][0], quick || 0.0085, 2.05), n = g.pos.length / 3; g.layer = new Uint8Array(n); for (let q = 0; q < n; q++) g.layer[q] = S[i][1].layerAt(g.pos[q * 3] - g.nrm[q * 3] * 0.004, g.pos[q * 3 + 1] - g.nrm[q * 3 + 1] * 0.004, g.pos[q * 3 + 2] - g.nrm[q * 3 + 2] * 0.004); return g; }, mesh, kit: Fantastic.kit };
 })();

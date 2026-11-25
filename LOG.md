@@ -3400,3 +3400,52 @@ Wrong, or not there:
   root on a face ought to work across it, finding ledges.
 - Nothing prefers the lip itself, where in a real cliff-edge tree the
   heaviest roots run along the edge like a hem.
+
+## On a face a root braces
+
+Said: roots should go over the cliff, or even through it, but then turn
+angularly back into it or up against it — force and grip, an organism
+fighting for its place in the wilderness. The entry above had made them
+keep off the face altogether, which answers the potato but not this.
+
+Three rules, which together are one: what a root does on a face is not
+what it does in soil.
+
+- **Which roots go.** Keeping every root off a cliff and letting every
+  root down it are the same mistake, a rule that tells them all the same
+  thing. Each root now has a disposition: most turn and run along the lip
+  where the soil is, and a `bold` one (0.35 of them) commits to the face.
+- **What it does there.** It braces. It works across the fall line in
+  runs of `brace` (0.12), turning hard at the end of each so the turns
+  are corners and not a curve, and the runs carry it down: across and
+  down, across and down. On a face it can choose a turn of up to 75
+  degrees, where in soil it may only lean 17.
+- **It bites.** Its standoff from the surface goes negative on a face
+  (`bite` 1.8 of its own girth), on a wavelength of its own, so it is
+  pressed into the rock and comes out again further along. That is the
+  "or through even".
+
+And a root working a face spends half its length doing so, where it
+spends all of it in soil — it is gripping, which is the point, not
+travelling.
+
+`sketch/page11.png`, `-other-side`, `-foot`. At the cliff one root goes
+over the lip and works down the face to the ground in corners, half
+buried as it goes, while the others hold the flat. On the boulder the
+same rule puts roots down the stone's sides. Withdrawn:
+`sketch/page11-no-grip-withdrawn.png`.
+
+Page 7's four trees are unchanged. Page 9's are not, and this is worth
+recording: nothing in the rule touches level ground, where a face cannot
+occur — but asking each root whether it is bold draws a random number,
+which moves every draw after it. The trees are the same in kind and the
+pictures are remade (`sketch/page9.png`, `-foot`, `-from-above`). Page 7
+escaped only because it has no ground at all, so the walk never runs.
+
+Wrong, or not there:
+- A root that bites into the rock does not do anything there. It is a
+  wave in its depth, not a crack it has found and gone into.
+- Nothing prefers the lip, where a cliff-edge tree runs its heaviest
+  roots along the edge like a hem.
+- Bold is drawn per root and nothing about the tree or the place changes
+  how many are bold.

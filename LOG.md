@@ -3449,3 +3449,38 @@ Wrong, or not there:
   roots along the edge like a hem.
 - Bold is drawn per root and nothing about the tree or the place changes
   how many are bold.
+
+## The hook
+
+Given a drawing: a tree on a block, roots running out over the top and
+draping off both edges, and the one that goes down the face turning back
+against the rock at its end. The end is where it shows.
+
+A root that has gone over an edge no longer simply stops where its length
+runs out. From `hookAt` of its length, different for every root (0.5 to
+0.88, so they do not all turn at the same depth), its heading turns back
+up the face, and the bite holds hard the whole way, so it ends clawed
+into the rock rather than dangling off it. That is the whole of "revert
+back into the cliff": a J, not a hair.
+
+`sketch/page11.png`, `-other-side`, `-foot`. At the cliff several roots
+go over the lip, at different depths, and each turns back against the
+face. On the boulder one goes right under the stone and takes hold on its
+underside. (`sketch/page9.png`, `-foot`, `-from-above` remade.)
+
+And a thing about the work itself. Every new question asked of a root on
+ground — is it bold, where does it hook, how steeply does it come down —
+was drawn from the tree's own stream of numbers, so each one moved every
+draw after it, and the level-ground trees changed although no rule of
+theirs had. Twice I remade their pictures for nothing. A root's behaviour
+on ground is now drawn from a stream of its own, one per root, seeded
+from the tree's seed and the root's number. Page 7 had been safe only by
+accident: it has no ground, so the walk never runs and never draws.
+
+Wrong, or not there:
+- A root that bites into the rock still does not do anything there. It is
+  a wave in its depth, not a crack it found and went into.
+- Nothing prefers the lip, where a cliff-edge tree runs its heaviest
+  roots along the edge like a hem.
+- How many roots are bold is a fixed share; nothing about the tree or the
+  place changes it.

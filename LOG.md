@@ -2945,3 +2945,53 @@ Against the drawing, still:
 - Crumbs where runs of two roots meet (the cleft, the slope).
 - Roots still cross each other: room is looked for at the start of a run,
   not along it.
+
+## Roots that divide (run 020, continued)
+
+Said of the switchback roots: something is clearly very wrong; use your
+own judgement and taste, and do not be put in a straitjacket by what I
+point at.
+
+Retracted: the switchbacks of the entry above
+(`sketch/page11-switchbacks-withdrawn.png`). A rule for doubling back,
+set off by nothing, gave a pile of jointed sticks. It was the drawing
+taken as a template, which is the one thing this work is not to do.
+
+What I judged wrong, looking at the trees and not at any one indication:
+- The roots had no cause. They kinked where a rule said kink.
+- They had no order of size. Every root was one tube of about the same
+  girth from foot to tip, so the foot was spokes.
+- The tree stood on them. They left a ring under the trunk in the air and
+  came down over most of their length, like the legs of a table.
+
+Built so:
+- A root comes down to the ground at once, within a fifth of its length,
+  and then lies in it, a little sunk, more in places and less in others.
+- It flows. Its heading has a curl that drifts and carries on, so it
+  winds and can come round on itself; and it goes out from the foot, and
+  downhill, and into creases, and where there is room. It still may let
+  go through the air where the ground falls away and it can land.
+- It keeps its girth along its length. It gets finer by dividing: some
+  way out a share of it leaves to one side as a root of its own, walked
+  the same way from there, and what goes on is that much the less. A root
+  that has parted off may part once more. So a foot of 5 to 8 heavy roots
+  ends in 14 to 26 fine ones, each traceable back to a heavy one. It is
+  run 017's dividing, upside down.
+
+`runs/020-roots/roots.png` (the paths alone, from above; the last with no
+dividing). With the wood: `sketch/page11.png`, `-other-side`,
+`-from-above`; level ground `sketch/page9.png`, `-foot`.
+- At the cliff the heavy roots go over the lip and down the face and fan
+  out over the ledge in fine ones.
+- On the boulder they stand over the stone and web the ground at its foot.
+- On level ground the foot is a flare of heavy roots parting into fine
+  ones. It is the first foot here that looks grown where it is.
+
+Wrong, or not there:
+- A root sometimes coils into a ring (one beside the stone on the slope).
+- At the boulder's foot the fine roots tangle: several come down the same
+  face and part in the same place.
+- The trunk's own foot is still a little off the ground, and the trunk
+  still does not lean or sweep for the ground it is on.
+- Fine roots are smooth; the wood's flat-faced pieces do not show at that
+  girth.

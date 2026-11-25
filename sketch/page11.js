@@ -20,7 +20,7 @@
     ['in a cleft', all(under([0, 1, 0.06], [0, 0.08, 0]), rock([-0.5, 0.3, 0.02], 0.36, 13, [1, 1.1, 1.2]), rock([0.5, 0.28, -0.04], 0.36, 17, [1, 1.05, 1.2])), [0, 0], 4],
   ];
   const quick = typeof location !== 'undefined' ? +new URLSearchParams(location.search).get('h') : 0;   // ?h=0.013 for a quick look
-  const S = SITES.map(([name, ground, site, seed]) => [name, tree(Object.assign({ seed }, Trees.sprout({ seed, strands: 14, feet: 6, foot: 0.16, tall: 0.8, reach: 0.85, twig: 0.2, ground, site, roots: 1.3 })))]);
+  const S = SITES.map(([name, ground, site, seed]) => [name, tree(Object.assign({ seed }, Trees.sprout({ seed, strands: 14, feet: 6, foot: 0.16, tall: 0.8, reach: 0.85, twig: 0.2, ground, site, roots: 0.65 })))]);
   if (typeof location !== 'undefined') { const only = new URLSearchParams(location.search).get('only'); if (only) { const keep = only.split(',').map(Number).map((i) => S[i]).filter(Boolean); S.length = 0; S.push(...keep); } }   // ?only=2 builds just that one
   window.Fantastic = { grounds: SITES.map((s) => s[1]), fields: S.map((s) => s[1]), names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), counts: S.map((s) => s[1].count), build: (i) => { const g = mesh(S[i][1], S[i][0], quick || 0.0085, 2.05), n = g.pos.length / 3; g.layer = new Uint8Array(n); for (let q = 0; q < n; q++) g.layer[q] = S[i][1].layerAt(g.pos[q * 3] - g.nrm[q * 3] * 0.004, g.pos[q * 3 + 1] - g.nrm[q * 3 + 1] * 0.004, g.pos[q * 3 + 2] - g.nrm[q * 3 + 2] * 0.004); return g; }, mesh, kit: Fantastic.kit };
 })();

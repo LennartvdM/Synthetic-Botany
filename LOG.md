@@ -3068,3 +3068,43 @@ Wrong, or not there:
 - Fine roots are smooth: the flat-faced pieces do not show at that girth.
 - Roots run to the edge of the ground they are given and stop there.
 - `grip` is a number I chose by eye at 0.62. Nothing derives it.
+
+Run 021, continued. Said of the result: better, but the roots are about
+twice too long and still about 70% too thick where they start.
+
+Both taken as given. The length is halved (`roots` 1.1 to 0.55). The
+girth took three tries to get right, and the last two were instructive.
+
+- Thinned the whole root by 1.7, collar and all. The roots came out as
+  claws and the trunk ended in a cliff: it was thick, and then eight thin
+  hooks, with nothing between. Also the divisions stopped, because a root
+  that thin never reaches the girth a part needs to be worth having.
+- So: thin the *run*, not the start. A root now leaves at the trunk's own
+  girth and narrows to `grip` (0.36) of it within `flare` (0.06, under a
+  trunk's width). The wood is continuous out of the trunk, as a buttress,
+  and thin along the ground. Divisions take it down further: a root is a
+  third of its leaving girth half way along, and most of that is the
+  parting, not a taper.
+
+So what was 70% too thick was the root as it runs, and the start wanting
+to stay thick was the only thing holding the trunk and the ground
+together. Thinning both at once broke the join and I could not see why
+until I put them back one at a time.
+
+      girth where a root leaves the trunk   0.059  (the strand's own, 0.063)
+      girth half way along                  0.014
+      length                                0.52   (was 1.0)
+      roots crossing a ring, at most        0.07 to 0.30 of the trunk
+
+`sketch/page9.png`, `-foot`, `-from-above`, `-cut`; `sketch/page11.png`,
+`-other-side`, `-from-above`. Page 7's four trees unchanged to the last
+digit — nearly not: on ground almost every root now goes into it at its
+end rather than running out to a point, and the first way I wrote that
+changed the one random draw that every flat root also makes, which moved
+two of the four. The draw is now the same and only the threshold differs.
+
+Wrong, or not there:
+- A few roots still arc through the air in smooth even loops.
+- The cleft tree has little to grip and comes out sparse.
+- `grip`, `collar` and `flare` are three numbers set by eye against one
+  judgement. Nothing derives them, and they are not independent.

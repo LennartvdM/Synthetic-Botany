@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 0.5, snake: 1, air: 0.18, reach: 0.6, forks: 1, dive: 0.12, grip: 0.62, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 0.5, snake: 1, air: 0.18, reach: 0.6, forks: 1, dive: 0.12, grip: 0.36, collar: 2.7, flare: 0.06, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -50,14 +50,16 @@
     //   and takes hold where it lands. If not, it stays on the surface.
     //   It keeps its girth along its length: it gets finer by dividing, not by tapering. But not all of what the
     //   trunk carries comes out where it can be seen. Only `grip` of a strand's girth leaves as a surface root;
-    //   the rest goes straight down at the foot and is never drawn. So a root narrows from the trunk's own girth
-    //   to that over the first short stretch, which is the collar, and all the roots together are then well under
-    //   the trunk's section, as they must be. Only a root that does not go into the ground runs out to a point.
+    //   the rest goes straight down at the foot and is never drawn. But it leaves at the trunk's own girth and
+    //   narrows to its running girth within `flare`, under a trunk's width: so the wood is continuous out of the
+    //   trunk, as a buttress, and thin along the ground, and the roots together are well under the trunk's
+    //   section, as they must be. (`collar` x `grip` is about 1: the two are set together.) Only a root that does
+    //   not go into the ground runs out to a point. A root that parted off another has no collar of its own.
     // Going down a face or through the air counts little toward its length, so a root that leaves the level it
     // began on runs on until it has ground under it again.
     const walk = G ? (p0, away, rho0, len, dives, collar) => { const rx = [], rr = [], c0 = G(p0[0], p0[1], p0[2]), most = Math.round(len / ds) * 5, kmax = ds / (2.6 * Math.max(0.025, rho0)), wob = TAU * r(), wl = 0.25 + 0.3 * r();
       let pos = p0, h = away, prog = 0, curl = 0, air = 0, gone = 0;
-      const girth = (g, far) => rho0 * (collar ? P.grip + (1 - P.grip) * Math.pow(Math.max(0, 1 - far / (2 * P.dive)), 1.5) : 1) * (dives ? 1 : Math.pow(Math.min(1, (1 - g) / 0.22), 0.7) * 0.9 + 0.1);
+      const girth = (g, far) => rho0 * (collar ? P.grip * (1 + (P.collar - 1) * Math.pow(Math.max(0, 1 - far / P.flare), 1.6)) : 1) * (dives ? 1 : Math.pow(Math.min(1, (1 - g) / 0.22), 0.7) * 0.9 + 0.1);
       const room = (pr, own) => { if (Math.abs(pr[0]) > 0.97 || Math.abs(pr[2]) > 0.97) return 0; let near = 0.22; for (const q of rootPts) near = Math.min(near, H(pr[0] - q[0], pr[1] - q[1], pr[2] - q[2])); for (let e = 0; e < own; e++) near = Math.min(near, H(pr[0] - rx[e][0], pr[1] - rx[e][1], pr[2] - rx[e][2])); return near; };
       for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = girth(g, gone), nn = gradG(pos[0], pos[1], pos[2]), hug = rad * (0.4 + 0.22 * Math.sin(wob + TAU * gone / wl)), want = c0 + (hug - c0) * sstep(0, P.dive, gone) - (dives ? 0.3 * sstep(0.72, 1, g) : 0);
         let tt = h.map((v, k) => v - nn[k] * dot(h, nn)); const dn = UP.map((v, k) => -(v - nn[k] * nn[1])), dl = H(dn[0], dn[1], dn[2]); if (H(tt[0], tt[1], tt[2]) < 0.2) tt = dl > 1e-6 ? dn : cross(nn, [1, 0, 0]); tt = unit(tt);
@@ -122,7 +124,8 @@
       }
       // its root: the strand itself coming down from the foot of the trunk the way it faces there, heavy, and
       // most often going into the ground. A few stay on it and run out to a point.
-      const p0 = X[0], away = H(p0[0] - trunk[0][0], p0[2] - trunk[0][2]) > 1e-4 ? unit([p0[0] - trunk[0][0], 0, p0[2] - trunk[0][2]]) : [1, 0, 0], len = P.roots * (0.5 + 0.5 * r()), bend = 2.6 * (r() - 0.5), dives = r() < 0.75, rx = [], rr = [], rg = []; let q = p0, Kr = Math.max(6, Math.round(len / ds));
+      // (on ground nearly all roots go into it at their end; the old flat roots are left as they were)
+      const p0 = X[0], away = H(p0[0] - trunk[0][0], p0[2] - trunk[0][2]) > 1e-4 ? unit([p0[0] - trunk[0][0], 0, p0[2] - trunk[0][2]]) : [1, 0, 0], len = P.roots * (0.5 + 0.5 * r()), bend = 2.6 * (r() - 0.5), dives = r() < (G ? 0.9 : 0.75), rx = [], rr = [], rg = []; let q = p0, Kr = Math.max(6, Math.round(len / ds));
       if (!G) {
         for (let m = 1; m <= Kr; m++) { const g = m / Kr, t = bend * g * g, dir = [away[0] * Math.cos(t) - away[2] * Math.sin(t), 0, away[0] * Math.sin(t) + away[2] * Math.cos(t)], rad = rho[0] * (dives ? 0.5 + 0.5 * (1 - g) : 0.2 + 0.8 * Math.pow(1 - g, 0.8));
           q = [q[0] + dir[0] * ds, p0[1] + (rad * 0.6 - p0[1]) * sstep(0, 0.8, g) - (dives ? 0.35 * sstep(0.6, 1, g) : 0), q[2] + dir[2] * ds]; rx.push(q); rr.push(rad); rg.push(q); }
@@ -154,16 +157,16 @@
     // side as a root of its own, walked like any other from there, and what goes on is that much the less. A root
     // that has parted off may part once more. So the foot has a few heavy roots, and the ground further out has
     // many fine ones, each traceable back to a heavy one: the way the tree divides above the ground, upside down.
-    if (G && P.forks) { const part = (pi, depth) => { const par = S[pi], n = depth ? (r() < 0.35 * P.forks ? 1 : 0) : 1 + (r() < 0.45 * P.forks ? 1 : 0); let u = 0.15 + 0.2 * r();
-        for (let e = 0; e < n; e++, u += 0.22 + 0.2 * r()) { if (u > 0.75) break; const k = Math.round((1 - u) * par.root); if (k < 8 || k > par.root - 2) continue;
+    if (G && P.forks) { const part = (pi, depth) => { const par = S[pi], n = depth ? (r() < 0.35 * P.forks ? 1 : 0) : 1 + (r() < 0.45 * P.forks ? 1 : 0); let u = 0.1 + 0.18 * r();
+        for (let e = 0; e < n; e++, u += 0.2 + 0.18 * r()) { if (u > 0.75) break; const k = Math.round((1 - u) * par.root); if (k < 4 || k > par.root - 2) continue;
           const pos = [par.X[k * 3], par.X[k * 3 + 1], par.X[k * 3 + 2]], d = unit([par.X[(k - 2) * 3] - pos[0], par.X[(k - 2) * 3 + 1] - pos[1], par.X[(k - 2) * 3 + 2] - pos[2]]), nn = gradG(pos[0], pos[1], pos[2]), sd = cross(nn, d), a = (r() < 0.5 ? -1 : 1) * (0.4 + 0.4 * r());
           const dir = unit(d.map((v, c) => v * Math.cos(a) + sd[c] * Math.sin(a))), share = 0.34 + 0.24 * r(), rb = par.rho[k] * Math.sqrt(share);
-          if (rb < 0.012) continue; const w = walk(pos, dir, rb, Math.max(0.2, k * ds * (0.3 + 0.3 * r())), r() < 0.75, 0); if (w.rx.length < 6) continue;   // (a part of a root runs a good deal shorter than what is left of the root it came off)
+          if (rb < 0.005) continue; const w = walk(pos, dir, rb, Math.max(0.2, k * ds * (0.3 + 0.3 * r())), r() < 0.9, 0); if (w.rx.length < 6) continue;   // (a part of a root runs a good deal shorter than what is left of the root it came off)
           for (let j = 0; j < k; j++) par.rho[j] *= 1 + (Math.sqrt(1 - share) - 1) * sstep(k, k - 4, j);
           const pts = w.rx.slice().reverse().concat([pos]), K = pts.length, X = Float64Array.from(pts.flat()); for (const q of w.rx) rootPts.push(q);
           S.push({ X, goal: Float64Array.from(X), rho: Float64Array.from(w.rr.slice().reverse().concat([rb])), hold: Float64Array.from({ length: K }, (_, j) => (j < K * 0.45 ? 0.2 : 0)), root: K, K, limb: -1, limbAt: -1, a: par.a, b: par.b, fat: par.fat * Math.sqrt(share), bend: Math.min(par.bend, 0.055), give: 1, snapped: false, rootOf: pi, po: k });
           if (!depth) part(S.length - 1, 1); } };
-      const first = S.length; for (let i = 0; i < first; i++) if (S[i].root > 14 && S[i].stem === undefined) part(i, 0); }
+      const first = S.length; for (let i = 0; i < first; i++) if (S[i].root > 7 && S[i].stem === undefined) part(i, 0); }
     if (G) for (const s of S) { s.gc = new Float64Array(s.K); for (let k = 0; k < s.K; k++) s.gc[k] = G(s.goal[k * 3], s.goal[k * 3 + 1], s.goal[k * 3 + 2]); }   // how far off the ground each place on a strand was meant to be
     // Where a shoot snapped off (a limb given as a `stub`). Three ages of the same event:
     //   fresh   the stub stands, its strands broken off a little apart
@@ -371,7 +374,7 @@
   // rule, and `share` is its main number (small: a leader with side shoots; a half: even forks and no leader).
   // Returns { strands, trunk, limbs } for grow(), and what it made (shoots, tips, deepest).
   function sprout(rule) {
-    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true, feet: 8, lap: 0.3, ground: null, site: [0, 0], roots: 1.1 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
+    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true, feet: 8, lap: 0.3, ground: null, site: [0, 0], roots: 0.55 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
     const length = (c) => Q.reach * (Q.twig + Math.sqrt(c / n)), Gq = Q.ground, inside = (p) => Math.abs(p[0]) < 0.9 && Math.abs(p[2]) < 0.9 && p[1] < 1.9 && (Gq ? Gq(p[0], p[1], p[2]) > 0.12 : p[1] > 0.3), laid = [];   // every point of every shoot so far
     const open = (p) => { let d = Gq ? Math.max(0, Gq(p[0], p[1], p[2])) * 1.2 : 9; for (const q of laid) d = Math.min(d, H(p[0] - q[0], p[1] - q[1], p[2] - q[2])); return d; };   // (open: far from every shoot, and from the ground and any rock)
     let shoots = 0, tips = 0, deepest = 0;

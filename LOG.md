@@ -3199,3 +3199,57 @@ Wrong, or not there:
 - Where a root ends is still its own length running out, not anything
   about the ground it is in.
 - A few roots arc through the air in smooth even loops.
+
+## How a root tapers, and an arc that corners
+
+Said: the arcs through the air are wanted but must be angular; and the
+taper is horrible — you know what a tree looks like.
+
+**The taper.** What I had was a cone: the girth fell smoothly from the
+trunk's to a thin running girth and then a long thin tube ran out. That
+is a carrot. A root does not taper away along its length. It keeps its
+weight between forks and steps down at each one, and nearly all of its
+thinning happens at those steps. What it does at the trunk is not taper
+but flare.
+
+So, three things in place of one:
+- flare: it leaves at the trunk's own girth and is down to its running
+  girth within `flare` (0.07, under half a trunk's width).
+- run: it holds that girth, losing only `waste` (a quarter) over its
+  whole length.
+- fork: `grip` raised from 0.36 to 0.62, so there is weight to divide,
+  and roots now part to three levels instead of two. 8 roots at the foot
+  become 22 to 24.
+
+      girth from the trunk outward, one root
+      0.060 0.057 0.040 0.031 | 0.029 0.027 0.023 0.019 0.017 | 0.017 0.016 0.016 0.016 0.015
+      flare                     steps at forks                  run
+
+      roots crossing a ring, at most   0.23 to 0.29 of the trunk
+
+**The arc.** The span was the sagging curve that found the landing — a
+parabola, because that is what I used to probe for ground. Wood does not
+sag. The probe still finds where it lands, but the span is then laid as
+two or three straight runs with a hard bend between them, kinked out past
+the curve so the corners stand proud: up and out, across, and down onto
+what it lands on. The drawn pieces already end at a root's turns, so each
+leg is its own piece.
+
+Broke on the way: leaps began firing on level ground. The test for "the
+ground falls away" compared the root's height to the height it wanted,
+which is true of every root while it is still coming down — so roots
+arched into the air at the foot and the trees stood on spider legs. The
+test now compares the ground ahead with the ground underfoot, and no leap
+may begin until the root is down. On level ground nothing now rises more
+than 0.035 above the trunk's base.
+
+`sketch/page9.png`, `-foot`, `-from-above`; `sketch/page11.png`,
+`-other-side`, `-foot`. Withdrawn:
+`sketch/page9-foot-carrot-taper-withdrawn.png`. Page 7 unchanged.
+
+Wrong, or not there:
+- The roots radiate evenly: eight families spaced by angle round the
+  foot, so from above it is a starburst. Nothing clusters them.
+- Between forks a root is a smooth tube. The flat-faced pieces are there
+  but at that girth they hardly show.
+- A root ends where its length runs out, not for any reason in the ground.

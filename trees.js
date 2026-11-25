@@ -230,28 +230,42 @@
           S.push({ X, goal: Float64Array.from(X), rho: Float64Array.from(w.rr.slice().reverse().concat([rb])), hold: Float64Array.from({ length: K }, (_, j) => (j < K * 0.45 ? 0.2 : 0)), root: K, K, limb: -1, limbAt: -1, a: par.a, b: par.b, fat: par.fat * Math.sqrt(share), bend: Math.min(par.bend, 0.055), give: 1, snapped: false, rootOf: pi, po: k });
           if (depth < 2) part(S.length - 1, depth + 1); } };
       const first = S.length; for (let i = 0; i < first; i++) if (S[i].root > 7 && S[i].stem === undefined) part(i, 0); }
-    // Eyes. Sometimes a root parts and comes back: it sprouts to one side and merges into the same root again
-    // further along, leaving a closed eye of wood with daylight through it. Nothing in the ground asks for this
-    // and it does nothing. Roots do it, and a tree that has one looks like something that has lived.
-    if (G && P.eyes) { const re = rng(P.seed + 777), made = S.length;
+    // Eyes. Sometimes a limb or a root parts and comes back: a stretch of it sprouts to one side, arches away and
+    // merges into the same wood further along, leaving a closed eye with daylight through it. Nothing asks for
+    // this and it does nothing. Trees do it, and one that has an eye looks like something that has lived.
+    // Where the two meet, the wood of each piles against the other: both thicken at the two joins, and the eye
+    // is heaviest where it leaves and lightest at its middle. A clean even arch reads as a handle stuck on.
+    const eye = (i, ka, kb, onGround, re) => { const par = S[i];
+      const a = [par.X[ka * 3], par.X[ka * 3 + 1], par.X[ka * 3 + 2]], b = [par.X[kb * 3], par.X[kb * 3 + 1], par.X[kb * 3 + 2]];
+      const span = Math.abs(ka - kb), mid = Math.round((ka + kb) / 2), rmid = par.rho[mid], share = 0.2 + 0.16 * re();
+      const tg = unit([b[0] - a[0], b[1] - a[1], b[2] - a[2]]);
+      const up = onGround ? gradG(a[0], a[1], a[2]) : unit(cross(tg, Math.abs(tg[1]) < 0.85 ? UP : [1, 0, 0]));
+      const big = onGround ? 1 : 1.9;
+      const sd = unit(cross(up, tg)), wide = rmid * big * (4 + 3.5 * re()) * (re() < 0.5 ? 1 : -1), rise = rmid * big * (2.2 + 2.6 * re());
+      const n2 = span * 2, X = [], rr = [];
+      for (let e = 0; e <= n2; e++) { const t = e / n2, lift = Math.sin(PI * t);
+        let q = [0, 1, 2].map((c) => a[c] + (b[c] - a[c]) * t + sd[c] * wide * lift + (onGround ? 0 : up[c] * rise * lift * 0.5));
+        if (onGround) for (let it = 0; it < 3; it++) { const gn = gradG(q[0], q[1], q[2]), gv = G(q[0], q[1], q[2]); q = q.map((v, c) => v + gn[c] * (rmid * 0.45 + rise * lift - gv)); }
+        X.push(q); rr.push(rmid * Math.sqrt(share) * (1.45 - 0.62 * lift)); }
+      for (let k = Math.min(ka, kb); k <= Math.max(ka, kb); k++) par.rho[k] *= Math.sqrt(1 - share);
+      for (const k0 of [ka, kb]) for (let d = -2; d <= 2; d++) { const k = k0 + d; if (k < 0 || k >= par.K) continue; par.rho[k] *= 1 + 0.3 * (1 - Math.abs(d) / 3); }
+      const K2 = X.length, flat = Float64Array.from(X.flat());
+      S.push({ X: flat, goal: Float64Array.from(flat), set: Float64Array.from(flat), rho: Float64Array.from(rr), hold: new Float64Array(K2),
+        root: onGround ? K2 : 0, K: K2, limb: onGround ? -1 : par.limb, limbAt: -1, a: par.a, b: par.b, fat: par.fat * Math.sqrt(share),
+        bend: Math.min(par.bend, 0.055), give: 1, snapped: false, rootOf: i, po: ka, po2: kb, loop: true, air: !onGround });
+      return true; };
+    if (P.eyes) { const re = rng(P.seed + 777), made = S.length;
       for (let i = 0; i < made; i++) { const par = S[i];
-        if (par.rootOf !== undefined || par.stem !== undefined || par.root < 11 || re() > P.eyes) continue;
-        // (index 0 is a root's far tip and par.root is at the foot, so the eye is placed from its outer end up)
-        const kb = Math.max(2, Math.round(par.root * (0.14 + 0.26 * re()))), span = Math.min(6 + Math.round(6 * re()), par.root - 3 - kb), ka = kb + span;
-        if (span < 5) continue;
-        const a = [par.X[ka * 3], par.X[ka * 3 + 1], par.X[ka * 3 + 2]], b = [par.X[kb * 3], par.X[kb * 3 + 1], par.X[kb * 3 + 2]];
-        const mid = Math.round((ka + kb) / 2), rmid = par.rho[mid], share = 0.2 + 0.16 * re();
-        const nn = gradG(a[0], a[1], a[2]), tg = unit([b[0] - a[0], b[1] - a[1], b[2] - a[2]]), sd = unit(cross(nn, tg));
-        const wide = rmid * (4 + 3.5 * re()) * (re() < 0.5 ? 1 : -1), rise = rmid * (2.2 + 2.6 * re()), n2 = span * 2, X = [], rr = [];
-        for (let e = 0; e <= n2; e++) { const t = e / n2, lift = Math.sin(PI * t);
-          let q = [0, 1, 2].map((c) => a[c] + (b[c] - a[c]) * t + sd[c] * wide * lift);
-          for (let it = 0; it < 3; it++) { const gn = gradG(q[0], q[1], q[2]), gv = G(q[0], q[1], q[2]); q = q.map((v, c) => v + gn[c] * (rmid * 0.45 + rise * lift - gv)); }
-          X.push(q); rr.push(rmid * Math.sqrt(share) * (0.7 + 0.45 * lift)); }
-        for (let k = kb; k <= ka; k++) par.rho[k] *= Math.sqrt(1 - share);
-        const K2 = X.length, flat = Float64Array.from(X.flat());
-        S.push({ X: flat, goal: Float64Array.from(flat), set: Float64Array.from(flat), rho: Float64Array.from(rr), hold: new Float64Array(K2),
-          root: K2, K: K2, limb: -1, limbAt: -1, a: par.a, b: par.b, fat: par.fat * Math.sqrt(share), bend: Math.min(par.bend, 0.055),
-          give: 1, snapped: false, rootOf: i, po: ka, po2: kb, loop: true }); } }
+        if (par.rootOf !== undefined || par.stem !== undefined || par.child) continue;
+        // (index 0 is a root's far tip and par.root is at the foot, so a root's eye is placed from its outer end up)
+        if (G && par.root >= 11 && re() < P.eyes) { const kb = Math.max(2, Math.round(par.root * (0.14 + 0.26 * re()))), sp = Math.min(6 + Math.round(6 * re()), par.root - 3 - kb);
+          if (sp >= 5) eye(i, kb + sp, kb, true, re); }
+        // A limb's eye goes on a bough: out far enough that the strands have parted and the limb is its own body,
+        // but still thick enough to be worth looking at. Nearer the trunk the wood is one mass and swallows it;
+        // out on a twig it is lost among the other twigs. And it is half as big again, to be seen at all up there.
+        const top = par.K - 1 - par.root; if (top < 22 || re() > P.eyes * 0.8) continue;
+        const ja = par.root + Math.round(top * (0.3 + 0.28 * re())), sp2 = 7 + Math.round(6 * re());
+        if (ja + sp2 < par.K - 5 && par.rho[ja] > 0.018 && par.rho[ja] < 0.05) eye(i, ja, ja + sp2, false, re); } }
     if (G) for (const s of S) { s.gc = new Float64Array(s.K); for (let k = 0; k < s.K; k++) s.gc[k] = G(s.goal[k * 3], s.goal[k * 3 + 1], s.goal[k * 3 + 2]); }   // how far off the ground each place on a strand was meant to be
     // Where a shoot snapped off (a limb given as a `stub`). Three ages of the same event:
     //   fresh   the stub stands, its strands broken off a little apart
@@ -453,7 +467,7 @@
       let root = 0; if (q.root) { const at = L[Math.min(K - 1, q.root)]; root = Math.round((n - 1) * at / L[K - 1]); }
       return Object.assign({}, q, { X, rho, gap, O, F, inner, K: n, root }); };
     if (P.fair !== false) for (let i = 0; i < S.length; i++) S[i] = fair(S[i]);
-    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, loop: !!s.loop, stem: s.stem === undefined ? -1 : s.stem, rootOf: s.rootOf === undefined ? -1 : s.rootOf, stub: s.limb >= 0 && limbs[s.limb] ? limbs[s.limb].L.stub || null : null, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, marks: marks.map((v) => ({ c: v.c, a: v.a, e: v.e, r: v.r, d: v.d, kind: v.kind, limb: v.limb, asOrb: !!v.asOrb })), measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
+    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, loop: !!s.loop, air: !!s.air, stem: s.stem === undefined ? -1 : s.stem, rootOf: s.rootOf === undefined ? -1 : s.rootOf, stub: s.limb >= 0 && limbs[s.limb] ? limbs[s.limb].L.stub || null : null, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, marks: marks.map((v) => ({ c: v.c, a: v.a, e: v.e, r: v.r, d: v.d, kind: v.kind, limb: v.limb, asOrb: !!v.asOrb })), measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
   }
 
   // The tree's lines, grown and not given. A shoot carries some of the tree's strands. It grows in bouts: it runs

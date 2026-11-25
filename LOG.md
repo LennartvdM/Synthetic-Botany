@@ -3519,3 +3519,43 @@ Wrong, or not there:
 - An eye is a clean arch. A root that did this would be lumpy at the two
   joins, where the wood of the two has run together over years.
 - Only roots get them. A limb could.
+
+## Eyes, mended: lumpy at the joins, and limbs get them too
+
+Both faults from the entry above, agreed and taken.
+
+**Lumpy at the joins.** An eye was a clean even arch — a handle stuck on.
+Where wood parts and merges, each piles against the other, so now: the
+eye is heaviest where it leaves and lightest at its middle (it was the
+other way round), and the wood it leaves swells by a third over four
+steps at both joins. The joins read as grown rather than glued.
+
+**Limbs get them.** The eye is built from any stretch of any strand now,
+not only a walked root: on the ground it is laid on the surface, in the
+air it arches off the limb's own side. Three to four of each a tree.
+
+Where a limb's eye goes took two goes. Out on a twig it is lost among the
+other twigs; near the trunk the wood is one mass and swallows it whole.
+It sits on a bough: far enough out that the strands have parted and the
+limb is its own body, thick enough to be worth looking at (girth 0.018 to
+0.05), and half as big again as a root's, to be seen at all up there.
+Even so it reads less clearly than a root's eye, because a crown is busy
+and a root's eye has the ground behind it. That is the honest result, not
+a fault to tune away.
+
+Page 7's four trees now carry `eyes: 0` in their recipes. They are the
+record of what was approved and are kept as they were; eyes came later
+and belong to the grown trees. Fingerprint back to `e387ada36c`.
+
+      roots crossing a ring, at most   0.24 to 0.47 of the trunk
+
+`sketch/page9.png`, `-foot`, `-crown`; `sketch/page11.png`,
+`-other-side`, `-foot`.
+
+Wrong, or not there:
+- A root that bites into rock still only makes a wave in its own depth.
+  Nothing there is a crack it found.
+- Nothing prefers a cliff's lip, where a tree runs its heaviest roots
+  along the edge like a hem.
+- How many roots are bold is a fixed share, and so is how many eyes a
+  tree has. Neither answers to the tree or the place.

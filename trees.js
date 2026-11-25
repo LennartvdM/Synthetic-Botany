@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 0.5, snake: 1, air: 0.18, reach: 0.6, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.62, collar: 1.6, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 0.5, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.62, collar: 1.6, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -230,6 +230,28 @@
           S.push({ X, goal: Float64Array.from(X), rho: Float64Array.from(w.rr.slice().reverse().concat([rb])), hold: Float64Array.from({ length: K }, (_, j) => (j < K * 0.45 ? 0.2 : 0)), root: K, K, limb: -1, limbAt: -1, a: par.a, b: par.b, fat: par.fat * Math.sqrt(share), bend: Math.min(par.bend, 0.055), give: 1, snapped: false, rootOf: pi, po: k });
           if (depth < 2) part(S.length - 1, depth + 1); } };
       const first = S.length; for (let i = 0; i < first; i++) if (S[i].root > 7 && S[i].stem === undefined) part(i, 0); }
+    // Eyes. Sometimes a root parts and comes back: it sprouts to one side and merges into the same root again
+    // further along, leaving a closed eye of wood with daylight through it. Nothing in the ground asks for this
+    // and it does nothing. Roots do it, and a tree that has one looks like something that has lived.
+    if (G && P.eyes) { const re = rng(P.seed + 777), made = S.length;
+      for (let i = 0; i < made; i++) { const par = S[i];
+        if (par.rootOf !== undefined || par.stem !== undefined || par.root < 11 || re() > P.eyes) continue;
+        // (index 0 is a root's far tip and par.root is at the foot, so the eye is placed from its outer end up)
+        const kb = Math.max(2, Math.round(par.root * (0.14 + 0.26 * re()))), span = Math.min(6 + Math.round(6 * re()), par.root - 3 - kb), ka = kb + span;
+        if (span < 5) continue;
+        const a = [par.X[ka * 3], par.X[ka * 3 + 1], par.X[ka * 3 + 2]], b = [par.X[kb * 3], par.X[kb * 3 + 1], par.X[kb * 3 + 2]];
+        const mid = Math.round((ka + kb) / 2), rmid = par.rho[mid], share = 0.2 + 0.16 * re();
+        const nn = gradG(a[0], a[1], a[2]), tg = unit([b[0] - a[0], b[1] - a[1], b[2] - a[2]]), sd = unit(cross(nn, tg));
+        const wide = rmid * (4 + 3.5 * re()) * (re() < 0.5 ? 1 : -1), rise = rmid * (2.2 + 2.6 * re()), n2 = span * 2, X = [], rr = [];
+        for (let e = 0; e <= n2; e++) { const t = e / n2, lift = Math.sin(PI * t);
+          let q = [0, 1, 2].map((c) => a[c] + (b[c] - a[c]) * t + sd[c] * wide * lift);
+          for (let it = 0; it < 3; it++) { const gn = gradG(q[0], q[1], q[2]), gv = G(q[0], q[1], q[2]); q = q.map((v, c) => v + gn[c] * (rmid * 0.45 + rise * lift - gv)); }
+          X.push(q); rr.push(rmid * Math.sqrt(share) * (0.7 + 0.45 * lift)); }
+        for (let k = kb; k <= ka; k++) par.rho[k] *= Math.sqrt(1 - share);
+        const K2 = X.length, flat = Float64Array.from(X.flat());
+        S.push({ X: flat, goal: Float64Array.from(flat), set: Float64Array.from(flat), rho: Float64Array.from(rr), hold: new Float64Array(K2),
+          root: K2, K: K2, limb: -1, limbAt: -1, a: par.a, b: par.b, fat: par.fat * Math.sqrt(share), bend: Math.min(par.bend, 0.055),
+          give: 1, snapped: false, rootOf: i, po: ka, po2: kb, loop: true }); } }
     if (G) for (const s of S) { s.gc = new Float64Array(s.K); for (let k = 0; k < s.K; k++) s.gc[k] = G(s.goal[k * 3], s.goal[k * 3 + 1], s.goal[k * 3 + 2]); }   // how far off the ground each place on a strand was meant to be
     // Where a shoot snapped off (a limb given as a `stub`). Three ages of the same event:
     //   fresh   the stub stands, its strands broken off a little apart
@@ -259,7 +281,9 @@
     // Nothing meets the grain square. A part that has split off may never stand further from the strand it split
     // from than half the way it has run from the join: it stays inside a wedge of about 27 degrees at each end.
     const WEDGE = P.wedge === undefined ? 0.5 : P.wedge;
-    const kin = (i, k, j, l) => { const A = S[i], B = S[j]; let ch, m, pl; if (B.rootOf === i || A.rootOf === j) { const c3 = B.rootOf === i ? B : A, e3 = c3.K - 1 - (c3 === B ? l : k), p3 = c3 === B ? k : l; if (Math.abs(p3 - (c3.po - e3)) > 12) return 1; const w3 = WEDGE * e3 * ds / (A.rho[k] + B.rho[l]); return w3 < 0.05 ? 0 : Math.min(1, w3); }
+    const kin = (i, k, j, l) => { const A = S[i], B = S[j]; let ch, m, pl;
+      if (A.loop && j === A.rootOf) return Math.min(k, A.K - 1 - k) < 7 ? 0 : 1;
+      if (B.loop && i === B.rootOf) return Math.min(l, B.K - 1 - l) < 7 ? 0 : 1; if (B.rootOf === i || A.rootOf === j) { const c3 = B.rootOf === i ? B : A, e3 = c3.K - 1 - (c3 === B ? l : k), p3 = c3 === B ? k : l; if (Math.abs(p3 - (c3.po - e3)) > 12) return 1; const w3 = WEDGE * e3 * ds / (A.rho[k] + B.rho[l]); return w3 < 0.05 ? 0 : Math.min(1, w3); }
       if (B.stem === i || A.stem === j) { const c2 = B.stem === i ? B : A, m2 = c2 === B ? l : k, p2 = c2 === B ? k : l; if (Math.abs(p2 - (c2.po + m2)) > 12) return 1; const w2 = WEDGE * m2 * ds / (A.rho[k] + B.rho[l]); return w2 < 0.05 ? 0 : Math.min(1, w2); }
       if (B.parent === i) { ch = B; m = l; pl = k; } else if (A.parent === j) { ch = A; m = k; pl = l; } else return 1; if (Math.abs(pl - (ch.po + m)) > 12) return 1; const w = WEDGE * Math.min(m, ch.K - 1 - m) * ds / (A.rho[k] + B.rho[l]); return w < 0.05 ? 0 : Math.min(1, w); };
     // lap: how far strands may lie in each other. Two give way only once they are closer than their girths less that
@@ -282,7 +306,10 @@
     // a split strand rejoins the one it split from at both its ends
     // a tear closes inside its wedge (see WEDGE): toward each end a part is held as near its strand as that allows
     // (a strand that divided off another at the foot of its own length is joined to it there in the same way, at that one end)
-    const joins = () => { for (const s of S) if (s.rootOf !== undefined) { const p = S[s.rootOf].X, K = s.K; let run = 0;   // (a root that parted off another is joined to it where it parted)
+    const joins = () => {
+      for (const s of S) if (s.loop) { const p = S[s.rootOf].X, K = s.K;
+        for (let e = 0; e < 3; e++) for (let c = 0; c < 3; c++) { s.X[e * 3 + c] = p[(s.po - e) * 3 + c]; s.X[(K - 1 - e) * 3 + c] = p[(s.po2 + e) * 3 + c]; } }
+      for (const s of S) if (s.rootOf !== undefined && !s.loop) { const p = S[s.rootOf].X, K = s.K; let run = 0;   // (a root that parted off another is joined to it where it parted)
         for (let e = 0; e < K >> 1; e++) { const m = K - 1 - e, k = s.po - e; if (k < 1) break; if (e) run += H(p[k * 3] - p[(k + 1) * 3], p[k * 3 + 1] - p[(k + 1) * 3 + 1], p[k * 3 + 2] - p[(k + 1) * 3 + 2]); const lim = WEDGE * run; if (lim > 0.5) break;
           const dx = s.X[m * 3] - p[k * 3], dy = s.X[m * 3 + 1] - p[k * 3 + 1], dz = s.X[m * 3 + 2] - p[k * 3 + 2], d = H(dx, dy, dz); if (d > lim) { const f = d > 1e-12 ? lim / d : 0; s.X[m * 3] = p[k * 3] + dx * f; s.X[m * 3 + 1] = p[k * 3 + 1] + dy * f; s.X[m * 3 + 2] = p[k * 3 + 2] + dz * f; } } }
       for (const s of S) if (s.child || s.stem !== undefined) { const par = S[s.child ? s.parent : s.stem], p = par.X, K = s.K;
@@ -426,7 +453,7 @@
       let root = 0; if (q.root) { const at = L[Math.min(K - 1, q.root)]; root = Math.round((n - 1) * at / L[K - 1]); }
       return Object.assign({}, q, { X, rho, gap, O, F, inner, K: n, root }); };
     if (P.fair !== false) for (let i = 0; i < S.length; i++) S[i] = fair(S[i]);
-    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, stem: s.stem === undefined ? -1 : s.stem, rootOf: s.rootOf === undefined ? -1 : s.rootOf, stub: s.limb >= 0 && limbs[s.limb] ? limbs[s.limb].L.stub || null : null, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, marks: marks.map((v) => ({ c: v.c, a: v.a, e: v.e, r: v.r, d: v.d, kind: v.kind, limb: v.limb, asOrb: !!v.asOrb })), measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
+    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, loop: !!s.loop, stem: s.stem === undefined ? -1 : s.stem, rootOf: s.rootOf === undefined ? -1 : s.rootOf, stub: s.limb >= 0 && limbs[s.limb] ? limbs[s.limb].L.stub || null : null, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, marks: marks.map((v) => ({ c: v.c, a: v.a, e: v.e, r: v.r, d: v.d, kind: v.kind, limb: v.limb, asOrb: !!v.asOrb })), measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
   }
 
   // The tree's lines, grown and not given. A shoot carries some of the tree's strands. It grows in bouts: it runs

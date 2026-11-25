@@ -3484,3 +3484,38 @@ Wrong, or not there:
   roots along the edge like a hem.
 - How many roots are bold is a fixed share; nothing about the tree or the
   place changes it.
+
+## Eyes
+
+Said: it does not need to do anything, it has to look immersive, it has
+to look good. For instance: roots that sprout outward and merge back into
+the main root again. Nothing to do with the soil; it looks good.
+
+Built, and it is the first thing here put in for no reason but that. A
+root parts from itself and comes back: a stretch of it sprouts to one
+side, arches up off the ground and merges into the same root further
+along, leaving a closed eye of wood with daylight through it. It takes a
+share of the root's section between the two joins, so the root is thinner
+through the eye and whole again beyond it, and both of its ends are
+pinned to the root each pass, so the two never come apart. Three to five
+on a tree.
+
+Took three goes, all of them about where and how big:
+- Flat on the ground. The eye lay in the surface, so from any angle it
+  was a sliver, not a hole. It arches up off it now, by two or three of
+  its own girths.
+- Too many and too near the foot, where the skirt widening already fills
+  between the legs: the foot webbed shut into a tent. They sit further
+  out along a root now, where the legs are separate and a hole can be
+  seen against the ground.
+- Then none at all, because I placed them by counting from the wrong end
+  of the root (index 0 is the tip, not the foot) and every one fell off
+  the end. Placed from the outer end now.
+
+`sketch/page9.png`, `-foot`, `-from-above`; `sketch/page11.png`,
+`-other-side`, `-foot`.
+
+Wrong, or not there:
+- An eye is a clean arch. A root that did this would be lumpy at the two
+  joins, where the wood of the two has run together over years.
+- Only roots get them. A limb could.

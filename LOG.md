@@ -3108,3 +3108,58 @@ Wrong, or not there:
 - The cleft tree has little to grip and comes out sparse.
 - `grip`, `collar` and `flare` are three numbers set by eye against one
   judgement. Nothing derives them, and they are not independent.
+
+## The thick roots were not roots: a torn join
+
+Said: still way too thick, way; clearly a problem balancing the start and
+the taper; colour the roots to see where I believe they start.
+
+Colouring them answered it in one look. Roots are now tagged with a layer
+of their own (6, and 7 for a root that parted off a root) and the
+sketchbooks colour them. In `sketch/page9-roots-coloured-fault.png` the
+root is the red: thin, short, and beginning well out from the trunk.
+Everything thick between — the heavy slabs splaying from the foot that I
+have been told about four times and have been thinning the wrong thing to
+mend — is **trunk**.
+
+What it was. A strand's root is walked, and its trunk part stands off the
+bundle's centre line. Those are two frames: the root's goal is the places
+it was walked to, the trunk's is the line. The settling holds a strand's
+shape against tension by its distance from its goal, and read across the
+join that step is a stretch. So the tension pulled the two halves apart
+every pass. The join opened to 0.135, four times a step, and the piece
+bridging it was drawn as a slab as thick as the trunk, lying out where
+the root should have been. Measured:
+
+      step across the root/trunk join   0.135   (a step is 0.035)
+      after                             0.042
+
+Mended by writing the held shape in one frame all along a strand: a
+walked root's own line, moved to meet the trunk's without a step. The
+root then runs evenly from the collar out to its tip, and the trunk is a
+column that flares into roots instead of standing on splayed boards.
+
+Three rounds of thinning roots were aimed at this and missed it:
+`grip`, `collar`, `flare`, the halved length. They were not wrong — the
+roots were also too thick and too long — but none of them could have
+fixed it, because the thing complained about was not a root. I should
+have coloured the layers at the first "too thick", not the fourth. The
+tool was already there: the layer tint has been in the viewer since the
+bark work.
+
+Where it stands now (`sketch/page9.png`, `-foot`, `-roots`;
+`sketch/page11.png`, `-other-side`, `-roots`; `runs/021-girth/girth.png`):
+
+      roots crossing a ring, at most    0.11 to 0.13 of the trunk
+      with grip and collar off          0.69
+
+Page 7's four trees unchanged to the last digit (they have no ground, so
+no walked root and no second frame).
+
+Wrong, or not there:
+- At 0.11 of the trunk the roots may now be too slight rather than too
+  heavy: three rounds of thinning were aimed at a fault that was not
+  theirs. `grip` raises them without touching anything else.
+- The trunk's strands pull in tight at the foot now that nothing holds
+  them out. The flare is the roots leaving, not the trunk spreading.
+- A few roots still arc through the air in smooth even loops.

@@ -98,7 +98,7 @@
         { const dsl = H(B[0] - at(s, k1 - 1)[0], B[1] - at(s, k1 - 1)[1], B[2] - at(s, k1 - 1)[2]) || 0.035, cutLen = ending === 'point' ? 0.3 * n * dsl : (end.skew ? 2 * Math.abs(end.skew) * w1 : 0) + (end.step ? end.step.a : 0); backBy = clamp(Math.ceil(cutLen / dsl) + 2, 3, Math.max(3, n - 2)); }
         // a part that has torn from another is thickest on its far side and thins to a lip toward the tear
         const mid = (k0 + k1) >> 1, inn = s.inner && s.inner[mid], sg = inn ? dot(inn, unit(cross(tan(s, mid), s.O[mid]))) : 0, torn = Math.abs(sg) > 0.4 ? Math.sign(sg) : 0, e1 = 0.2 + 0.5 * r(), e2 = 0.2 + 0.5 * r(), rd = clamp(ridge0 + 0.4 * (r() - 0.5), -0.6, 0.6);
-        all.push(Object.assign(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? -0.4 * torn : rd, eL: torn < 0 ? 0.3 : torn > 0 ? 0.55 : e1, eR: torn > 0 ? 0.3 : torn < 0 ? 0.55 : e2, feather: torn, featherAmt: 0.78 }, s.thread ? { skew: 0 } : end)), { layer: fine || torn || (s.gap && s.gap[mid] > 0) ? 1 : 0 }));
+        all.push(Object.assign(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? -0.4 * torn : rd, eL: torn < 0 ? 0.3 : torn > 0 ? 0.55 : e1, eR: torn > 0 ? 0.3 : torn < 0 ? 0.55 : e2, feather: torn, featherAmt: 0.78 }, s.thread ? { skew: 0 } : end)), { layer: k1 <= s.root ? (s.rootOf >= 0 ? 7 : 6) : fine || torn || (s.gap && s.gap[mid] > 0) ? 1 : 0 }));   // 6, 7: root, and root that parted off a root
         count[fine ? 'fine' : 'bands'] = (count[fine ? 'fine' : 'bands'] || 0) + 1; k = k1; first = false;
       }
     }

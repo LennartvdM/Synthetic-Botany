@@ -131,7 +131,14 @@
           q = [q[0] + dir[0] * ds, p0[1] + (rad * 0.6 - p0[1]) * sstep(0, 0.8, g) - (dives ? 0.35 * sstep(0.6, 1, g) : 0), q[2] + dir[2] * ds]; rx.push(q); rr.push(rad); rg.push(q); }
       } else { const w = walk(p0, away, rho[0], len, dives, 1); for (let e = 0; e < w.rx.length; e++) { rx.push(w.rx[e]); rg.push(w.rx[e]); rr.push(w.rr[e]); rootPts.push(w.rx[e]); } Kr = rx.length; }
       s.root = Kr; s.K = Kr + X.length; const all = rx.reverse().concat(X), goals = rg.reverse().concat(goal);
-      s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho)); s.hold = Float64Array.from(Array.from({ length: Kr }, (_, k) => (k < Kr * 0.45 ? 0.2 : 0)).concat(hold));   // anchored at the far end of its root, and nowhere else
+      s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho));
+      // The shape a strand holds against tension is written in one frame all along it. A root's goal is the places
+      // it was walked to; the trunk's is the bundle's centre line, which the strand stands off from. Read as one
+      // frame, that step is a stretch, and the tension pulled the two apart: the join opened to four times a step,
+      // and the piece bridging it was drawn as a slab as thick as the trunk, lying out where the root should be.
+      // So the root's held shape is its own line moved to meet the trunk's without a step.
+      if (G) { const off = [0, 1, 2].map((q) => s.X[Kr * 3 + q] - s.goal[Kr * 3 + q]); s.set = Float64Array.from(s.goal);
+        for (let k = 0; k < Kr; k++) for (let q = 0; q < 3; q++) s.set[k * 3 + q] = s.goal[k * 3 + q] - off[q]; } s.hold = Float64Array.from(Array.from({ length: Kr }, (_, k) => (k < Kr * 0.45 ? 0.2 : 0)).concat(hold));   // anchored at the far end of its root, and nowhere else
       s.limbAt = fi; s.bend = P.stiff * Math.min(1.6, s.fat * s.fat);
       if (G) s.bend = Math.min(s.bend, 0.055);   // (with a long anchored root, stiffer than this and the settling runs away: taut, stiff and held together must stay under what one pass can undo)
     }
@@ -252,8 +259,9 @@
         // set: wood keeps the shape it grew in. A strand is then taut and stiff about its line, corners and all, and not
         // about a straight one: what is pulled smooth is how far it lies from its line, so a corner in the line stays a corner.
         // (A walked root keeps its shape wholly. Left even a little taut about a straight line, its windings are drawn out flat between the foot and its far end.)
-        const G = s.goal, w0 = s.child ? 0 : P.set, walked = !!P.ground && !s.child;
-        for (let k = 0; k < K; k++) { const w = walked && k < s.root ? 1 : w0; for (let q = 0; q < 3; q++) { const p = X[k * 3 + q]; let v = s.hold[k] * (G[k * 3 + q] - p);
+        const G = s.set || s.goal, w0 = s.child ? 0 : P.set, walked = !!s.set;
+        for (let k = 0; k < K; k++) { const w = walked ? w0 + (1 - w0) * Math.max(0, Math.min(1, 1 - (k - s.root) / 8)) : w0;   // (a walked root holds its own shape wholly; the trunk eases back to `set` over a few steps above it)
+          for (let q = 0; q < 3; q++) { const p = X[k * 3 + q]; let v = s.hold[k] * (s.goal[k * 3 + q] - p);
           if (k > 1 && k < K - 2) { const a = X[(k - 2) * 3 + q] - w * G[(k - 2) * 3 + q], b = X[(k - 1) * 3 + q] - w * G[(k - 1) * 3 + q], c = p - w * G[k * 3 + q], d = X[(k + 1) * 3 + q] - w * G[(k + 1) * 3 + q], e = X[(k + 2) * 3 + q] - w * G[(k + 2) * 3 + q]; v += P.taut * ((b + d) / 2 - c) - s.bend * (a - 4 * b + 6 * c - 4 * d + e); } m[k * 3 + q] = v; } }
         for (let q = 0; q < K * 3; q++) X[q] += m[q]; });
       // stiffness by girth (lmax): a strand leaves the tree's line only gradually, over a stretch that rises with

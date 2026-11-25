@@ -3673,3 +3673,73 @@ Wrong, or not there:
   it is standing on.
 - A bold root goes over a face. It still has no sense of what is at the
   bottom, and reaches it only because the ground happens to be there.
+
+## Roots are stiff: a line held, a corner taken, a knuckle at the bend
+
+The roots read as tentacles. Tepid stings, jellyfish: no rigidity of their
+own, which is the one thing a root has to have.
+
+The cause was in the walk, and it was not tautness. Every step turned a
+little: a rolling curvature, damped and re-randomised, kept inside what the
+girth allowed. However far such a thing wanders it can only make a curve,
+and a curve is what something limp makes. (This is the same lesson as the
+branches' elbows, from the other side. There the fault was too little
+turning, here too much of it, and the answer is the same both times:
+put the turning in one place and let the rest be straight.)
+
+So a root now holds its line. It goes straight -- the heading it has, laid
+on the ground, which bends only as the ground bends -- for a run as long as
+it is thick: a heavy root holds its line a long way, a slight one turns
+often. Only at the end of a run does it look around, from a fan of nine
+ways out to 75 degrees either side, and take the best. Then it holds that.
+
+Two things follow from the corner, and they are what makes it read as
+strength rather than as a zigzag:
+
+- **The knuckle.** At the bend the wood piles up and presses into the
+  ground: wider by up to half again over three steps, and sunk by half a
+  radius more. The harder the corner the bigger the knuckle. A corner is
+  where a root is holding on, and this is what the corner is for.
+- **The depth is held along a run.** It was a slow sine along the root's
+  own length, which is more wandering of the same kind. It is flat along a
+  run now and steps at the corner, so the knuckle is a step down and not a
+  swell on a wave.
+
+Lengths, by picture, on the cliff tree:
+
+      run 0.10   many corners, which average back into a curve: the thing
+                 the change was for, undone
+      run 0.16   a thigh, a knee, a shin, a foot -- kept
+      run 0.24   long bones, few joints: a stick insect
+
+Two more changes in the same direction, both by eye and then checked:
+
+- **Mass.** `grip` 0.62 -> 0.8. The roots were wiry for their length. At
+  the most loaded ring the roots now come to 0.81 of the trunk's section,
+  where they came to 0.45 -- nearer what the pipe model would say, and
+  still inside the rule that they may not exceed it.
+- **Blunter feet.** The taper ran over the last 22% of the length down to a
+  tenth of the girth, which left a long wiry tail. It is the last 13% down
+  to a quarter: the limb carries its weight out to the foot and then ends.
+
+What this costs: every tree on ground is re-walked, so page 9's roots and
+limbs are not the lines they were. Page 7's four are untouched (they have
+no ground, so nothing walks) and fingerprint exactly as before.
+
+Wrong, or not there:
+- The corner is chosen in the plane of the ground. A root's bends are all
+  in plan; nothing knees downward into the soil except where the ground
+  itself falls, so from the side a root is still a fairly even descent.
+- A knuckle is a swelling of the whole section. The wood ought to pile on
+  the outside of a bend and be drawn thin on the inside, which needs the
+  line moved and not only the girth.
+- The eyes are still smooth arches, laid out by sine. Against roots made of
+  straight runs they are now the limpest thing on the tree.
+
+And the eyes with them: an eye of wood is two straight runs out and back
+with corners, not a sine arch, and the wood piles at its two bends as it
+does at a root's. The proportions of the trapezoid come from the share of
+the section the eye took, so no two are alike.
+
+      page 9's lines, from here   1f56c8eb6f 4cf2326b26 88b7a470c3 9c164ef91a 1a82562001
+      page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f

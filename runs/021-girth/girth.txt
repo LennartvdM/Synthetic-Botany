@@ -1,0 +1,4 @@
+seed 1: trunk 0.1057 at y=0.20; 8 roots at the foot 0.0990 = 0.94x, parting into 11 more; most crossing a ring 0.29x
+seed 2: trunk 0.1166 at y=0.24; 8 roots at the foot 0.0993 = 0.85x, parting into 11 more; most crossing a ring 0.34x
+seed 3: trunk 0.0952 at y=0.20; 8 roots at the foot 0.0875 = 0.92x, parting into 9 more; most crossing a ring 0.38x
+seed 1, all of it showing: trunk 0.1057 at y=0.20; 8 roots at the foot 0.0990 = 0.94x, parting into 15 more; most crossing a ring 0.55x

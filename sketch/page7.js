@@ -37,7 +37,16 @@
     // strand is drawn wide enough to run into its neighbours and deep enough to reach the middle of the wood
     // round it. Where it has torn from another, or passes an orb, it is drawn at its own girth, so that the only
     // gaps are tears. (mass: 0 turns this off.)
+    // How far in there is wood to meet: to the far side of the nearest other strand on that side. Where neighbours
+    // are close they reach each other and the gap between them fills into one body; where a strand has parted from
+    // the rest, as at the foot where the roots leave, there is nothing to meet and it keeps its own girth. (Before,
+    // a strand reached toward the middle of its bundle however far that was, so the foot, where the bundle is
+    // widest, swelled to three times the wood that is in it.)
     const mass = recipe.mass === undefined ? 1 : recipe.mass;
+    const meet = (p, n, rho, qi, cap) => { let best = Infinity;
+      for (const o of pts) { if (o[4] === qi) continue; const vx = o[0] - p[0], vy = o[1] - p[1], vz = o[2] - p[2], al = vx * n[0] + vy * n[1] + vz * n[2];
+        if (al <= 0 || al > cap || al >= best) continue; const across = Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al)); if (across > rho + o[3]) continue; best = al + o[3] * 0.7; }
+      return best === Infinity ? 0.95 * rho : Math.min(cap, best); };
     // Elbows. A strand does not keep one width round a bend: the inside of the bend fills in, so it is broadest
     // at the elbow and its inner edge goes round on an easier curve than its middle. The sharper the bend the
     // more it fills, eased in before the corner and out after it, and never further than there is free room
@@ -69,7 +78,7 @@
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
           const no = nearOrb(base), tornHere = s.gap && s.inner && s.inner[i] ? Math.min(1, s.gap[i] / (1.2 * rho)) : 0, alone = 1 - sstep(0.9, 2.0, s.far[i] / rho), free = s.thread ? 1 : Math.max(no, tornHere, alone, 1 - sstep(s.root, s.root + 8, i)), body = mass * (1 - free),   // a strand running alone is a limb, not part of a mass
-          toMid = Math.max(0.95 * rho, Math.min(s.far[i] * 0.9, (s.limb >= 0 ? 1.5 : 3.2) * rho));   // a limb is thin: reaching for its middle must not come out of its other side
+          toMid = body > 0.01 ? Math.max(0.95 * rho, meet(base, [-s.O[i][0], -s.O[i][1], -s.O[i][2]], rho, si, Math.min(s.far[i] * 0.9, (s.limb >= 0 ? 1.5 : 3.2) * rho))) : 0.95 * rho;   // a limb is thin: reaching for its middle must not come out of its other side
           // (so does a strand that divided off another, where it comes out of it)
           // (a torn part leaves and rejoins what it tore from from underneath: laid level with it there, the two surfaces run through each other and come out pitted)
           const lift = (first ? (fine || s.stem >= 0 ? -0.9 * (1 - sstep(0, 0.35, q)) : 0) : -0.28 * (1 - sstep(0, 0.3, q))) + proud * q * q - ((fine || s.rootOf >= 0) && last ? 0.9 * sstep(0.65, 1, q) : 0), front = ending === 'point' ? Math.pow(Math.min(1, (1 - q) / 0.3), 0.7) : 1, back = first && !(s.stem >= 0) ? 1 : 0.7 + 0.3 * sstep(0, 0.3, q), w = Math.min(wide, 1.05 + (wide - 1.05) * (1 - no)) + body * (massW - 1.05);

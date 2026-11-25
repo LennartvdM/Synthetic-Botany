@@ -2995,3 +2995,76 @@ Wrong, or not there:
   still does not lean or sweep for the ground it is on.
 - Fine roots are smooth; the wood's flat-faced pieces do not show at that
   girth.
+
+## Run 021: the wood has to add up
+
+Said: the combined cross-section of the roots cannot exceed the
+cross-section of the thickest part of the trunk.
+
+The kernel already obeyed that and had since run 017: a root's girth is
+its family's combined section, so the roots at the foot summed to 0.90 of
+the trunk's. It was the drawing that did not. Measured against what is
+counted (`runs/021-girth/draw.js`, and cuts through the mesh itself):
+
+      up the clean trunk   drawn / counted  0.9 to 1.2   honest
+      at the foot                           2.5 to 3.9   not
+
+So the fault was at the foot, and in the picture, not in the arithmetic.
+Three things were wrong, found by switching parts off one at a time and
+by printing a plain map of a horizontal cut. (Switching off bark, shell,
+slivers, elbows, mass and the chaining changed almost nothing: it was the
+bands themselves, which is what sent me to the map.)
+
+- **The roots held the trunk up on legs.** A root came down to the ground
+  "within a fifth of its length", but its length counted progress, not
+  distance, and progress is discounted on a descent. So a long root slid
+  down a shallow ramp: it left the trunk's base and ran out nearly level
+  for 0.1 to 0.25 before dropping. Eight of those at full girth, splayed,
+  is the whole flare. A cut at that height sliced them lengthwise, which
+  is why the map showed lobes of wood with no strand anywhere near them.
+  Now the descent is paced by real distance (`dive`, 0.12).
+- **The trunk did not reach the ground.** It began a fifth of its own
+  width up, with only roots bridging the gap, so a cut through the foot
+  showed air under the middle. Now it begins 0.6 of its foot radius up:
+  the collar is short and the wood is continuous into the ground.
+- **Every root carried the whole of what its family carries.** Conserved,
+  but all of it above ground and spread wide, where the trunk's share of
+  it is packed into one compact body. Area is conserved; extent is not,
+  and extent is what the eye reads as girth. So: not all of what the
+  trunk carries comes out where it can be seen. `grip` (0.62 of girth,
+  0.38 of section) leaves as surface root; the rest goes straight down at
+  the foot and is never drawn. A root narrows to that over the first
+  short stretch, which is the collar.
+
+Also changed, though it turned out to be small: a strand reaching toward
+the middle of its bundle used to reach as far as the middle was, so at
+the foot, where the bundle is widest, it reached furthest. It now reaches
+only as far as there is a neighbour to meet. Where strands have parted,
+as at the foot, there is nothing to meet and each keeps its own girth.
+
+`runs/021-girth/girth.png`: the trunk's section and the roots' section
+drawn to the same scale, and how much root crosses a ring at each
+distance out. The four approved trees of page 7 come out unchanged to the
+last digit.
+
+      roots crossing a ring, at most    0.27 to 0.38 of the trunk
+      with grip turned off (1.0)        0.55
+
+Pictures: `sketch/page9.png`, `-foot`, `-cut` (level ground, and a cut
+through the foot, which is now solid wood from trunk into root);
+`sketch/page11.png`, `-other-side`, `-from-above` (the four sites).
+Withdrawn: `sketch/page9-foot-on-legs-withdrawn.png`,
+`sketch/page11-heavy-roots-withdrawn.png`.
+
+Surprised me: switching off every layer of the surface changed the foot
+by two per cent. I had assumed the extra wood was something laid on, and
+spent three measurements looking for it there. The map of the cut found
+it in one look. A picture of the thing beat four numbers about it, which
+is what the brief says and what I did not do first.
+
+Wrong, or not there:
+- A few roots still arc through the air in smooth even loops. They read
+  as wire, not wood.
+- Fine roots are smooth: the flat-faced pieces do not show at that girth.
+- Roots run to the edge of the ground they are given and stop there.
+- `grip` is a number I chose by eye at 0.62. Nothing derives it.

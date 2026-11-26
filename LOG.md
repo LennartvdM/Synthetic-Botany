@@ -4282,3 +4282,43 @@ Wrong, or not there:
 
       page 9's lines, from here   53ec4047f0 c104457eb0 9e8dcca33f 75f3c67c09 6aaf3a1c9f
       page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f
+
+## A flag for the flooded foot
+
+"You frequently do this thing where you seem to flood the rootplate with
+growth hormone and it's like a cancerous growth blasting from the bottom
+[...] And you clearly don't pick up on it in screenshots."
+
+Fair, and the second half is the important half. A dense foot and a strong
+foot look much alike from most angles, so a still does not settle it, and
+I have shipped the fault more than once while looking straight at it.
+
+`runs/023-plate/plate.js` counts it instead. It samples a ball about the
+foot, a little over two trunks across, and reports how much of that space
+is wood. A second ball at twice the radius says whether what is there
+spreads or stops.
+
+What makes it a useful flag rather than another number is what it does
+*not* answer to. Forced on purpose, on page 11's seven sites:
+
+      as it stands                       foot 0.13 to 0.21
+      more roots      (feet 14)          foot 0.17 to 0.21   no worse
+      more dividing   (forks 3)          foot 0.19 to 0.20   no worse
+      roots twice as thick (grip 1.0)    foot 0.27 to 0.33   flagged, all seven
+
+A foot may have as many roots as it likes and may not be made of wood,
+which is exactly the distinction that was being missed. The flag is at
+0.25. Nothing is clamped -- it prints and marks, and it is to be run
+before believing a picture, the way the lint is run before a render.
+
+This is the third measure in the repository and the first one asked for
+rather than reached for. The other two (the girth budget, the seam count)
+were both built to answer a question I already had; this one exists
+because a fault kept getting past the eye. Worth remembering which kind of
+measure is worth having.
+
+Wrong, or not there:
+- It counts a ball at the foot, so a tree whose roots go under the ground
+  reads lower than one whose roots lie on it, for no reason that has
+  anything to do with the fault.
+- It is run by hand. Nothing stops a picture being taken without it.

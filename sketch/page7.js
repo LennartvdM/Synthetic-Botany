@@ -281,7 +281,7 @@
     // the ground the tree was given, if any, is part of what is shown: its own layer, and no part of the wood
     const o = t.orb, gr = recipe.ground && !recipe.ground.level ? recipe.ground : null, f = gr ? (x, y, z) => Math.min(solid(x, y, z), gr(x, y, z)) : (x, y, z) => solid(x, y, z);
     f.layerAt = (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); let d = 9, l = 0; if (b) for (const i of b) { const v = all[i].f(x, y, z); if (v < d) { d = v; l = all[i].layer || 0; } } if (gr && gr(x, y, z) < d) l = 5; return l; };
-    f.orb = o && !o.empty ? o : null; f.marks = wounds; f.measure = t.measure; f.count = count; return f;
+    f.orb = o && !o.empty ? o : null; f.marks = wounds; f.measure = t.measure; f.count = count; f.recipe = recipe; return f;
   }
   // the same four trees. bare: bands only, so the body can be judged by itself. eyes: 0, because these four are
   // the record of what was approved and are kept as they were; eyes came later and belong to the grown trees.

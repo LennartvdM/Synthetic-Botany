@@ -3833,3 +3833,59 @@ having. The girth was never in the knuckles.
 
       page 9's lines, from here   b1cb17889f 0736abf4f0 89ee38b16e 561483e938 b15cb8ba77
       page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f
+
+## Roots articulate: a hand taken at each knuckle, kept or changed
+
+"It really has to snake", and then: "it doesn't just have to be zigzag,
+they can also curl, let the roots articulate freely."
+
+The first attempt was a zigzag and only a zigzag: a root that alternates
+hand at every knuckle, with shorter runs between them. Twice wrong.
+Shorter runs are the old trap -- corners every other step average back
+into the curve the corners were for -- and strict alternation is a
+sawtooth, which is one shape, not freedom.
+
+What is there now is a degree and a habit, both drawn for each root.
+
+- **How freely it articulates** is a number, not a kind: a slight root
+  articulates more than a heavy one, which holds its line. It changes what
+  the root is willing to pay for a turn (the straight-ahead bonus goes, the
+  penalty on a big angle nearly goes) and adds a push toward the hand it
+  has taken.
+- **Its habit** is whether it keeps that hand at the next knuckle or
+  changes it. Kept, successive turns carry it round into a curl or a hook;
+  changed, it zigzags. Most roots do some of both, and the habit is the
+  root's own, so one tree has both kinds in it.
+- And how far it swings is not the same twice: some knuckles are nearly
+  straight, some are hairpins.
+
+A root that articulates takes **longer** runs between its knuckles, not
+shorter: fewer, harder turns. With shorter ones the curls came out smooth
+and the thing was a tentacle again, which is what the whole of the last two
+rounds was about. The rule that keeps it stiff is the same rule that lets
+it wind: a held line and a hard corner.
+
+It is also given a little more length (12%) for the same reach, since what
+it spends going sideways it would otherwise spend going out. That was 50%
+at first, which simply made more wood: the trees grew a third more root
+and most of the gain was in the thin ends.
+
+      roots crossing a ring, at most   0.32 of the trunk's section
+
+Measured and discarded on the way: the share of root length thinner than a
+wire. It came out at 45-60% and barely moved whatever I did, because what
+it was counting was slight roots, which are meant to be slight. A rule to
+end a root when it had "run out of substance" was written against that
+number and then removed: it fired in the last 1% of a root and did nothing.
+Two rounds running, a number has sent me after the wrong thing.
+
+Wrong, or not there:
+- A curl is a curl in plan. Nothing lifts off the ground and comes back
+  down in the middle of a run, which is what a root does when it crosses
+  another one.
+- The habit is fixed for the whole length of a root. A real one wanders
+  loosely where there is nothing in its way and turns hard where there is;
+  the ground decides nothing about how much it articulates.
+
+      page 9's lines, from here   2ecabc8f7b 9b5ddcdc69 b9c92f8e4f a540462735 46492b392d
+      page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f

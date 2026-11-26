@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.5, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, weave: 1, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.5, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -94,6 +94,17 @@
       // corners. The line is as long as the root is thick -- a heavy one holds it a long way, a slight one turns
       // often -- and only at the corner does it look around and take the best way it can see, from a wide fan.
       // A curve is what a tentacle does. A corner is what something that is bracing itself does.
+      // How freely a root articulates at its knuckles. Not a kind of root but a degree, drawn for each: a slight
+      // root articulates more than a heavy one, which holds its line. At a knuckle it swings to one hand; whether
+      // it keeps that hand or changes it is the root's own habit, so one zigzags, the next carries on round into
+      // a curl, and most do some of both. Turning more often is not the way to get this: corners every other
+      // step average back into the very curve the corners were for.
+      const weave = Math.min(1.4, P.weave * (1.4 - 0.9 * heavy) * (0.35 + 1.3 * rw()));
+      const hold = 0.2 + 0.65 * rw();
+      let swing = rw() < 0.5 ? 1 : -1;
+      // and it is longer for the same reach: what it spends going sideways it would otherwise have spent going
+      // out, so a winding root given the length of a straight one never gets anywhere.
+      len *= 1 + 0.12 * weave;
       let legLeft = 0, legHug = 0.4 + 0.3 * Math.sin(wob), since = 9;
       // Where it corners it makes a knuckle: the wood piles up at the bend and presses into the ground there.
       // That is where a root is holding on, and it is what the corner is for.
@@ -147,9 +158,10 @@
         if (!turning) { legLeft--; since++; h = tt; } else {
         for (const a of [-1.3, -0.8, -0.45, -0.18, 0, 0.18, 0.45, 0.8, 1.3]) { const c = tt.map((v, k) => v * Math.cos(a) + side[k] * Math.sin(a)), pr = pos.map((v, k) => v + c[k] * 0.07);
           const lie = 1 - Math.abs(gradG(pr[0], pr[1], pr[2])[1]);
-          const score = (hemDir ? P.hem * brink * dot(c, hemDir) : 0) + (1 - onFace) * (1 - 0.5 * brink) * (0.7 * dot(c, out) + P.down * dot(c, dn)) + onFace * 3.2 * dot(c, grip) - bold * (1 - P.hang) * 2.2 * lie * lie * (1 - onFace) + (seamWay ? P.crease * seamAmt * dot(c, seamWay) : 0) + 2.4 * room(pr, rx.length - 12) / 0.22 + (Math.abs(a) < 0.2 ? 0.3 : 0) - 0.22 * Math.abs(a) + P.snake * 0.3 * r(); if (!best || score > best.score) best = { score, c, a }; }
+          const score = (hemDir ? P.hem * brink * dot(c, hemDir) : 0) + (1 - onFace) * (1 - 0.5 * brink) * (0.7 * dot(c, out) + P.down * dot(c, dn)) + onFace * 3.2 * dot(c, grip) - bold * (1 - P.hang) * 2.2 * lie * lie * (1 - onFace) + (seamWay ? P.crease * seamAmt * dot(c, seamWay) : 0) + 2.4 * room(pr, rx.length - 12) / 0.22 + (Math.abs(a) < 0.2 ? 0.3 * Math.max(0, 1 - weave) : 0) - 0.22 * Math.max(0.15, 1 - 0.8 * weave) * Math.abs(a) + weave * P.snake * (0.35 + 1.25 * r()) * swing * Math.sin(a) + P.snake * 0.3 * r(); if (!best || score > best.score) best = { score, c, a }; }
           h = best.c;
-          legLeft = Math.max(2, Math.round((onFace > 0.5 ? P.brace * (0.6 + 0.9 * r()) : P.leg * (0.75 + 1.1 * heavy) * (0.6 + 0.8 * r())) / ds));
+          if (r() > hold) swing = -swing;
+          legLeft = Math.max(2, Math.round((onFace > 0.5 ? P.brace * (0.6 + 0.9 * r()) : P.leg * (0.75 + 1.1 * heavy) * (1 + 0.35 * Math.min(1, weave)) * (0.6 + 0.8 * r())) / ds));
           legHug = 0.4 + 0.3 * Math.sin(wob + TAU * gone / wl);
           if (rx.length) corners.push([rx.length, Math.min(1, Math.abs(best.a) / 0.75)]);
           since = 0; }

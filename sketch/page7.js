@@ -202,7 +202,7 @@
         return Math.max(dd, H(x - c[0], y - c[1], z - c[2]) - R * 0.99, (x - c[0]) * d[0] + (y - c[1]) * d[1] + (z - c[2]) * d[2] - 0.6 * R); };
       all.push({ f, C: [c], reach: [R + 0.02], layer: 4 }); count.scars++; }
     const bs = Math.min(1, (recipe.trunk && recipe.trunk[0] ? recipe.trunk[0][3] : 0.27) / 0.27);
-    const BK = recipe.bare || recipe.bark === 0 ? null : Object.assign({ cell: 0.075 * bs, stretch: 1.6, cover: 0.4, percolate: 0.985, cohere: 0.6, least: 10, thick: 0.02 * bs, peel: 0.08 }, recipe.bark || {}), rb = rng((recipe.seed || 1) + 123);
+    const BK = recipe.bare || recipe.bark === 0 ? null : Object.assign({ cell: 0.075 * bs, stretch: 1.6, cover: 0.4, percolate: 0.985, cohere: 0.6, least: 10, thick: 0.02 * bs, peel: 0.08, onRoots: false }, recipe.bark || {}), rb = rng((recipe.seed || 1) + 123);
     // which pieces are near which place, so that only those are asked
     const cell = 0.12, grid = new Map(), key = (x, y, z) => (x + 64) * 16384 + (y + 64) * 128 + z + 64;
     const index = (i) => { const s = all[i], seen = new Set(); s.C.forEach((c, j) => { const m = s.reach[j] + 0.06;
@@ -215,7 +215,7 @@
       // tears: distance from a cell's point is counted short along its strand's direction. No point is nearer
       // another than a cell's width, so counted.
       const sp = BK.cell, st = BK.stretch, P = [], gs = Math.max(0.1, sp * st), sgrid = new Map(), skey = (x, y, z) => (Math.floor(x / gs) + 512) * 1048576 + (Math.floor(y / gs) + 512) * 1024 + Math.floor(z / gs) + 512, cand = [];
-      for (const q of t.strands) if (!q.thread) for (let i = walked ? 1 : q.root + 1; i < q.K - 1; i++) if (q.rho[i] > 0.012 * bs) { const low = walked && i <= q.root;
+      for (const q of t.strands) if (!q.thread) for (let i = walked && BK.onRoots ? 1 : q.root + 1; i < q.K - 1; i++) if (q.rho[i] > 0.012 * bs) { const low = walked && i <= q.root;
         const bar = (low ? i > q.root - 6 || q.rho[i] <= 0.016 * bs : i < q.root + 5 || q.rho[i] <= 0.02 * bs) || q.far[i] <= 0.9 * q.rho[i] ? 1 : 0; const T = tan(q, i), sv = unit(cross(T, q.O[i])); for (const e of [-0.8, 0, 0.8]) { let n = [0, 1, 2].map((c) => q.O[i][c] * (q.far[i] + 0.8 * q.rho[i]) + sv[c] * e * q.rho[i]); const al = dot(n, T); n = unit(n.map((v, c) => v - T[c] * al)); cand.push([0, 1, 2].map((c) => q.X[i * 3 + c] + (q.O[i][c] * 0.8 + sv[c] * e) * q.rho[i]).concat(T, q.far[i] + q.rho[i], n, bar, low ? 1 : 0, low ? st * 1.9 : st)); } }   // each with the way out from the middle of the wood there
       for (let i = cand.length - 1; i > 0; i--) { const j = Math.floor(rb() * (i + 1)), x = cand[i]; cand[i] = cand[j]; cand[j] = x; }
       const dist = (c, x, y, z) => { const vx = x - c[0], vy = y - c[1], vz = z - c[2], al = vx * c[3] + vy * c[4] + vz * c[5]; return Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al) + (al / (c[12] || st)) ** 2); };   // a root's bark tears longer along the grain than a trunk's

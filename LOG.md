@@ -4071,3 +4071,26 @@ Wrong, or not there:
 
       page 9's lines, from here   15f37aece6 bcd8e7d262 782ba78d99 cd506d8d28 b05cb87fe5
       page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f
+
+## Withdrawn: bark on the roots
+
+"And doesn't seem to need bark." Put side by side it plainly does not. The
+plates sit on a root as broad smooth shields, and what they cover is the
+fluting -- the one thing that had just made a root read as living wood
+rather than a peeled stick. A root with bark is blobbier than a root
+without; the sheet adds mass where the shape wants tautness.
+
+So the diagnosis two rounds ago was wrong. "A root is bare wood against a
+plated trunk, and that is why it reads as peeled" sounded right and was
+not. What a root needed was fibre along it and tension in it, not a coat
+over it. The coat was the obvious answer and the obvious answer was in the
+way of the real one.
+
+The machinery stays, switched off: `bark: { onRoots: true }` puts it back
+for anyone who wants to look again. What is kept from that round is the
+rest of it -- bark sized to the tree it grows on, which is what gave the
+grown trees any bark at all on their trunks and limbs, and the measurement
+that found they had almost none.
+
+The flutes, which were laid in the same round for the same wrong reason,
+turned out to be the thing that worked.

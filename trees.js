@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, forkBy: 0.42, weave: 1, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.5, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, sinew: 0.17, apart: 1, slack: 0.11, press: 1.3, forkBy: 0.42, weave: 1, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.5, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -115,7 +115,9 @@
       // which is where nearly all of its thinning happens. Along a run it loses only `waste`. What it does at the
       // trunk is not taper but flare: it leaves at the trunk's own girth and is down to its running girth within
       // `flare`, under half a trunk's width. (A long smooth cone from trunk to tip is a carrot, not a root.)
-      const girth = (g, far) => rho0 * (collar ? P.grip * (1 + (P.collar - 1) * Math.pow(Math.max(0, 1 - far / P.flare), 1.6)) : 1) * (1 - P.waste * g) * (dives ? 1 : Math.pow(Math.min(1, (1 - g) / P.toe), 0.7) * (1 - P.tip) + P.tip);
+      const sp1 = TAU * rw(), sl1 = 0.075 + 0.06 * rw(), sp2 = TAU * rw(), sl2 = 0.2 + 0.15 * rw();
+      const sinew = (far) => 1 + P.sinew * (0.62 * Math.sin(sp1 + TAU * far / sl1) + 0.38 * Math.sin(sp2 + TAU * far / sl2));
+      const girth = (g, far) => sinew(far) * rho0 * (collar ? P.grip * (1 + (P.collar - 1) * Math.pow(Math.max(0, 1 - far / P.flare), 1.6)) : 1) * (1 - P.waste * g) * (dives ? 1 : Math.pow(Math.min(1, (1 - g) / P.toe), 0.7) * (1 - P.tip) + P.tip);
       const room = (pr, own) => { if (Math.abs(pr[0]) > 0.97 || Math.abs(pr[2]) > 0.97) return 0; let near = 0.22; for (const q of rootPts) near = Math.min(near, H(pr[0] - q[0], pr[1] - q[1], pr[2] - q[2])); for (let e = 0; e < own; e++) near = Math.min(near, H(pr[0] - rx[e][0], pr[1] - rx[e][1], pr[2] - rx[e][2])); return near; };
       for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = girth(g, gone), nn = gradG(pos[0], pos[1], pos[2]), nk = Math.min(1.4, nook(pos, nn) * P.seams), hug = rad * (legHug - P.knuckle * 0.6 * Math.max(0, 1 - since / 2.5)) - rad * P.seam * Math.max(0, nk) + rad * 0.5 * Math.max(0, Math.min(1, -nk)) - rad * P.bite * Math.max(0, 1 - Math.abs(nn[1]) - 0.45) / 0.3 * Math.max(hooked, Math.max(0, Math.min(1, nk)), 0.5 * Math.max(0, Math.sin(wob * 2 + TAU * gone / (wl * 0.55)))), want = c0 + (hug - c0) * sstep(0, P.dive + P.slant * steepness * Math.max(0, c0), gone) - (dives ? 0.3 * sstep(0.72, 1, g) : 0);
         let tt = h.map((v, k) => v - nn[k] * dot(h, nn)); const dn = UP.map((v, k) => -(v - nn[k] * nn[1])), dl = H(dn[0], dn[1], dn[2]); if (H(tt[0], tt[1], tt[2]) < 0.2) tt = dl > 1e-6 ? dn : cross(nn, [1, 0, 0]); tt = unit(tt);
@@ -158,7 +160,7 @@
         if (!turning) { legLeft--; since++; h = tt; } else {
         for (const a of [-1.3, -0.8, -0.45, -0.18, 0, 0.18, 0.45, 0.8, 1.3]) { const c = tt.map((v, k) => v * Math.cos(a) + side[k] * Math.sin(a)), pr = pos.map((v, k) => v + c[k] * 0.07);
           const lie = 1 - Math.abs(gradG(pr[0], pr[1], pr[2])[1]);
-          const score = (hemDir ? P.hem * brink * dot(c, hemDir) : 0) + (1 - onFace) * (1 - 0.5 * brink) * (0.7 * dot(c, out) + P.down * dot(c, dn)) + onFace * 3.2 * dot(c, grip) - bold * (1 - P.hang) * 2.2 * lie * lie * (1 - onFace) + (seamWay ? P.crease * seamAmt * dot(c, seamWay) : 0) + 2.4 * room(pr, rx.length - 12) / 0.22 + (Math.abs(a) < 0.2 ? 0.3 * Math.max(0, 1 - weave) : 0) - 0.22 * Math.max(0.15, 1 - 0.8 * weave) * Math.abs(a) + weave * P.snake * (0.35 + 1.25 * r()) * swing * Math.sin(a) + P.snake * 0.3 * r(); if (!best || score > best.score) best = { score, c, a }; }
+          const score = (hemDir ? P.hem * brink * dot(c, hemDir) : 0) + (1 - onFace) * (1 - 0.5 * brink) * (0.7 * dot(c, out) + P.down * dot(c, dn)) + onFace * 3.2 * dot(c, grip) - bold * (1 - P.hang) * 2.2 * lie * lie * (1 - onFace) + (seamWay ? P.crease * seamAmt * dot(c, seamWay) : 0) + P.apart * room(pr, rx.length - 12) / 0.22 + (Math.abs(a) < 0.2 ? 0.3 * Math.max(0, 1 - weave) : 0) - 0.22 * Math.max(0.15, 1 - 0.8 * weave) * Math.abs(a) + weave * P.snake * (0.35 + 1.25 * r()) * swing * Math.sin(a) + P.snake * 0.3 * r(); if (!best || score > best.score) best = { score, c, a }; }
           h = best.c;
           if (r() > hold) swing = -swing;
           legLeft = Math.max(2, Math.round((onFace > 0.5 ? P.brace * (0.6 + 0.9 * r()) : P.leg * (0.75 + 1.1 * heavy) * (1 + 0.35 * Math.min(1, weave)) * (0.6 + 0.8 * r())) / ds));
@@ -209,6 +211,36 @@
         // and a root that went over a lip then ran on to the bottom of the cliff however far that was.
         hooked = hook; const coming = G(nx[0], nx[1], nx[2]) > 3 * rad, working = onFace > 0.5 && bold < 1; prog += ds * (coming ? 0.3 : working ? 0.5 : 1); gone += H(nx[0] - pos[0], nx[1] - pos[1], nx[2] - pos[2]); pos = nx; rx.push(nx); rr.push(rad); }   // (gone is real distance: counted as ds while the step also drops, the descent comes out far steeper than `slant` asks)
       for (const [c, hard] of corners) for (let d = -1; d <= 1; d++) { const k = c + d; if (k >= 0 && k < rr.length) rr[k] *= 1 + P.knuckle * hard * (d ? 0.55 : 1); }
+      // The buckle. A root reaches out until it finds something it can hold, and there it stays: that end is
+      // tethered and the foot never moves. Afterwards the tree keeps putting length on at the foot, and the
+      // length has nowhere to go -- the run between the two ends is longer than the distance between them. So it
+      // buckles: it bows to one hand, and it presses down into the ground, which is how it loses some of the
+      // tension without having to rise far. The bow is taken at the knuckles and the runs between them stay
+      // straight, so it buckles the way a strut does and not the way a rope sags.
+      if (rx.length > 9 && P.slack > 0) { const n = rx.length, lo = 0, hi = n - 1;
+        const ends = [lo].concat(corners.map(([c]) => c).filter((c) => c > lo + 1 && c < hi - 1), [hi]);
+        const run = (X) => { let L = 0; for (let k = 1; k < n; k++) L += H(X[k][0] - X[k - 1][0], X[k][1] - X[k - 1][1], X[k][2] - X[k - 1][2]); return L; };
+        const L0 = run(rx), want = L0 * (1 + P.slack * (0.45 + 1.1 * rw()));
+        const lobes = rw() < 0.62 ? 1 : 2, hand = rw() < 0.5 ? 1 : -1;
+        const span = unit([rx[hi][0] - rx[lo][0], rx[hi][1] - rx[lo][1], rx[hi][2] - rx[lo][2]]);
+        const nn0 = gradG(rx[(lo + hi) >> 1][0], rx[(lo + hi) >> 1][1], rx[(lo + hi) >> 1][2]);
+        let sideW = cross(nn0, span); if (H(sideW[0], sideW[1], sideW[2]) < 0.2) sideW = cross(span, [1, 0, 0]);
+        sideW = unit(sideW);
+        const env = (k) => Math.sin(lobes * PI * (k - lo) / (hi - lo));
+        const base = rx.map((p) => p.slice()), gBase = rx.map((p) => G(p[0], p[1], p[2]));
+        const lay = (A) => { const out = base.map((p) => p.slice());
+          for (let e = 1; e < ends.length - 1; e++) { const c = ends[e], w = A * env(c);
+            for (let q = 0; q < 3; q++) out[c][q] = base[c][q] + sideW[q] * hand * w; }
+          for (let e = 0; e < ends.length - 1; e++) { const a = ends[e], b = ends[e + 1];
+            for (let k = a + 1; k < b; k++) { const t = (k - a) / (b - a); for (let q = 0; q < 3; q++) out[k][q] = out[a][q] + (out[b][q] - out[a][q]) * t; } }
+          return out; };
+        let A = 0, step = 0.5 * L0 / Math.max(1, lobes);
+        for (let it = 0; it < 14; it++) { const L = run(lay(A + step)); if (L < want) A += step; step *= 0.5; }
+        const done = lay(A);
+        for (let k = 0; k < n; k++) { let p = done[k];
+          for (let it = 0; it < 3; it++) { const gn = gradG(p[0], p[1], p[2]), gv = G(p[0], p[1], p[2]), to = gBase[k] - P.press * rr[k] * Math.abs(env(k)) * 0.5;
+            if (Math.abs(to - gv) < 1e-9) break; p = p.map((v, q) => v + gn[q] * (to - gv)); }
+          rx[k] = p; } }
       return { rx, rr }; } : null;
     // every strand has a place in the bundle's section, and a girth of its own (mixed: most thin, a few heavy)
     const S = Array.from({ length: n }, (_, j) => { const d = Math.sqrt((j + 0.5) / n), a = j * GA + 0.5 * (r() - 0.5); return { a: d * Math.cos(a), b: d * Math.sin(a), fat: P.mixed ? 0.35 + 1.9 * Math.pow(r(), 2.5) : 1 + P.uneven * (r() - 0.5), limb: -1, give: r() < P.giving ? 1 : 0.25 * r() }; });

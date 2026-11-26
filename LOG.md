@@ -4002,3 +4002,72 @@ Wrong, or not there:
 
       page 9's lines, from here   3e496fc5e4 81c54a33c9 ce8a85f524 a13c6d4762 c5496686c3
       page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f
+
+## Timber, and what was missing: a root is a strut, not a path
+
+"Now it looks like timber, not alive at all." It did. Four things were
+wrong, and the fourth is the one that was never in the model at all.
+
+**It held one girth along a run.** Wood that does is sawn. A root has two
+slow waves of its own now, at a few radii and at a span, so no stretch of
+it is the thickness of the next and the silhouette is never
+parallel-sided. The knuckles are the big swells; this is what happens
+between them.
+
+**It had no fibre.** The slivers that make the trunk read as a living
+thing -- lengths of wood lying along it, pointed at both ends -- were laid
+above the foot only. Every root on every tree was a bare smooth rod, a
+peeled stick. Roots are fluted now, more plainly than the trunk because
+there is no bundle to hide it. They first came out invisible twice: laid at
+0.42 of the radius they were buried inside the wood, and then, put on the
+skin, they stood a tenth of a radius proud where a mesh cell is a third of
+that. At a root's size, detail has to be bigger than it would be on a
+trunk or it is not there at all.
+
+**They were held apart.** The score paid a root 2.4 for room, which spaced
+them evenly round the foot -- a dozen similar rods at equal angles, which
+is a thing a machine makes. At 1.0 they bunch, run alongside each other and
+cross, and that alone did more for the look than anything else in the
+round.
+
+**And a root is not a path.** This was the user's, and it is the right
+model:
+
+> A root expands outward and down through the air until it hits something
+> it can nest itself in, then it digs in or latches. But after it tethers
+> that point into a solid mass. The root keeps growing from the base in
+> length. The excess root is now caught between the tree and the ground and
+> will bend outward; this extra tension is also used to bury the root
+> further so some tension alleviates and you don't have to bend upward far.
+
+So the walk finds where the root reaches and latches, and that end is
+fixed; the foot never moves. Then the tree goes on putting length on at the
+foot, and the run between the two ends is longer than the distance between
+them. It buckles: it bows to one hand -- first mode or second, its own
+choice -- and as it is laid back down it presses into the ground, which is
+how it sheds some of the tension without having to rise. The bow is taken
+at the knuckles and the runs between them stay straight, so it buckles as a
+strut does and not as a rope sags.
+
+      extra length between foot and latch   5 to 17%
+      roots crossing a ring, at most        0.36 of the trunk's section
+
+Found on the way and not chased: the worst pair of strands on these trees
+overlaps by 35 to 49%, against the 27% the brief allows. It is not from
+anything in this round -- it reads the same with every one of these changes
+off -- but it has been true for a while and I had not measured it.
+
+Wrong, or not there:
+- The latch is assumed, not found. The walk still ends where its length
+  runs out, and the buckle then treats that end as though the root had
+  taken hold there. What the model asks for is that the root reaches until
+  it finds something worth holding -- a seam, a lip, the far side of a
+  stone -- and stops there because it has found it.
+- The length is put on once, at the end. A root that had been adding length
+  for years would have buckled, pressed, been held, and buckled again
+  against its own earlier shape.
+- Nothing is in tension afterwards. The buckle is a shape, not a load: the
+  wood does not pull on the tree or on what it holds.
+
+      page 9's lines, from here   15f37aece6 bcd8e7d262 782ba78d99 cd506d8d28 b05cb87fe5
+      page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f

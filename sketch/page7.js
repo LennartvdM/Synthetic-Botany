@@ -117,7 +117,22 @@
     // where a strand is on the outside of the wood, and off the ground
     const rhoTop = Math.max(...t.strands.map((q) => Math.max(...q.rho))), outer = (s, k) => k > s.root + 4 && k < s.K - 3 && s.far[k] > 1.1 * s.rho[k] && s.rho[k] > Math.min(0.03, 0.4 * rhoTop) && !wounds.some((v) => H(s.X[k * 3] - v.c[0], s.X[k * 3 + 1] - v.c[1], s.X[k * 3 + 2] - v.c[2]) < 2 * v.r);
     const stretch = (s, len) => { for (let go = 0; go < 6; go++) { const k0 = s.root + 4 + Math.floor(r() * Math.max(1, s.K - s.root - len - 8)), k1 = k0 + len; if (k1 < s.K - 2 && outer(s, k0) && outer(s, k1) && outer(s, (k0 + k1) >> 1)) return [k0, k1]; } return null; };
+    const alongRoot = (s, k) => k > 3 && k < s.root - 5 && s.far[k] > 0.95 * s.rho[k] && s.rho[k] > 0.013 && !wounds.some((v) => H(s.X[k * 3] - v.c[0], s.X[k * 3 + 1] - v.c[1], s.X[k * 3 + 2] - v.c[2]) < 2 * v.r);
+    const runOfRoot = (s, len) => { for (let go = 0; go < 6; go++) { const k0 = 3 + Math.floor(r() * Math.max(1, s.root - len - 8)), k1 = k0 + len; if (k1 < s.root - 4 && alongRoot(s, k0) && alongRoot(s, k1) && alongRoot(s, (k0 + k1) >> 1)) return [k0, k1]; } return null; };
     const thick = t.strands.filter((q) => !q.vine && !(q.inner && q.inner.some((v) => v)) && Math.max(...q.rho) > Math.min(0.045, 0.6 * rhoTop));   // (thick: for a small tree, by its own measure)
+    if (!recipe.bare && walked) for (const s of t.strands) { if (s.vine || s.loop || !(s.root > 16)) continue;
+      for (let j = 0; j < 3; j++) {   // a root's flutes
+        const len = 9 + Math.floor(20 * r()), st = runOfRoot(s, len); if (!st) continue;
+        const side = (r() < 0.5 ? -1 : 1) * (0.2 + 0.62 * r()), wide = 0.34 + 0.3 * r(), high = 0.5 + 0.4 * r(), sd = 1 + Math.floor(r() * 1e6), rd = 0.7 * (r() - 0.5), eL = 0.15 + 0.6 * r(), eR = 0.15 + 0.6 * r();
+        const C = [], O = [], W = [], Hh = [], D = [];
+        for (let k = st[0]; k <= st[1]; k++) { const q = (k - st[0]) / len, o = s.O[k], sv = unit(cross(tan(s, k), o)), rho = s.rho[k], fine = Math.min(1, q / 0.25, (1 - q) / 0.35), p = at(s, k);
+          // round the root, not into it: a flute lies on the skin and faces out from the axis, and it wanders
+          // slowly round as it runs, the way a root's ridges do
+          const a2 = side * 1.6 + 0.5 * Math.sin(q * 3.1 + sd % 7);
+          const dir = [0, 1, 2].map((i) => o[i] * Math.cos(a2) + sv[i] * Math.sin(a2));
+          C.push([0, 1, 2].map((i) => p[i] + dir[i] * rho * 0.78)); O.push(dir); W.push(Math.max(0.003, rho * wide * fine)); Hh.push(rho * high * (0.4 + 0.6 * fine)); D.push(rho * 0.7); }
+        all.push(Object.assign(shard({ C, O, W, Hh, D, deep: Math.max(...D), seed: sd, wiggle: 1, ridge: rd, eL, eR, skew: 0 }), { layer: 2 })); count.slivers++;
+      } }
     if (!recipe.bare) for (const s of thick) for (let j = 0; j < 2; j++) {   // slivers
       const u = r(), len = 10 + Math.floor(18 * r()), side = (r() < 0.5 ? -1 : 1) * (0.25 + 0.5 * r()), lift = 0.3 + 0.7 * r(), wide = 0.3 + 0.25 * r(), high = 0.3 + 0.2 * r(), sd = 1 + Math.floor(r() * 1e6), rd = 0.8 * (r() - 0.5), eL = 0.1 + 0.6 * r(), eR = 0.1 + 0.6 * r(), st = u < 0.6 ? stretch(s, len) : null; if (!st) continue;
       const C = [], O = [], W = [], Hh = [], D = [];

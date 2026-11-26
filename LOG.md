@@ -4322,3 +4322,50 @@ Wrong, or not there:
   reads lower than one whose roots lie on it, for no reason that has
   anything to do with the fault.
 - It is run by hand. Nothing stops a picture being taken without it.
+
+## Retracted: the plate flag was counting the wrong thing
+
+The entry above is wrong and the round it reports did not fix anything.
+"So you fixed nothing, this is still the freakish growth tumor roots."
+
+I had assumed the fault was **wood** -- a foot flooded, a mass -- and built
+a measure of how much of a ball at the foot is solid. It was calibrated
+against a tree with its root girth doubled, which it caught; it passed the
+trees that actually had the fault; and I reported a clean bill while the
+fault was in the picture I sent with it. Worse, in calibrating it I wrote
+down that more roots (`feet 14`) left the number unmoved and called that
+the right sensitivity. More roots *is* the fault. I had the measure certify
+the thing it was built to catch.
+
+What the fault actually is, cut open and counted: **thirteen to nineteen
+roots were leaving the foot, and every one of them was a wire.** They share
+one trunk's worth of section between them, so the more of them there are
+the thinner each must be. A fringe of wires round a swollen trunk is what
+reads as a tumour. Volume cannot see it, because fourteen wires and six
+roots weigh the same.
+
+And the cause was mine, from two rounds ago. Crowding the divisions toward
+the foot -- right as a share of a root's length -- put them inside the
+first two trunk-widths, so each primary root sprouted two or three more
+before it had got clear of the collar. The foot is left clear now
+(`clearFoot`, 2.1 trunk radii): what leaves the foot is few, and the
+dividing starts out beyond it.
+
+      roots leaving the foot   13 to 19  ->  4 to 7
+      roots crossing a ring, at most   0.48 of the trunk's section
+      (`grip` 0.5 -> 0.6: with six roots instead of sixteen, each can carry more)
+
+`runs/023-plate/plate.js` counts both now -- how many leave, and the fill
+-- and says in its own comments which fault each number sees and that the
+first one was got wrong. The fill is kept because the solid-foot fault is
+real; it is just not this one.
+
+The lesson is sharper than "a picture beats a number", which I had already
+written down twice. It is: **a measure built from a guess about the cause
+will certify the fault.** I guessed wood, calibrated against wood, and got
+a green light. What found it was cutting the foot open, failing to see it
+there either, and then going back to the picture the complaint was about
+and counting what was actually in it.
+
+      page 9's lines, from here   3124a3e482 a6955d0811 8edf224e71 95442327a8 adbe75f371
+      page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f

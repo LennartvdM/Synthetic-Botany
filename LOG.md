@@ -3938,3 +3938,16 @@ Wrong, or not there:
   the root enters the ground.
 - Bark still stops at a hard edge on open wood. Where a swathe ends on a
   root there is no reason for it to end there.
+
+A root's bark is now its own stuff: it tears nearly twice as far along the
+root as a trunk's does across it, so what lies on a root is long strips
+running with it rather than the trunk's broad patches, and the sheet is
+half as thick. The far thin roots stay bare, which is the contrast that
+makes the barked wood read as covered.
+
+And the seventh time: a replacement line of mine ended with a comment, and
+the brace that closed the block was pushed out past it and swallowed. The
+check in `runs/021-girth/lint.js` did not catch it, because the check was
+written for a comment put after unfinished code, and this was code put
+after a finished comment -- the same accident from the other side. It
+checks both now.

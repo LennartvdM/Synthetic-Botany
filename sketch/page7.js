@@ -201,9 +201,9 @@
       // another than a cell's width, so counted.
       const sp = BK.cell, st = BK.stretch, P = [], gs = Math.max(0.1, sp * st), sgrid = new Map(), skey = (x, y, z) => (Math.floor(x / gs) + 512) * 1048576 + (Math.floor(y / gs) + 512) * 1024 + Math.floor(z / gs) + 512, cand = [];
       for (const q of t.strands) if (!q.thread) for (let i = walked ? 1 : q.root + 1; i < q.K - 1; i++) if (q.rho[i] > 0.012 * bs) { const low = walked && i <= q.root;
-        const bar = (low ? i > q.root - 6 || q.rho[i] <= 0.016 * bs : i < q.root + 5 || q.rho[i] <= 0.02 * bs) || q.far[i] <= 0.9 * q.rho[i] ? 1 : 0; const T = tan(q, i), sv = unit(cross(T, q.O[i])); for (const e of [-0.8, 0, 0.8]) { let n = [0, 1, 2].map((c) => q.O[i][c] * (q.far[i] + 0.8 * q.rho[i]) + sv[c] * e * q.rho[i]); const al = dot(n, T); n = unit(n.map((v, c) => v - T[c] * al)); cand.push([0, 1, 2].map((c) => q.X[i * 3 + c] + (q.O[i][c] * 0.8 + sv[c] * e) * q.rho[i]).concat(T, q.far[i] + q.rho[i], n, bar, low ? 1 : 0)); } }   // each with the way out from the middle of the wood there
+        const bar = (low ? i > q.root - 6 || q.rho[i] <= 0.016 * bs : i < q.root + 5 || q.rho[i] <= 0.02 * bs) || q.far[i] <= 0.9 * q.rho[i] ? 1 : 0; const T = tan(q, i), sv = unit(cross(T, q.O[i])); for (const e of [-0.8, 0, 0.8]) { let n = [0, 1, 2].map((c) => q.O[i][c] * (q.far[i] + 0.8 * q.rho[i]) + sv[c] * e * q.rho[i]); const al = dot(n, T); n = unit(n.map((v, c) => v - T[c] * al)); cand.push([0, 1, 2].map((c) => q.X[i * 3 + c] + (q.O[i][c] * 0.8 + sv[c] * e) * q.rho[i]).concat(T, q.far[i] + q.rho[i], n, bar, low ? 1 : 0, low ? st * 1.9 : st)); } }   // each with the way out from the middle of the wood there
       for (let i = cand.length - 1; i > 0; i--) { const j = Math.floor(rb() * (i + 1)), x = cand[i]; cand[i] = cand[j]; cand[j] = x; }
-      const dist = (c, x, y, z) => { const vx = x - c[0], vy = y - c[1], vz = z - c[2], al = vx * c[3] + vy * c[4] + vz * c[5]; return Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al) + (al / st) ** 2); };
+      const dist = (c, x, y, z) => { const vx = x - c[0], vy = y - c[1], vz = z - c[2], al = vx * c[3] + vy * c[4] + vz * c[5]; return Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al) + (al / (c[12] || st)) ** 2); };   // a root's bark tears longer along the grain than a trunk's
       const nearSeeds = (x, y, z, fn) => { const cx = Math.floor(x / gs), cy = Math.floor(y / gs), cz = Math.floor(z / gs); for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let c = -2; c <= 2; c++) { const g = sgrid.get((cx + a + 512) * 1048576 + (cy + b + 512) * 1024 + cz + c + 512); if (g) for (const i of g) fn(i); } };
       // Bark may not lie on the foot, on a strand buried in the middle, on thin wood, or within reach of an orb's room. Those places have cells
       // all the same, barred from being switched on, so that wherever bark stops it stops on a boundary between two cells.
@@ -243,7 +243,7 @@
         const off = nb[i].filter((j) => !on[j]); let bd = null, slope = 0;
         if (off.length) { let v = [0, 0, 0]; for (const j of off) { const d = unit([P[j][0] - p[0], P[j][1] - p[1], P[j][2] - p[2]]); v = v.map((x, c) => x + d[c]); } const al = dot(v, n); v = v.map((x, c) => x - n[c] * al);
           if (H(v[0], v[1], v[2]) > 0.2) { bd = unit(v); const u1 = rb(), u2 = rb(); slope = u1 < BK.peel ? 0.45 + 0.4 * u2 : 0; } }
-        plates[i] = { n, T, u, t0, ga: ga / la, gb: gb / lb, top: Math.min(0.05, cover) + skin, bd, slope }; }
+        plates[i] = { n, T, u, t0, ga: ga / la, gb: gb / lb, top: Math.min(0.05, cover) + (p[11] ? skin * 0.5 : skin), bd, slope }; }   // and it is a thinner sheet
       // Between two plates the sheet does not break: over a band it passes from one to the other, a crease where
       // they meet at an angle and a ramp where one lies higher. Only a plate that has peeled is cut free of its
       // neighbours along its sides, and stands as a flake.

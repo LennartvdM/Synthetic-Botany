@@ -3951,3 +3951,54 @@ check in `runs/021-girth/lint.js` did not catch it, because the check was
 written for a comment put after unfinished code, and this was code put
 after a finished comment -- the same accident from the other side. It
 checks both now.
+
+## Roots divide near the foot, not out in the field
+
+"I don't like it when the roots fork late, that feels like potato rhizome
+again." Measured, that was fair: a division happened at a median 0.46 of
+the way out along the roots' reach and sometimes at 0.77, and what parted
+took two thirds of the section it left. A root running most of its length
+and then splitting half of itself off is a rhizome. A tree shares its
+section out near the foot and fines down from there.
+
+Three things, and the third is the one that mattered.
+
+- **Divisions are crowded into the first part of a run.** Where one may
+  happen was 0.1 to 0.75 of the way out; it is 0.06 to `forkBy` (0.42) now,
+  and the steps between are half what they were, so several fit in the near
+  part instead of being spread the whole length.
+- **What a division takes falls away with how far out it is.** It was a
+  flat 34 to 58% of the section wherever it happened. At `forkBy` it is now
+  40% of that, so what parts far out is a side root and not a second trunk.
+- **And the rule that refused four of every seven.** A division was refused
+  while the root was "still coming down", measured as being more than four
+  of its own radii above the ground -- which is exactly where a root is in
+  the near part of its run, the part I had just crowded the divisions into.
+  The first two changes cut the branching from 87 divisions to 30, and the
+  root system came out sparse and long: I had traded one wrong look for
+  another. What that rule is for is not forbidding height but forbidding
+  division while the root is plunging, which is what would stand a perched
+  tree on a palisade of straws. It tests the run's own slope now, and
+  refuses a division only on a plunge or out on an aerial leap.
+
+      divisions                              87  ->  99
+      how far out, as a share of the reach   median 0.46 -> 0.26, worst 0.77 -> 0.46
+      what a division takes of its parent    median 0.68 -> 0.57
+      roots crossing a ring, at most         0.39 of the trunk's section
+
+The lesson is the one from the bark round again, a day later: a threshold
+written as an absolute height (or girth, or length) encodes an assumption
+about where the thing it guards will be, and when another rule moves that
+thing the threshold quietly guts it. Both times the symptom was a count
+collapsing, and both times I found it by counting the refusals rather than
+by staring at the result.
+
+Wrong, or not there:
+- Where a root divides is decided along the root, not by the place. It does
+  not divide at a rock, or round one.
+- The two that leave a division are the same kind of thing at different
+  sizes. In a tree one is usually the continuation and the other is clearly
+  a branch of it, and that difference is not drawn here.
+
+      page 9's lines, from here   3e496fc5e4 81c54a33c9 ce8a85f524 a13c6d4762 c5496686c3
+      page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f

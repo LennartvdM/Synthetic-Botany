@@ -3889,3 +3889,52 @@ Wrong, or not there:
 
       page 9's lines, from here   2ecabc8f7b 9b5ddcdc69 b9c92f8e4f a540462735 46492b392d
       page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f
+
+## The knee pushed out, and bark on the roots
+
+Three changes, one small and two that had been hiding in plain sight.
+
+**The knee.** A knuckle swelled evenly, which is a bead on a string. The
+corner's vertex is now pushed out along the bisector of the exterior angle,
+by a little over a third of a radius at a hard corner, so the wood piles on
+the outside of a bend and the inside is drawn tight. It is a modest effect
+-- half of what I hoped -- but it is the right half: a knee rather than a
+bead.
+
+**Bark was never on the roots at all.** The cells it is made of were seeded
+from above the foot only. Every root on every tree was bare wood against a
+plated trunk, which is half of why a root read as something peeled, and I
+had been looking for the cause in the shape for two rounds. Roots carry
+bark now, barred within six steps of the foot (the flare stays clean) and
+off wood too thin to hold it.
+
+**And the grown trees had almost no bark anywhere.** Counting the cells
+found 108 on a tree of page 11, of which 10 to 14 were lit -- one swathe,
+or on the cliff tree none at all. Two causes, both the same mistake:
+
+- The cell size, the sheet's thickness and what counts as wood too thin to
+  carry bark are absolute numbers, tuned against a trunk of radius 0.27.
+  A grown tree's trunk is 0.16 to 0.25, so nearly every place on it was
+  "too thin". They scale with the trunk's own radius now, and never up, so
+  the trees the numbers were set on are untouched.
+- What counts as broad wood was measured over *all* the cells, and the
+  broadest cells are on the foot -- which is barred, being the flare. The
+  foot set a mark that the rest of the tree could not reach, and barred
+  itself out of the measurement it had set. It is measured over the wood
+  that may actually carry bark now.
+
+      bark cells on a page 11 tree, lit   10-14  ->  17-46
+      page 7's four                       pixel for pixel as they were
+
+Page 7 is held to the old reading of both rules, as it is held to the old
+everything. That is three rules now that are gated on whether a tree was
+given ground (the beam pieces, root bark, and this), which is a fair
+description of what separates those four trees from the grown ones, but it
+is a seam in the code and worth saying out loud.
+
+Wrong, or not there:
+- The bark on a root is the trunk's bark at a smaller size. A root's bark
+  is a different stuff: thinner, stretched along, and it goes scaly where
+  the root enters the ground.
+- Bark still stops at a hard edge on open wood. Where a swathe ends on a
+  root there is no reason for it to end there.

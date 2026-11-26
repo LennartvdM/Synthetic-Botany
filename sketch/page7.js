@@ -186,7 +186,8 @@
             e = Math.min(e, H(x - a[0] - bx * tt, y - a[1] - by * tt, z - a[2] - bz * tt) - (a[3] + (b[3] - a[3]) * tt)); } dd = smin(dd, e, 0.012); }
         return Math.max(dd, H(x - c[0], y - c[1], z - c[2]) - R * 0.99, (x - c[0]) * d[0] + (y - c[1]) * d[1] + (z - c[2]) * d[2] - 0.6 * R); };
       all.push({ f, C: [c], reach: [R + 0.02], layer: 4 }); count.scars++; }
-    const BK = recipe.bare || recipe.bark === 0 ? null : Object.assign({ cell: 0.075, stretch: 1.6, cover: 0.4, percolate: 0.985, cohere: 0.6, least: 10, thick: 0.02, peel: 0.08 }, recipe.bark || {}), rb = rng((recipe.seed || 1) + 123);
+    const bs = Math.min(1, (recipe.trunk && recipe.trunk[0] ? recipe.trunk[0][3] : 0.27) / 0.27);
+    const BK = recipe.bare || recipe.bark === 0 ? null : Object.assign({ cell: 0.075 * bs, stretch: 1.6, cover: 0.4, percolate: 0.985, cohere: 0.6, least: 10, thick: 0.02 * bs, peel: 0.08 }, recipe.bark || {}), rb = rng((recipe.seed || 1) + 123);
     // which pieces are near which place, so that only those are asked
     const cell = 0.12, grid = new Map(), key = (x, y, z) => (x + 64) * 16384 + (y + 64) * 128 + z + 64;
     const index = (i) => { const s = all[i], seen = new Set(); s.C.forEach((c, j) => { const m = s.reach[j] + 0.06;
@@ -199,7 +200,8 @@
       // tears: distance from a cell's point is counted short along its strand's direction. No point is nearer
       // another than a cell's width, so counted.
       const sp = BK.cell, st = BK.stretch, P = [], gs = Math.max(0.1, sp * st), sgrid = new Map(), skey = (x, y, z) => (Math.floor(x / gs) + 512) * 1048576 + (Math.floor(y / gs) + 512) * 1024 + Math.floor(z / gs) + 512, cand = [];
-      for (const q of t.strands) if (!q.thread) for (let i = q.root + 1; i < q.K - 1; i++) if (q.rho[i] > 0.012) { const bar = i < q.root + 5 || q.rho[i] <= 0.02 || q.far[i] <= 0.9 * q.rho[i] ? 1 : 0; const T = tan(q, i), sv = unit(cross(T, q.O[i])); for (const e of [-0.8, 0, 0.8]) { let n = [0, 1, 2].map((c) => q.O[i][c] * (q.far[i] + 0.8 * q.rho[i]) + sv[c] * e * q.rho[i]); const al = dot(n, T); n = unit(n.map((v, c) => v - T[c] * al)); cand.push([0, 1, 2].map((c) => q.X[i * 3 + c] + (q.O[i][c] * 0.8 + sv[c] * e) * q.rho[i]).concat(T, q.far[i] + q.rho[i], n, bar)); } }   // each with the way out from the middle of the wood there
+      for (const q of t.strands) if (!q.thread) for (let i = walked ? 1 : q.root + 1; i < q.K - 1; i++) if (q.rho[i] > 0.012 * bs) { const low = walked && i <= q.root;
+        const bar = (low ? i > q.root - 6 || q.rho[i] <= 0.016 * bs : i < q.root + 5 || q.rho[i] <= 0.02 * bs) || q.far[i] <= 0.9 * q.rho[i] ? 1 : 0; const T = tan(q, i), sv = unit(cross(T, q.O[i])); for (const e of [-0.8, 0, 0.8]) { let n = [0, 1, 2].map((c) => q.O[i][c] * (q.far[i] + 0.8 * q.rho[i]) + sv[c] * e * q.rho[i]); const al = dot(n, T); n = unit(n.map((v, c) => v - T[c] * al)); cand.push([0, 1, 2].map((c) => q.X[i * 3 + c] + (q.O[i][c] * 0.8 + sv[c] * e) * q.rho[i]).concat(T, q.far[i] + q.rho[i], n, bar, low ? 1 : 0)); } }   // each with the way out from the middle of the wood there
       for (let i = cand.length - 1; i > 0; i--) { const j = Math.floor(rb() * (i + 1)), x = cand[i]; cand[i] = cand[j]; cand[j] = x; }
       const dist = (c, x, y, z) => { const vx = x - c[0], vy = y - c[1], vz = z - c[2], al = vx * c[3] + vy * c[4] + vz * c[5]; return Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al) + (al / st) ** 2); };
       const nearSeeds = (x, y, z, fn) => { const cx = Math.floor(x / gs), cy = Math.floor(y / gs), cz = Math.floor(z / gs); for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let c = -2; c <= 2; c++) { const g = sgrid.get((cx + a + 512) * 1048576 + (cy + b + 512) * 1024 + cz + c + 512); if (g) for (const i of g) fn(i); } };
@@ -207,16 +209,18 @@
       // all the same, barred from being switched on, so that wherever bark stops it stops on a boundary between two cells.
       for (const c of cand) { if (rooms.some((o) => away(o, c[0], c[1], c[2]) < o.room * 1.35 + 0.6 * sp * st) || wounds.some((v) => H(c[0] - v.c[0], c[1] - v.c[1], c[2] - v.c[2]) < v.r * 2 + 0.6 * sp * st)) c[10] = 1;
         let ok = true; nearSeeds(c[0], c[1], c[2], (i) => { if (ok && dist(c, P[i][0], P[i][1], P[i][2]) < sp) ok = false; }); if (!ok) continue; const k = skey(c[0], c[1], c[2]), g = sgrid.get(k); if (g) g.push(P.length); else sgrid.set(k, [P.length]); P.push(c); }
-      const N = P.length, barred = P.map((p) => p[10]), nb = P.map((p, i) => { const out = []; nearSeeds(p[0], p[1], p[2], (j) => { if (j !== i && dist(p, P[j][0], P[j][1], P[j][2]) < 1.8 * sp) out.push(j); }); return out; }), girth = Math.max(...P.map((p) => p[6])); for (let i = 0; i < N; i++) if (P[i][6] < 0.4 * girth) barred[i] = 1;   // and not where the wood is a thin limb or a tip
+      const N = P.length, barred = P.map((p) => p[10]), nb = P.map((p, i) => { const out = []; nearSeeds(p[0], p[1], p[2], (j) => { if (j !== i && dist(p, P[j][0], P[j][1], P[j][2]) < 1.8 * sp) out.push(j); }); return out; }), girth = Math.max(0.01, ...P.filter((p, i) => !p[11] && (!walked || !barred[i])).map((p) => p[6])), girthL = Math.max(0.01, ...P.filter((p, i) => p[11] && (!walked || !barred[i])).map((p) => p[6]));
+      const ref = (p) => (p[11] ? girthL : girth);   // a root is judged against the roots, a limb against the trunk
+      for (let i = 0; i < N; i++) if (P[i][6] < 0.4 * ref(P[i])) barred[i] = 1;   // and not where the wood is a thin limb or a tip
       // swathes. cohere runs from 0 (a swathe reaches out in arms: it prefers a cell touching only one of its own)
       // to 1 (it stays compact: it prefers a cell touching several).
       const free = barred.filter((b) => !b).length, on = new Uint8Array(N), tried = new Uint8Array(N), power = -3 + 7 * BK.cohere; let lit = 0, swathes = 0;
       for (let go = 0; go < 2000 && lit < BK.cover * free; go++) {
-        const start = Math.floor(rb() * N); if (on[start] || barred[start] || tried[start] || rb() > (P[start][6] / girth) ** 2 || nb[start].some((j) => on[j])) continue; tried[start] = 1;   // bark begins where the wood is broad far more often than on a limb
+        const start = Math.floor(rb() * N); if (on[start] || barred[start] || tried[start] || rb() > (P[start][6] / ref(P[start])) ** 2 || nb[start].some((j) => on[j])) continue; tried[start] = 1;   // bark begins where the wood is broad far more often than on a limb
         const mine = [start], inIt = new Set(mine);
         // (it spreads over broad wood sooner than out along a limb)
         while (lit + mine.length < BK.cover * free && rb() < BK.percolate) { const front = new Map(); for (const i of mine) for (const j of nb[i]) if (!inIt.has(j) && !on[j] && !barred[j]) front.set(j, (front.get(j) || 0) + 1); if (!front.size) break;
-          let total = 0; const w = []; for (const [j, c] of front) { const v = Math.pow(c, power) * (P[j][6] / girth) ** 2; w.push([j, v]); total += v; } let pick = rb() * total, chosen = w[0][0]; for (const [j, v] of w) { pick -= v; if (pick <= 0) { chosen = j; break; } } mine.push(chosen); inIt.add(chosen); }
+          let total = 0; const w = []; for (const [j, c] of front) { const v = Math.pow(c, power) * (P[j][6] / ref(P[j])) ** 2; w.push([j, v]); total += v; } let pick = rb() * total, chosen = w[0][0]; for (const [j, v] of w) { pick -= v; if (pick <= 0) { chosen = j; break; } } mine.push(chosen); inIt.add(chosen); }
         if (mine.length < BK.least) continue;   // not worth having
         for (const i of mine) on[i] = 1; lit += mine.length; swathes++; }
       count.bark = swathes; count.barkCells = lit; count.cells = N;

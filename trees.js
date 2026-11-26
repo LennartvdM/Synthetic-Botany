@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, weave: 1, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.5, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, weave: 1, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.5, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -163,7 +163,14 @@
           if (r() > hold) swing = -swing;
           legLeft = Math.max(2, Math.round((onFace > 0.5 ? P.brace * (0.6 + 0.9 * r()) : P.leg * (0.75 + 1.1 * heavy) * (1 + 0.35 * Math.min(1, weave)) * (0.6 + 0.8 * r())) / ds));
           legHug = 0.4 + 0.3 * Math.sin(wob + TAU * gone / wl);
-          if (rx.length) corners.push([rx.length, Math.min(1, Math.abs(best.a) / 0.75)]);
+          if (rx.length) { const hard = Math.min(1, Math.abs(best.a) / 0.75);
+            // the wood piles on the outside of a bend: the knee is pushed out along the bisector, so it stands
+            // proud and the inside of the turn is drawn tight. Evenly round, a knuckle is a bead on a string.
+            const ob = [0, 1, 2].map((q) => tt[q] - h[q]), ol = H(ob[0], ob[1], ob[2]);
+            if (ol > 1e-6) { const e = rx[rx.length - 1], push = P.knee * rad * hard;
+              for (let q = 0; q < 3; q++) e[q] += ob[q] / ol * push;
+              for (let it = 0; it < 2; it++) { const gn = gradG(e[0], e[1], e[2]), gv = G(e[0], e[1], e[2]); for (let q = 0; q < 3; q++) e[q] += gn[q] * (want - gv); } }
+            corners.push([rx.length, hard]); }
           since = 0; }
         let nx = pos.map((v, k) => v + h[k] * ds);
         // it lets go only where the ground itself drops away ahead of it, and never while it is still coming down

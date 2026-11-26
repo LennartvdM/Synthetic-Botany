@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, sinew: 0.17, apart: 1, bury: 0, forgive: 0.22, rank: 2.6, slack: 0.11, press: 1.3, forkBy: 0.42, weave: 1, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.5, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, sinew: 0.17, apart: 1, bury: 0, forgive: 0.22, rank: 2.6, slack: 0.11, press: 1.3, forkBy: 0.42, weave: 1, kink: 1.1, swallow: 0.95, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.5, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, softAt = G && G.soft && P.bury ? G.soft : null, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -160,10 +160,10 @@
         if (!turning) { legLeft--; since++; h = tt; } else {
         for (const a of [-1.3, -0.8, -0.45, -0.18, 0, 0.18, 0.45, 0.8, 1.3]) { const c = tt.map((v, k) => v * Math.cos(a) + side[k] * Math.sin(a)), pr = pos.map((v, k) => v + c[k] * 0.07);
           const lie = 1 - Math.abs(gradG(pr[0], pr[1], pr[2])[1]);
-          const score = (hemDir ? P.hem * brink * dot(c, hemDir) : 0) + (1 - onFace) * (1 - 0.5 * brink) * (0.7 * dot(c, out) + P.down * dot(c, dn)) + onFace * 3.2 * dot(c, grip) - bold * (1 - P.hang) * 2.2 * lie * lie * (1 - onFace) + (seamWay ? P.crease * seamAmt * dot(c, seamWay) : 0) + P.apart * room(pr, rx.length - 12) / 0.22 - 3.5 * Math.max(0, (Math.max(Math.abs(pr[0]), Math.abs(pr[2])) - 0.68) / 0.2) + (Math.abs(a) < 0.2 ? 0.3 * Math.max(0, 1 - weave) : 0) - 0.22 * Math.max(0.15, 1 - 0.8 * weave) * Math.abs(a) + weave * P.snake * (0.35 + 1.25 * r()) * swing * Math.sin(a) + P.snake * 0.3 * r(); if (!best || score > best.score) best = { score, c, a }; }
+          const score = (hemDir ? P.hem * brink * dot(c, hemDir) : 0) + (1 - onFace) * (1 - 0.5 * brink) * (0.7 * dot(c, out) + P.down * dot(c, dn)) + onFace * 3.2 * dot(c, grip) - bold * (1 - P.hang) * 2.2 * lie * lie * (1 - onFace) + (seamWay ? P.crease * seamAmt * dot(c, seamWay) : 0) + P.apart * room(pr, rx.length - 12) / 0.22 - 3.5 * Math.max(0, (Math.max(Math.abs(pr[0]), Math.abs(pr[2])) - 0.68) / 0.2) + (Math.abs(a) < 0.2 ? 0.3 * Math.max(0, 1 - weave) : 0) - 0.22 * Math.max(0.15, 1 - 0.8 * weave) * Math.abs(a) - weave * P.kink * Math.max(0, 0.42 - Math.abs(a)) / 0.42 + weave * P.snake * (0.35 + 1.25 * r()) * swing * Math.sin(a) + P.snake * 0.3 * r(); if (!best || score > best.score) best = { score, c, a }; }
           h = best.c;
           if (r() > hold) swing = -swing;
-          legLeft = Math.max(2, Math.round((onFace > 0.5 ? P.brace * (0.6 + 0.9 * r()) : P.leg * (0.75 + 1.1 * heavy) * (1 + 0.35 * Math.min(1, weave)) * (0.6 + 0.8 * r())) / ds));
+          legLeft = Math.max(2, Math.round((onFace > 0.5 ? P.brace * (0.6 + 0.9 * r()) : P.leg * (1 - 0.38 * Math.min(1, weave)) * (0.3 + 1.9 * Math.pow(r(), 2.5))) / ds));
           legHug = 0.4 + 0.3 * Math.sin(wob + TAU * gone / wl);
           if (rx.length) { const hard = Math.min(1, Math.abs(best.a) / 0.75);
             // the wood piles on the outside of a bend: the knee is pushed out along the bisector, so it stands
@@ -212,6 +212,11 @@
         hooked = hook; const coming = G(nx[0], nx[1], nx[2]) > 3 * rad, working = onFace > 0.5 && bold < 1;
         { const give = Math.min((1 - (coming ? 0.3 : working ? 0.5 : 1)) * ds, Math.max(0, P.forgive * len - saved)); saved += give; prog += ds - give; }
         gone += H(nx[0] - pos[0], nx[1] - pos[1], nx[2] - pos[2]); pos = nx; rx.push(nx); rr.push(rad); }   // (gone is real distance: counted as ds while the step also drops, the descent comes out far steeper than `slant` asks)
+      for (let pass = 0; pass < 3; pass++) for (let k = 2; k < rx.length - 2; k++) {
+        const a2 = rx[k - 2], b2 = rx[k + 2], mid = [0, 1, 2].map((q) => (a2[q] + b2[q]) / 2);
+        const dev = H(rx[k][0] - mid[0], rx[k][1] - mid[1], rx[k][2] - mid[2]);
+        const fill = Math.max(0, Math.min(1, 1 - dev / Math.max(1e-6, P.swallow * rr[k])));
+        if (fill > 0) rx[k] = rx[k].map((v, q) => v + (mid[q] - v) * fill * 0.55); }
       for (const [c, hard] of corners) for (let d = -1; d <= 1; d++) { const k = c + d; if (k >= 0 && k < rr.length) rr[k] *= 1 + P.knuckle * hard * (d ? 0.55 : 1); }
       // The buckle. A root reaches out until it finds something it can hold, and there it stays: that end is
       // tethered and the foot never moves. Afterwards the tree keeps putting length on at the foot, and the

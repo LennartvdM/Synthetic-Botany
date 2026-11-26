@@ -4222,3 +4222,63 @@ Wrong, or not there:
 
       page 9's lines, from here   a0fd975885 605974eb6b 482d097487 7f4b3b56bb 1aed93441d
       page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f
+
+## The bends were made when it was a thread
+
+"There's not enough joints, knuckles in them. Not all of them need it, but
+stochastically a whole bunch need more." And then the part that was
+missing from the model altogether:
+
+> roots often don't need anything to force them to snap into a new
+> direction. That's because roots often start small, a tiny pebble could
+> add a hinge and then it stays that way even as the root grows huge. Add
+> soil erosion washing away the causes of the bends and you got roots that
+> snake seemingly without reason, because what was once the reason is
+> either too small or no longer exists.
+
+Three changes, and the first two are each a thing I had backwards.
+
+**The spacing of the knuckles was a share of the root's final girth.** A
+heavy root was given long runs between its bends -- so the heaviest roots,
+the ones most looked at, were the straightest things on the tree. But a
+root's bends were settled when it was a thread. A pebble that turns a hair
+aside is nothing to a root of a hand's width, and the bend it makes is kept
+and grown around for the rest of the root's life. The spacing is a young
+root's spacing now, the same for every root whatever it becomes.
+
+**And nothing made a joint be a joint.** Turning more often had been tried
+twice and came out as a curve both times, because a corner was free to be
+almost straight: twenty corners of five degrees is an arc. A root that
+articulates now pays for a small angle at a knuckle, so each one is a real
+turn.
+
+**What a root can swallow, it does.** With a thread's spacing on a thick
+root the result was a ripple running along it, not knuckles -- which is
+right, and is what really happens: as a root thickens the wood fills the
+inside of every bend tighter than the root is wide. Those turns are gone,
+absorbed. What is left is the few it could not fill. So the bends are
+drawn mostly small with a long tail of big ones, and then the wood eats
+what it can: a thread keeps all its wiggles, and a heavy root keeps three
+or four real joints with smooth wood between them -- not because it bent
+less, but because it grew over most of what it did.
+
+This is the first rule here that is about *time* -- the shape is from one
+age of the root and the girth from another, and the look comes from the
+disagreement between them.
+
+      roots crossing a ring, at most   0.35 of the trunk's section
+      page 7's four                    unchanged
+
+Wrong, or not there:
+- What a root swallows is decided by its final girth everywhere at once. A
+  root thickens from the foot outward over years, so the near part should
+  have swallowed more than the far part, and the joints should survive
+  further out than near in.
+- Nothing in the ground ever made any of these bends. The account says the
+  cause is gone, which is a licence for the bends to be arbitrary -- but a
+  root crossing a stone that is still there should still bend at it, and
+  the pebbles that have washed away should have left the bends they made
+  in the ground's own pattern, not in the root's private stream of numbers.
+
+      page 9's lines, from here   53ec4047f0 c104457eb0 9e8dcca33f 75f3c67c09 6aaf3a1c9f
+      page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f

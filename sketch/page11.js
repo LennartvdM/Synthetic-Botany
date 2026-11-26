@@ -27,11 +27,16 @@
     ['on a boulder', all(under([0.05, 1, -0.05], [0, 0.1, 0]), rock([0, 0.32, 0], 0.4, 11, [1.1, 0.85, 1])), [0.03, 0.02], 3],
     ['in a cleft', all(under([0, 1, 0.06], [0, 0.08, 0]), rock([-0.5, 0.3, 0.02], 0.36, 13, [1, 1.1, 1.2]), rock([0.5, 0.28, -0.04], 0.36, 17, [1, 1.05, 1.2])), [0, 0], 4],
     ['on a bank the rain has cut away', cut(all(under([0.1, 1, 0.3], [0, 0.46, 0]), rock([0.55, 0.12, -0.5], 0.18, 19)), bowl([0.2, 0.18, 0.34], 0.52, [1, 0.75, 1])), [-0.1, -0.06], 6],
+    // A ground that says where it is soft. Soil everywhere but the stone, and the bury dial tells a root what to do
+    // with that: go under where it can, stay on the surface and grip where it cannot. What shows of this tree's
+    // roots is only what crosses the stone, which is what a tree in soil shows.
+    ['in soil, round a stone', (() => { const soil = under([0.03, 1, 0.02], [0, 0.3, 0]), stone = rock([0.33, 0.4, -0.12], 0.31, 29, [1.2, 0.85, 1]);
+      const gg = all(soil, stone); gg.soft = (x, y, z) => (stone(x, y, z) < 0.05 ? 0 : 1); return gg; })(), [-0.18, 0.12], 31, { bury: 2.1 }],
     ['on cracked rock', cut(all(under([0.05, 1, 0.04], [0, 0.34, 0]), rock([0.6, 0.18, 0.5], 0.22, 23)),
       all(groove([-0.95, 0.335, -0.3], [0.85, 0.30, 0.2], 0.036), groove([-0.25, 0.335, -0.9], [0.2, 0.315, 0.85], 0.027), groove([0.1, 0.33, -0.1], [0.75, 0.33, -0.75], 0.031))), [-0.2, 0.2], 23],
   ];
   const quick = typeof location !== 'undefined' ? +new URLSearchParams(location.search).get('h') : 0;   // ?h=0.013 for a quick look
-  const S = SITES.map(([name, ground, site, seed]) => [name, tree(Object.assign({ seed }, Trees.sprout({ seed, strands: 14, feet: 6, foot: 0.16, tall: 0.8, reach: 0.85, twig: 0.2, ground, site, roots: 0.85 })))]);
+  const S = SITES.map(([name, ground, site, seed, extra]) => [name, tree(Object.assign({ seed }, Trees.sprout({ seed, strands: 14, feet: 6, foot: 0.16, tall: 0.8, reach: 0.85, twig: 0.2, ground, site, roots: 0.85 }), extra || {}))]);
   if (typeof location !== 'undefined') { const only = new URLSearchParams(location.search).get('only'); if (only) { const keep = only.split(',').map(Number).map((i) => S[i]).filter(Boolean); S.length = 0; S.push(...keep); } }   // ?only=2 builds just that one
   window.Fantastic = { grounds: SITES.map((s) => s[1]), fields: S.map((s) => s[1]), names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), counts: S.map((s) => s[1].count), build: (i) => { const g = mesh(S[i][1], S[i][0], quick || 0.0085, 2.05), n = g.pos.length / 3; g.layer = new Uint8Array(n); for (let q = 0; q < n; q++) g.layer[q] = S[i][1].layerAt(g.pos[q * 3] - g.nrm[q * 3] * 0.004, g.pos[q * 3 + 1] - g.nrm[q * 3 + 1] * 0.004, g.pos[q * 3 + 2] - g.nrm[q * 3 + 2] * 0.004); return g; }, mesh, kit: Fantastic.kit };
 })();

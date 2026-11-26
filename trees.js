@@ -30,10 +30,10 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, sinew: 0.17, apart: 1, slack: 0.11, press: 1.3, forkBy: 0.42, weave: 1, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.5, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, sinew: 0.17, apart: 1, bury: 0, rank: 2.6, slack: 0.11, press: 1.3, forkBy: 0.42, weave: 1, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.5, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
-    const G = P.ground, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
+    const G = P.ground, softAt = G && G.soft && P.bury ? G.soft : null, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
     // How hollow the ground is at a place: positive in a groove, negative over a rib, zero on anything flat or
     // evenly sloped. Taken from the ground alone, so every root that crosses the same seam finds the same seam.
     const nook = G ? (p, nn) => { const e = 0.05, t1 = unit(cross(nn, Math.abs(nn[1]) < 0.85 ? UP : [1, 0, 0])), t2 = cross(nn, t1); let a = 4 * G(p[0], p[1], p[2]);
@@ -73,7 +73,7 @@
     // stream, so every new thing asked of a root on ground moved every draw after it and the level-ground trees
     // changed although no rule of theirs had. They are their own question and they get their own numbers.
     let walkN = 0;
-    const walk = G ? (p0, away, rho0, len, dives, collar) => { const rw = rng(P.seed * 7919 + (walkN++) * 104729), rb2 = r, rx = [], rr = [], c0 = G(p0[0], p0[1], p0[2]), most = Math.round(len / ds) * 5, wob = TAU * rw(), wl = 0.25 + 0.3 * rw();
+      const walk = G ? (p0, away, rho0, len, dives, collar, rank) => { const rw = rng(P.seed * 7919 + (walkN++) * 104729), rb2 = r, rx = [], rr = [], c0 = G(p0[0], p0[1], p0[2]), most = Math.round(len / ds) * 5, wob = TAU * rw(), wl = 0.25 + 0.3 * rw();
       // Whether this root is one that will go over an edge at all. Most turn and run along the lip, where the
       // soil is; a `bold` one commits to the face, and once on it braces rather than hangs. A rule that tells
       // every root the same thing gives either a cliff no root will touch or a cliff every root pours down.
@@ -86,7 +86,7 @@
             for (let it = 0; it < 14; it++) { const gn = gradG(q[0], q[1], q[2]); q = [0, 1, 2].map((c) => q[c] - gn[c] * G(q[0], q[1], q[2])); }
             tot++; if (Math.abs(gradG(q[0], q[1], q[2])[1]) > 0.72 && q[1] > p0[1] - 0.32) good++; } }
         lieShare = good / tot; }
-      const heavy = Math.max(0, Math.min(1, (rho0 / P.trunk[0][3] - 0.07) / 0.2));
+      const heavy = Math.max(0, Math.min(1, (rho0 * (rank || 1) / P.trunk[0][3] - 0.07) / 0.2));
       const bold = rw() < Math.min(0.9, P.bold * (0.3 + 1.9 * (1 - lieShare)) * (1.4 - 0.9 * heavy)) ? 0.12 : 1;
       const hookAt = 0.5 + 0.38 * rw();
       let braceWay = rw() < 0.5 ? 1 : -1, hooked = 0;
@@ -119,7 +119,7 @@
       const sinew = (far) => 1 + P.sinew * (0.62 * Math.sin(sp1 + TAU * far / sl1) + 0.38 * Math.sin(sp2 + TAU * far / sl2));
       const girth = (g, far) => sinew(far) * rho0 * (collar ? P.grip * (1 + (P.collar - 1) * Math.pow(Math.max(0, 1 - far / P.flare), 1.6)) : 1) * (1 - P.waste * g) * (dives ? 1 : Math.pow(Math.min(1, (1 - g) / P.toe), 0.7) * (1 - P.tip) + P.tip);
       const room = (pr, own) => { if (Math.abs(pr[0]) > 0.97 || Math.abs(pr[2]) > 0.97) return 0; let near = 0.22; for (const q of rootPts) near = Math.min(near, H(pr[0] - q[0], pr[1] - q[1], pr[2] - q[2])); for (let e = 0; e < own; e++) near = Math.min(near, H(pr[0] - rx[e][0], pr[1] - rx[e][1], pr[2] - rx[e][2])); return near; };
-      for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = girth(g, gone), nn = gradG(pos[0], pos[1], pos[2]), nk = Math.min(1.4, nook(pos, nn) * P.seams), hug = rad * (legHug - P.knuckle * 0.6 * Math.max(0, 1 - since / 2.5)) - rad * P.seam * Math.max(0, nk) + rad * 0.5 * Math.max(0, Math.min(1, -nk)) - rad * P.bite * Math.max(0, 1 - Math.abs(nn[1]) - 0.45) / 0.3 * Math.max(hooked, Math.max(0, Math.min(1, nk)), 0.5 * Math.max(0, Math.sin(wob * 2 + TAU * gone / (wl * 0.55)))), want = c0 + (hug - c0) * sstep(0, P.dive + P.slant * steepness * Math.max(0, c0), gone) - (dives ? 0.3 * sstep(0.72, 1, g) : 0);
+      for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = girth(g, gone), nn = gradG(pos[0], pos[1], pos[2]), nk = Math.min(1.4, nook(pos, nn) * P.seams), sf = softAt ? Math.max(0, Math.min(1, softAt(pos[0], pos[1], pos[2]))) : 0, hug = rad * (legHug - P.bury * sf - P.knuckle * 0.6 * Math.max(0, 1 - since / 2.5)) - rad * P.seam * Math.max(0, nk) + rad * 0.5 * Math.max(0, Math.min(1, -nk)) - rad * P.bite * Math.max(0, 1 - Math.abs(nn[1]) - 0.45) / 0.3 * Math.max(hooked, Math.max(0, Math.min(1, nk)), 0.5 * Math.max(0, Math.sin(wob * 2 + TAU * gone / (wl * 0.55)))), want = c0 + (hug - c0) * sstep(0, P.dive + P.slant * steepness * Math.max(0, c0), gone) - (dives ? 0.3 * sstep(0.72, 1, g) : 0);
         let tt = h.map((v, k) => v - nn[k] * dot(h, nn)); const dn = UP.map((v, k) => -(v - nn[k] * nn[1])), dl = H(dn[0], dn[1], dn[2]); if (H(tt[0], tt[1], tt[2]) < 0.2) tt = dl > 1e-6 ? dn : cross(nn, [1, 0, 0]); tt = unit(tt);
         // On a face it cannot lie on, a root does not hang down it: it braces. It works across the fall line in
         // runs, turning hard at the end of each so the turns are corners and not a curve, and it bites in — it is
@@ -201,7 +201,7 @@
         // whatever its line does in plan. That is a ribbon on a surface.
         // (this holds on the way down as well: a root does not slide down to the ground, it comes down in steps,
         //  on its knuckles, with the spans between them riding high)
-        { const plant = turning || since <= 1, stand = want + P.bridge * rad;
+        { const plant = turning || since <= 1, stand = want + P.bridge * rad * (1 - sf);
           for (let it = 0; it < 3; it++) { const gn = gradG(nx[0], nx[1], nx[2]), gv = G(nx[0], nx[1], nx[2]);
             const to = plant ? want : gv < want ? want : gv > stand ? stand : gv;
             if (to === gv) break;
@@ -279,6 +279,15 @@
     const clump = []; { const rc = rng(P.seed + 404), nc = Math.max(1, P.clumps); const a0 = TAU * rc();
       for (let i = 0; i < nc; i++) clump.push(a0 + TAU * (i + 0.5 * (rc() - 0.5)) / nc); }
     const toClump = (a) => { let best = a, bd = 9; for (const c of clump) { let d = Math.abs(((c - a + PI) % TAU + TAU) % TAU - PI); if (d < bd) { bd = d; best = c; } } return a + (((best - a + PI) % TAU + TAU) % TAU - PI) * P.cling; };
+    // the foot's families, drawn before the roots are walked so that each knows what it will carry
+    const rd = rng(P.seed + 311), order = S.map((s2, i) => i).sort((x, y) => Math.atan2(S[x].b, S[x].a) - Math.atan2(S[y].b, S[y].a));
+    const edge = [0], wt = Array.from({ length: P.feet }, () => Math.pow(0.1 + rd(), P.rank)), tot = wt.reduce((a, b) => a + b, 0);
+    if (P.feet && P.feet < n) { let acc = 0;
+      for (const w of wt) { acc += w; edge.push(Math.round((acc / tot) * n)); }
+      for (let g = 0; g < P.feet; g++) { const mem = order.slice(edge[g], edge[g + 1]); if (mem.length < 2) continue;
+        const lead = mem.reduce((v, i) => (H(S[i].a, S[i].b) > H(S[v].a, S[v].b) ? i : v), mem[0]);
+        let area = 0; for (const i of mem) area += S[i].fat * S[i].fat;
+        S[lead].rank = Math.sqrt(area) / S[lead].fat; } }
     for (const s of S) {
       const path = s.limb >= 0 ? limbs[s.limb].path : trunk, fr = s.limb >= 0 ? limbs[s.limb].frames : tf, fi = s.limb >= 0 ? limbs[s.limb].fi : -1, own = path.length - 1 - Math.max(0, fi);
       const first = s === S.find((q) => q.limb === s.limb), u1 = r(), u2 = r(), u3 = r(), stub = s.limb >= 0 ? limbs[s.limb].L.stub : null; s.snapped = stub ? stub === 'fresh' : !first && u1 < 0.6;   // some strands snap short of the end, and keep their girth to the break
@@ -294,11 +303,11 @@
       // its root: the strand itself coming down from the foot of the trunk the way it faces there, heavy, and
       // most often going into the ground. A few stay on it and run out to a point.
       // (on ground nearly all roots go into it at their end; the old flat roots are left as they were)
-      const p0 = X[0], a0 = toClump(Math.atan2(p0[2] - trunk[0][2], p0[0] - trunk[0][0])), away = G ? [Math.cos(a0), 0, Math.sin(a0)] : H(p0[0] - trunk[0][0], p0[2] - trunk[0][2]) > 1e-4 ? unit([p0[0] - trunk[0][0], 0, p0[2] - trunk[0][2]]) : [1, 0, 0], len = P.roots * (0.5 + 0.5 * r()), bend = 2.6 * (r() - 0.5), dives = r() < (G ? 0.9 : 0.75), rx = [], rr = [], rg = []; let q = p0, Kr = Math.max(6, Math.round(len / ds));
+      const p0 = X[0], a0 = toClump(Math.atan2(p0[2] - trunk[0][2], p0[0] - trunk[0][0])), away = G ? [Math.cos(a0), 0, Math.sin(a0)] : H(p0[0] - trunk[0][0], p0[2] - trunk[0][2]) > 1e-4 ? unit([p0[0] - trunk[0][0], 0, p0[2] - trunk[0][2]]) : [1, 0, 0], len = P.roots * (0.5 + 0.5 * r()) * (0.7 + 0.3 * (s.rank || 1)), bend = 2.6 * (r() - 0.5), dives = r() < (G ? 0.9 : 0.75), rx = [], rr = [], rg = []; let q = p0, Kr = Math.max(6, Math.round(len / ds));
       if (!G) {
         for (let m = 1; m <= Kr; m++) { const g = m / Kr, t = bend * g * g, dir = [away[0] * Math.cos(t) - away[2] * Math.sin(t), 0, away[0] * Math.sin(t) + away[2] * Math.cos(t)], rad = rho[0] * (dives ? 0.5 + 0.5 * (1 - g) : 0.2 + 0.8 * Math.pow(1 - g, 0.8));
           q = [q[0] + dir[0] * ds, p0[1] + (rad * 0.6 - p0[1]) * sstep(0, 0.8, g) - (dives ? 0.35 * sstep(0.6, 1, g) : 0), q[2] + dir[2] * ds]; rx.push(q); rr.push(rad); rg.push(q); }
-      } else { const w = walk(p0, away, rho[0], len, dives, 1); for (let e = 0; e < w.rx.length; e++) { rx.push(w.rx[e]); rg.push(w.rx[e]); rr.push(w.rr[e]); rootPts.push(w.rx[e]); } Kr = rx.length; }
+      } else { const w = walk(p0, away, rho[0], len, dives, 1, s.rank || 1); for (let e = 0; e < w.rx.length; e++) { rx.push(w.rx[e]); rg.push(w.rx[e]); rr.push(w.rr[e]); rootPts.push(w.rx[e]); } Kr = rx.length; }
       s.root = Kr; s.K = Kr + X.length; const all = rx.reverse().concat(X), goals = rg.reverse().concat(goal);
       s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho));
       // The shape a strand holds against tension is written in one frame all along it. A root's goal is the places
@@ -318,10 +327,7 @@
     // wood divides all the way up and at no one level, and there is as much of it at any level as there was: no
     // waist. A root does not end and a branch does not start. One divides into the other.
     if (P.feet && P.feet < n) {
-      const rd = rng(P.seed + 311), order = S.map((s, i) => i).sort((x, y) => Math.atan2(S[x].b, S[x].a) - Math.atan2(S[y].b, S[y].a));
-      // the families are not of a size: cut the ring at uneven places, so the foot has a few heavy roots and some slight ones
-      const wt = Array.from({ length: P.feet }, () => 0.35 + 1.3 * rd()), tot = wt.reduce((a, b) => a + b, 0), edge = [0], cuts = []; let acc = 0;
-      for (const w of wt) { acc += w; edge.push(Math.round((acc / tot) * n)); }
+      const cuts = [];
       for (let g = 0; g < P.feet; g++) { const mem = order.slice(edge[g], edge[g + 1]); if (mem.length < 2) continue;
         const lead = mem.reduce((v, i) => (H(S[i].a, S[i].b) > H(S[v].a, S[v].b) ? i : v), mem[0]), L = S[lead], endL = L.K - 1 - L.root, add = new Float64Array(L.K);
         for (const i of mem) { if (i === lead) continue; const B = S[i], endB = B.K - 1 - B.root; let dv = 0; while (dv < Math.min(endL, endB) && ownerAt(L.limb, dv + 1) === ownerAt(B.limb, dv + 1)) dv++;
@@ -598,7 +604,7 @@
   // rule, and `share` is its main number (small: a leader with side shoots; a half: even forks and no leader).
   // Returns { strands, trunk, limbs } for grow(), and what it made (shoots, tips, deepest).
   function sprout(rule) {
-    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true, feet: 8, lap: 0.3, ground: null, site: [0, 0], roots: 0.55, perch: 1.9 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
+    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true, feet: 8, lap: 0.3, ground: null, site: [0, 0], roots: 0.55, perch: 1.9, uneven: 0.95 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
     const length = (c) => Q.reach * (Q.twig + Math.sqrt(c / n)), Gq = Q.ground, inside = (p) => Math.abs(p[0]) < 0.9 && Math.abs(p[2]) < 0.9 && p[1] < 1.9 && (Gq ? Gq(p[0], p[1], p[2]) > 0.12 : p[1] > 0.3), laid = [];   // every point of every shoot so far
     const open = (p) => { let d = Gq ? Math.max(0, Gq(p[0], p[1], p[2])) * 1.2 : 9; for (const q of laid) d = Math.min(d, H(p[0] - q[0], p[1] - q[1], p[2] - q[2])); return d; };   // (open: far from every shoot, and from the ground and any rock)
     let shoots = 0, tips = 0, deepest = 0;
@@ -652,7 +658,7 @@
       (L.par ? L.par.limbs : limbs).push(o); for (let q = L.par; q; q = q.par) q.count += k; extra += k; regrown++; }
     walk(limbs, (l) => { delete l.host; delete l.par; delete l.own; delete l.lost; });
     const Rn = R0 * Math.sqrt((n + extra) / n);   // the foot is as much broader as the tree has more strands, so that no strand is thinner for it
-    return { strands: n + extra, trunk: [[p0[0], p0[1], p0[2], Rn]].concat(top.path.map((p, i) => [p[0], p[1], p[2], Rn * (1 - 0.5 * (i + 1) / top.path.length)])), limbs, set: Q.set, feet: Q.feet, lap: Q.lap, ground: Q.ground || level, roots: Q.roots, made: { shoots, tips, deepest, snapped, regrown, strands: n + extra } };
+    return { uneven: Q.uneven, strands: n + extra, trunk: [[p0[0], p0[1], p0[2], Rn]].concat(top.path.map((p, i) => [p[0], p[1], p[2], Rn * (1 - 0.5 * (i + 1) / top.path.length)])), limbs, set: Q.set, feet: Q.feet, lap: Q.lap, ground: Q.ground || level, roots: Q.roots, made: { shoots, tips, deepest, snapped, regrown, strands: n + extra } };
   }
 
   // level ground at height 0, for a grown tree that is given no other. Marked, so that whoever draws the tree need not draw it.

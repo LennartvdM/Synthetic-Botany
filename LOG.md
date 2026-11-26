@@ -4094,3 +4094,97 @@ that found they had almost none.
 
 The flutes, which were laid in the same round for the same wrong reason,
 turned out to be the thing that worked.
+
+## Hierarchy, and a ground that says where it is soft
+
+Two things, one settled and one put up for a decision.
+
+### The foot was a cable fraying
+
+"There's not enough hierarchy amongst the roots. It's like wires coming out
+of a braided cable." Measured: the heaviest root was 1.4 times the fourth,
+and a foot of a dozen roots within a factor of two of each other.
+
+I went at the share-out first -- the foot's families were cut at weights
+between 0.35 and 1.65 -- and drew them steeply instead. It barely moved.
+The reason is worth writing down: a family's girth is the root of the sum
+of its members' sections, and the members are strands of the trunk, so with
+fourteen strands in six families the heaviest family can hold eight and the
+lightest two, and that is a ratio of two however the weights are drawn.
+**The hierarchy was capped by the cable, not by how it was shared out.**
+
+The strands themselves were near-identical: `uneven` 0.5 puts all fourteen
+between 0.75 and 1.25 of each other. A grown tree's are drawn far more
+unequal now (0.95), and the foot has one or two roots that carry the tree
+and a scatter that do not. `mixed`, the power-law draw, was tried and is
+too much: one giant root, nothing else, and a trunk that stops reading as a
+bundle at all.
+
+      heaviest root against the trunk   0.24  ->  0.42
+      heaviest against the fourth       1.4   ->  2.4
+
+And a second fault found on the way: **which roots were to be heavy was
+settled after they had all been walked.** The families were cut and their
+shares added to the lead's girth once every root had already found its way,
+so a root that was going to carry a quarter of the tree walked as though it
+were one strand of fourteen -- it held no longer line than the rest,
+hemmed no lip, took the same slight way round everything, and only
+afterwards was fattened into a buttress. The share is drawn before the walk
+now, and a root that is to be heavy behaves heavy while it is finding its
+way.
+
+### Whether a root may go into the ground
+
+The rest of the message is a question the user has not decided, so this is
+a thing to look at rather than an answer:
+
+> the roots have some resistance against the ground, yes, but then they're
+> forced to crawl across impervious surfaces. But that's not the root's
+> fault [...] Whether the root is allowed to burrow or not seems to be
+> arbitrarily decided by the root itself and currently the answer is 'no'.
+
+Right on both counts. Nothing in the model ever asked the ground what it
+was made of. So: a ground may now carry a second reading beside how far
+outside it you are -- how soft it is there. Where it is soft a root sinks
+until it is under and is not seen; where it is rock it stays on the surface
+and grips. No soil, nothing simulated: one more function of a place,
+exactly like the ground itself, and the decision belongs to the place
+rather than to the root. With no such reading nothing changes.
+
+`in soil, round a stone` is the demonstration: soil everywhere but one
+stone, and what shows of that tree's roots is only what crosses the stone.
+
+**What it showed me is that the question is not the one being asked.**
+Burrowing is cheap and it works. What reads as lazy clipping is not a root
+going into the ground, it is a root going into the ground *without
+consequence* -- it meets a flat surface and ends, and nothing about the
+ground acknowledges it. A real one heaves the soil over itself, and the
+heave is what sells the burrow. That is drawable from what is already here
+(a low ridge of ground material over a shallow buried root, tagged as
+ground) and it is the next thing to build if this direction is wanted.
+
+So the choice is not between real soil mechanics and arbitrary burrowing.
+It is: the ground says soft or hard, which costs one function, and the
+burrow is paid for by a heave, which costs a ridge. Granite stays granite
+because the ground says so, not because the root was polite.
+
+And a near miss worth recording: the factor that makes a heavy root run
+further came out as `0.72 + 0.3 * rank`, which is 1.02 at rank 1, not 1.
+Page 7's four have no families at all, so nothing about this round should
+have touched them -- and their fingerprint moved, because every root on
+every tree in the repository got 2% longer. A multiplier that is meant to
+leave something alone has to be exactly 1 where it leaves it alone, and
+the only reason I caught it is that four trees are pinned and checked.
+
+A cost that came with the uneven strands, and it bears on the user's worry
+about build time in a procedural world: a page 9 tree now takes 30 to 68
+seconds to settle where it took about ten. The strands are fatter and more
+unequal, so far more pairs of them are close enough to push on each other,
+and the settling is quadratic in that. Nothing is broken -- the renders
+just stopped fitting in their five-minute budget and had to be given
+fifteen. Worth knowing before any of this is asked to run on a player's
+machine: the expensive part is not growing the line, it is settling the
+wood.
+
+      page 9's lines, from here   a0e3772461 7aa37cf6f1 b49b812a0e 3a141a6fa2 f8630c5170
+      page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f

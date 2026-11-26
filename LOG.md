@@ -4188,3 +4188,37 @@ wood.
 
       page 9's lines, from here   a0e3772461 7aa37cf6f1 b49b812a0e 3a141a6fa2 f8630c5170
       page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f
+
+## The long detours: a root forgiven too much for coming down
+
+"There's some weird roots still though, long detours feel like something
+went wrong in the rendering." Two causes, and the first is a rule of mine
+working exactly as written and being wrong.
+
+**A root was forgiven everything it spent getting down.** Going down a face
+counted a half toward its length and going through the air a third -- put
+in so that a root leaving the level it started on would not be cut off in
+mid-air. But a bold root that goes over a cliff spends most of its run
+descending, so it arrived at the bottom with nearly its whole length
+unspent and ran it out across the flat in one straight line. That is the
+detour: a long, nearly straight, barely tapered root going nowhere, which
+reads as a fault in the drawing because there is no reason in it. It may
+be forgiven up to a fifth of its length now, and no more.
+
+**And the ground is a patch, not a world.** A root that reached the edge of
+the ground it was given stopped dead, at whatever girth it had: a cut
+stump, which is exactly what asset clipping looks like. It feels the edge
+coming from 0.68 out and turns along it now.
+
+      roots that run out of ground   10 of 154  ->  4 of 138
+      of those, still thick when they stop   2  ->  0
+
+Wrong, or not there:
+- The edge-turn is housekeeping for a sketch, not a rule about trees. On a
+  real terrain there is no edge, and the rule should go when there isn't
+  one. It is the only thing in the walk that knows the ground is a square.
+- A root that goes over a cliff still comes down because the ground falls
+  away, not because there is anything below worth reaching.
+
+      page 9's lines, from here   a0fd975885 605974eb6b 482d097487 7f4b3b56bb 1aed93441d
+      page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f

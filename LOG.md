@@ -4973,3 +4973,18 @@ that was asked for -- without one that has to be a lobe. Worst ring share
 family's share is weighted (k/root)^carry, which is 1 at the collar
 whatever the exponent, so the collar girth moves 0.57 to 0.59 across the
 whole range. Left in at 1.5, the old value.
+
+### Root eyes: a ring with nothing behind it
+
+The closed loops in the ream are eyes. The rule makes them on limbs and
+on roots alike -- a stretch parts to one side, arches away and merges
+back into the same wood, leaving a hole.
+
+On a limb that is the point: there is daylight behind it, and a tree with
+an eye looks like one that has lived. On a root, lying near the ground,
+there is nothing behind it to see through, so it reads as a closed ring
+touching nothing -- a shape stuck on, which is the thing the brief warns
+against.
+
+`rootEyes` 0. Limb eyes stay. The draw is still taken either way, so no
+rng stream shifts and nothing else about the tree moves.

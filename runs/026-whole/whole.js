@@ -24,11 +24,11 @@ g.Fantastic.fields.forEach((f, ti) => {
   const name = g.Fantastic.names[ti] || ('tree ' + ti), rec = f.recipe, foot = rec.trunk[0];
   const x0 = foot[0] - 1.6, x1 = foot[0] + 1.6, z0 = foot[2] - 1.6, z1 = foot[2] + 1.6, y0 = -0.5, y1 = 2.3;
   const NX = Math.round((x1 - x0) / STEP), NY = Math.round((y1 - y0) / STEP), NZ = Math.round((z1 - z0) / STEP);
-  const sol = new Uint8Array(NX * NY * NZ); let total = 0;
+  const sol = new Uint8Array(NX * NY * NZ), lay = new Uint8Array(NX * NY * NZ); let total = 0;
   for (let j = 0; j < NY; j++) { const y = y0 + (j + 0.5) * STEP;
     for (let i = 0; i < NX; i++) { const x = x0 + (i + 0.5) * STEP;
       for (let k = 0; k < NZ; k++) { const z = z0 + (k + 0.5) * STEP;
-        if (f(x, y, z) < 0 && f.layerAt(x, y, z) !== 5) { sol[(j * NX + i) * NZ + k] = 1; total++; } } } }
+        if (f(x, y, z) < 0) { const L = f.layerAt(x, y, z); if (L !== 5) { sol[(j * NX + i) * NZ + k] = 1; lay[(j * NX + i) * NZ + k] = L; total++; } } } } }
   // group the solid cells: six-way, iterative so a long root does not blow the stack
   const seen = new Int32Array(NX * NY * NZ).fill(-1), sizes = [], stack = new Int32Array(total + 16);
   let grp = 0;
@@ -39,10 +39,14 @@ g.Fantastic.fields.forEach((f, ti) => {
       const push = (ii, jj, kk) => { if (ii < 0 || jj < 0 || kk < 0 || ii >= NX || jj >= NY || kk >= NZ) return;
         const d = (jj * NX + ii) * NZ + kk; if (sol[d] && seen[d] < 0) { seen[d] = grp; stack[sp2++] = d; } };
       push(i + 1, j, k); push(i - 1, j, k); push(i, j + 1, k); push(i, j - 1, k); push(i, j, k + 1); push(i, j, k - 1); }
-    sizes.push(cnt); grp++; }
-  sizes.sort((a, b) => b - a);
-  const loose = sizes.slice(1), lost = loose.reduce((s, v) => s + v, 0);
+    sizes.push({ cnt, lay: lay[a] }); grp++; }
+  sizes.sort((a, b) => b.cnt - a.cnt);
+  const loose = sizes.slice(1), lost = loose.reduce((s, v) => s + v.cnt, 0);
+  // what the loose pieces are made of: 0 band, 1 fine or torn, 2 sliver or shell plate, 3 bark, 4 scar, 6 root, 7 root off a root
+  const byLayer = {}; for (const o of loose) byLayer[o.lay] = (byLayer[o.lay] || 0) + 1;
+  const NAME = { 0: 'band', 1: 'fine', 2: 'sliver/plate', 3: 'bark', 4: 'scar', 6: 'root', 7: 'root-of-root' };
   console.log((sizes.length === 1 ? '  one body  ' : ' COME APART ') + name.padEnd(34) +
     ' bodies ' + String(sizes.length).padStart(3) + '   adrift ' + (lost / total * 100).toFixed(2) + '% of the wood' +
-    (loose.length ? '   largest pieces adrift ' + loose.slice(0, 6).map((v) => (v / total * 100).toFixed(2) + '%').join(' ') : ''));
+    (loose.length ? '   made of ' + Object.entries(byLayer).sort((a, b) => b[1] - a[1]).map(([k, v]) => v + ' ' + (NAME[k] || ('layer ' + k))).join(', ') +
+      '   largest ' + loose.slice(0, 4).map((v) => (v.cnt / total * 100).toFixed(2) + '%').join(' ') : ''));
 });

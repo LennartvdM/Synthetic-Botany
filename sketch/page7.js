@@ -48,7 +48,7 @@
     // the width is right. Where the strand IS the body -- a root, a lone twig -- the tile has nothing to wrap and
     // just lies there, half again as wide as it is tall: a strap. So the width answers to how much of the body
     // the band has to cover. `free` already says which case it is. `cord` is the width when it covers all of it.
-    const cord = recipe.cord === undefined ? 0.85 : recipe.cord, cordAt = recipe.cordAt === undefined ? 1 : recipe.cordAt;
+    const byNbr = recipe.byNeighbour === undefined ? 1 : recipe.byNeighbour, cord = recipe.cord === undefined ? 0.85 : recipe.cord, cordAt = recipe.cordAt === undefined ? 1 : recipe.cordAt;
     // A buttress is a plate standing on edge. Near the trunk a root carries the whole leaning of the tree in one
     // plane, so its wood is tall and narrow there; further out, where it only pulls along itself, it is round.
     // A round root cannot read as a buttress at a surface however it is buried: half of a round section is under
@@ -67,6 +67,17 @@
     const gain = recipe.elbow === undefined ? 3 : recipe.elbow, elbowFree = recipe.elbowFree === undefined ? 1 : recipe.elbowFree, pts = []; t.strands.forEach((q, qi) => { if (!q.thread) for (let i = 0; i < q.K; i++) pts.push([q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i], qi, q.fam]); });
     const roomToward = (p, n, want, rho, qi, fam) => { for (const o of pts) { if (o[4] === qi || (fam !== undefined && o[5] === fam)) continue; const d = [o[0] - p[0], o[1] - p[1], o[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dl > want + rho + o[3] + 0.02 || dot(d, n) < 0.3 * dl) continue; want = Math.min(want, Math.max(0, dl - rho - o[3] - 0.012)); }
       for (const o of rooms) { const q = to(o, p[0], p[1], p[2]), d = [q[0] - p[0], q[1] - p[1], q[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dot(d, n) > 0.3 * dl) want = Math.min(want, Math.max(0, dl - o.room - rho)); } return want; };
+    // How much of the body a band has to cover, asked properly. `far` is a strand's distance from the axis of its
+    // bundle, and that cannot tell a strand WRAPPING a bundle from one that has dispersed: at the foot the strands
+    // splay apart, `far` grows, and the old test read that as "deep in a mass" and gave each a wide tile. Those
+    // tiles are the flat sheets at the base -- layer 0, trunk bands, not roots. What matters is whether there is a
+    // neighbour close enough to share the surface with. So: the gap to the nearest other strand, in its own girths.
+    const gapTo = t.strands.map((q, qi) => { const K = q.K, g = new Float64Array(K).fill(9); if (q.thread) return g;
+      for (let i = 0; i < K; i++) { const x = q.X[i * 3], y = q.X[i * 3 + 1], z = q.X[i * 3 + 2], rho = q.rho[i]; let best = 9;
+        for (const o of pts) { if (o[4] === qi || (q.fam !== undefined && o[5] === q.fam)) continue;
+          const d = H(o[0] - x, o[1] - y, o[2] - z) - rho - o[3]; if (d < best) best = d; }
+        g[i] = best; }
+      return g; });
     const ease = t.strands.map((q, qi) => { const K = q.K, g = new Float64Array(K), dir = new Array(K).fill(null), room = new Float64Array(K).fill(9); if (q.thread || !gain || K < 7) return { g, dir };
       for (let i = 2; i < K - 2; i++) { const p = at(q, i), a = at(q, i - 2), b = at(q, i + 2), h = (H(b[0] - p[0], b[1] - p[1], b[2] - p[2]) + H(a[0] - p[0], a[1] - p[1], a[2] - p[2])) / 2 || 1e-9, T = tan(q, i);
         let kv = [0, 1, 2].map((j) => (a[j] + b[j] - 2 * p[j]) / (h * h)); const al = dot(kv, T); kv = kv.map((v, j) => v - T[j] * al); const kap = H(kv[0], kv[1], kv[2]), rho = q.rho[i]; if (kap * rho < 0.06) continue;
@@ -100,7 +111,7 @@
           onEdge = butt * (s.rootOf < 0 && k1 <= s.root ? sstep(0.12 * s.root, 0.5 * s.root, (k0 + k1) >> 1) : 0), wide = wide0 * (1 - 0.45 * onEdge), high = high0 * (1 + 2.2 * onEdge), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, massW = 1.55 + 0.4 * r(), e = r(), ending = last ? 'own' : turned ? 'turn' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
-          const no = nearOrb(base), tornHere = s.gap && s.inner && s.inner[i] ? Math.min(1, s.gap[i] / (1.2 * rho)) : 0, alone = 1 - sstep(0.9, 2.0, s.far[i] / rho), free = s.thread ? 1 : Math.max(no, tornHere, alone, s.rootOf >= 0 ? 1 : 1 - sstep(s.root - 7, s.root - 2, i)),   // the flare is still the body, and a root leaves it: mass runs down into a root's first steps and is gone a little further out
+          const no = nearOrb(base), tornHere = s.gap && s.inner && s.inner[i] ? Math.min(1, s.gap[i] / (1.2 * rho)) : 0, alone = byNbr ? sstep(0.25, 1.4, gapTo[si][i] / Math.max(1e-6, rho)) : 1 - sstep(0.9, 2.0, s.far[i] / rho), free = s.thread ? 1 : Math.max(no, tornHere, alone, s.rootOf >= 0 ? 1 : 1 - sstep(s.root - 7, s.root - 2, i)),   // the flare is still the body, and a root leaves it: mass runs down into a root's first steps and is gone a little further out
            body = mass * (1 - free),   // a strand running alone is a limb, not part of a mass
           toMid = body > 0.01 ? Math.max(0.95 * rho, meet(base, [-s.O[i][0], -s.O[i][1], -s.O[i][2]], rho, si, Math.min(s.far[i] * 0.9, (s.limb >= 0 ? 1.5 : 3.2) * rho))) : 0.95 * rho;   // a limb is thin: reaching for its middle must not come out of its other side
           // (so does a strand that divided off another, where it comes out of it)

@@ -74,21 +74,19 @@ function frondAtlas() {
   // between neighbours so a leaf is still a leaf when a dozen sheets overlap.
   const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
   const rnd = (() => { let s = 90210; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
-  const leaf = (ll, lw) => { x.beginPath(); x.moveTo(0, 0);
-    x.quadraticCurveTo(ll * 0.35, -lw, ll, 0); x.quadraticCurveTo(ll * 0.35, lw, 0, 0); x.fill(); };
   for (let cell = 0; cell < 4; cell++) {
     const ox = (cell & 1) * 256, oy = (cell >> 1) * 256, pairs = 8 + (cell % 4);
     x.strokeStyle = 'rgba(198,214,224,0.7)'; x.lineWidth = 2.4;
     x.beginPath(); x.moveTo(ox + 128, oy + 250); x.lineTo(ox + 128, oy + 20); x.stroke();
     for (let i = 0; i < pairs; i++) {
-      const v = (i + 0.4) / (pairs + 0.25), y = oy + 246 - v * 222, reach = 118 * Math.pow(1 - v * 0.55, 0.8);
+      const v = (i + 0.4) / (pairs + 0.25), y = oy + 240 - v * 206, reach = 100 * Math.pow(1 - v * 0.55, 0.8);
       for (const sgn of [-1, 1]) {
         if (rnd() < 0.1) continue;
-        const lean = 0.42 + 0.4 * rnd(), ll = reach * (0.86 + 0.3 * rnd()), lw = 10 + 6 * rnd();
+        const lean = 0.42 + 0.4 * rnd(), ll = reach * (0.82 + 0.28 * rnd()), lw = 10 + 6 * rnd();
         const tone = 214 + Math.floor(rnd() * 38);
         x.save(); x.translate(ox + 128, y + (rnd() - 0.5) * 10); x.rotate(sgn * (Math.PI / 2 - lean));
         x.fillStyle = 'rgb(' + (tone - 20) + ',' + tone + ',' + Math.min(255, tone + 6) + ')';
-        leaf(ll, lw);
+        drawLeaf(x, ll, lw);
         x.restore();
       }
     }
@@ -98,21 +96,30 @@ function frondAtlas() {
 
 // TIER ONE's cell: a dense plume, many leaves over a soft underlay. Wrong when a sheet had to BE the foliage;
 // right as a blocker behind a scatter of sprigs.
+
+// One leaf shape for both tiers. The core was round discs and the sprigs were lances, so the two read as two
+// different plants in the same crown. A blocker and a garnish may differ in density; they may not differ in kind.
+function drawLeaf(x, ll, lw) {
+  x.beginPath(); x.moveTo(0, 0);
+  x.quadraticCurveTo(ll * 0.35, -lw, ll, 0);
+  x.quadraticCurveTo(ll * 0.35, lw, 0, 0);
+  x.fill();
+}
 function plumeAtlas() {
   const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
   const rnd = (() => { let s = 4242; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
-  x.fillStyle = 'rgba(226,236,242,0.96)';
-  for (let i = 0; i < 58; i++) {
-    const a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), 0.62) * 196;
-    x.beginPath(); x.ellipse(256 + Math.cos(a) * rr, 256 + Math.sin(a) * rr * 0.86, 52 + rnd() * 44, 40 + rnd() * 34, rnd() * 3, 0, Math.PI * 2); x.fill();
-  }
-  for (let i = 0; i < 150; i++) {
-    const a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), 0.5) * 232;
-    const px = 256 + Math.cos(a) * rr, py = 256 + Math.sin(a) * rr * 0.9;
-    const ll = 26 + rnd() * 34, lw = 12 + rnd() * 12, tone = 206 + Math.floor(rnd() * 44);
-    x.save(); x.translate(px, py); x.rotate(a + (rnd() - 0.5) * 1.4);
-    x.fillStyle = 'rgb(' + (tone - 24) + ',' + tone + ',' + Math.min(255, tone + 6) + ')';
-    x.beginPath(); x.ellipse(0, 0, ll * 0.5, lw, 0, 0, Math.PI * 2); x.fill(); x.restore();
+  // a faint bed of the same leaf, laid flat and pale, so the cell blocks without reading as a cloud of pebbles
+  for (const pass of [0, 1]) {
+    const n = pass ? 200 : 90, far = pass ? 236 : 190;
+    for (let i = 0; i < n; i++) {
+      const a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), pass ? 0.5 : 0.72) * far;
+      const px = 256 + Math.cos(a) * rr, py = 256 + Math.sin(a) * rr * 0.9;
+      const ll = (pass ? 46 : 74) + rnd() * (pass ? 34 : 40), lw = (pass ? 11 : 15) + rnd() * 9;
+      const tone = (pass ? 212 : 226) + Math.floor(rnd() * 30);
+      x.save(); x.translate(px, py); x.rotate(a + (rnd() - 0.5) * 1.5);
+      x.fillStyle = 'rgb(' + (tone - 22) + ',' + tone + ',' + Math.min(255, tone + 6) + ')';
+      drawLeaf(x, ll, lw); x.restore();
+    }
   }
   const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
 }

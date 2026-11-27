@@ -4598,3 +4598,49 @@ ground, and what lifts it is its own flare.
 trunk, where a dozen bands wrap a bundle, wrong for a root, where the
 strand is the whole body. And one strand's root still leaves the trunk
 sideways at mid-height and stops blunt in the air.
+
+### Both numbers gone: the tree starts on the ground
+
+The second number was `inside()` in sprout: a shoot could not grow within
+**0.12** of the ground. Absolute, so on a tree of half the girth it is
+twice the bar, and it was what made perch 0.3 and 0 grow no tree at all in
+the sweep above -- those two rows were measuring that, not the perch, and
+are retracted as evidence. It is now `clear` times the trunk's own width,
+0.6 x 0.2, the same 0.12 at the default size and scaling from here.
+
+With that relative the perch has nothing left to do. `p0` sits on the
+ground and the leader is let inside the clearance for its first stretch,
+because a tree starts at the ground and has to climb out of its own flare.
+Nothing else is let inside it. perch 0.7 -> 0.
+
+      perch 1.9   ground 1.10   waist 0.75   widest up the trunk 1.23
+      perch 1.2   ground 1.07   waist 0.90   widest up the trunk 1.25
+      perch 0.7   ground 1.28   waist 0.99   widest up the trunk 1.06
+      perch 0.3   ground 1.42   waist 0.89   widest up the trunk 0.95
+      perch 0     ground 1.48   waist 0.94   widest up the trunk 1.12
+
+At 0 the profile runs 0.77 below ground, 1.37, **1.48 at the ground**,
+then 1.13 1.00 0.95 0.94 0.90 and holds near 0.90 up the trunk. Widest
+where it meets the ground, narrowing from there, wood below the ground.
+In the four vertical cuts the trunk now stands on the blue line in all of
+them and widens into it.
+
+So the whole of the root-plate complaint, three rounds of it, came down to
+two put-in numbers at the foot: one that held the trunk in the air and one
+that stopped anything growing near the ground. Neither was a rule. Both
+are now either gone or expressed as a share of the tree's own size.
+
+### Next: a band is a tile, and a root is not a tiled thing
+
+With the base right, the straps are what is left. A band is about 1.25 rho
+across against 0.75 tall. In a trunk a dozen bands wrap a bundle and that
+width is correct. Where the strand IS the body -- a root, a lone twig --
+the tile has nothing to wrap and lies there half again as wide as it is
+tall.
+
+`free` already says which case a band is in, and it is not a crown risk:
+`far` is a strand's distance from the axis of the bundle it belongs to, so
+in a trunk `free` is 0, along a root it is 1, and a branch of six strands
+is still a bundle. The rule can be uniform. `cord` is the width when the
+band covers the whole body; `cordAt` 0 restores the old behaviour exactly,
+so the baseline in the sweep is the real one and not an approximation.

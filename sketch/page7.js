@@ -44,6 +44,11 @@
     // widest, swelled to three times the wood that is in it.)
     const mass = recipe.mass === undefined ? 1 : recipe.mass;
     const skirtOn = recipe.skirt === undefined ? 1 : recipe.skirt;
+    // A band is a tile on a body. In a trunk a dozen of them wrap a bundle, so each is wider than it is tall and
+    // the width is right. Where the strand IS the body -- a root, a lone twig -- the tile has nothing to wrap and
+    // just lies there, half again as wide as it is tall: a strap. So the width answers to how much of the body
+    // the band has to cover. `free` already says which case it is. `cord` is the width when it covers all of it.
+    const cord = recipe.cord === undefined ? 0.85 : recipe.cord, cordAt = recipe.cordAt === undefined ? 1 : recipe.cordAt;
     const meet = (p, n, rho, qi, cap) => { let best = Infinity;
       for (const o of pts) { if (o[4] === qi) continue; const vx = o[0] - p[0], vy = o[1] - p[1], vz = o[2] - p[2], al = vx * n[0] + vy * n[1] + vz * n[2];
         if (al <= 0 || al > cap || al >= best) continue; const across = Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al)); if (across > rho + o[3]) continue; best = al + o[3] * 0.7; }
@@ -87,7 +92,7 @@
           toMid = body > 0.01 ? Math.max(0.95 * rho, meet(base, [-s.O[i][0], -s.O[i][1], -s.O[i][2]], rho, si, Math.min(s.far[i] * 0.9, (s.limb >= 0 ? 1.5 : 3.2) * rho))) : 0.95 * rho;   // a limb is thin: reaching for its middle must not come out of its other side
           // (so does a strand that divided off another, where it comes out of it)
           // (a torn part leaves and rejoins what it tore from from underneath: laid level with it there, the two surfaces run through each other and come out pitted)
-          const lift = (first ? (fine || s.stem >= 0 ? -0.9 * (1 - sstep(0, 0.35, q)) : 0) : -0.28 * (1 - sstep(0, 0.3, q))) + proud * q * q - ((fine || s.rootOf >= 0) && last ? 0.9 * sstep(0.65, 1, q) : 0), front = ending === 'point' ? Math.pow(Math.min(1, (1 - q) / 0.3), 0.7) : 1, back = first && !(s.stem >= 0) ? 1 : 0.7 + 0.3 * sstep(0, 0.3, q), w = Math.min(wide, 1.05 + (wide - 1.05) * (1 - no)) + body * (massW - 1.05);
+          const lift = (first ? (fine || s.stem >= 0 ? -0.9 * (1 - sstep(0, 0.35, q)) : 0) : -0.28 * (1 - sstep(0, 0.3, q))) + proud * q * q - ((fine || s.rootOf >= 0) && last ? 0.9 * sstep(0.65, 1, q) : 0), front = ending === 'point' ? Math.pow(Math.min(1, (1 - q) / 0.3), 0.7) : 1, back = first && !(s.stem >= 0) ? 1 : 0.7 + 0.3 * sstep(0, 0.3, q), wTile = Math.min(wide, 1.05 + (wide - 1.05) * (1 - no)), w = wTile + (cord - wTile) * cordAt * free + body * (massW - 1.05);
           let deepHere = rho * 0.95 + body * (toMid - rho * 0.95); for (const o of rooms) deepHere = Math.max(rho * 0.5, Math.min(deepHere, away(o, base[0], base[1], base[2]) - o.room - 0.01));
           let wCap = 9; for (const o of rooms) if (!o.orb) wCap = Math.min(wCap, Math.max(0.6 * rho, away(o, base[0], base[1], base[2]) - o.room));   // nor is it drawn so wide that its edge stands in a hollow   // never into an orb's room
           const eg = ease[si].g[i], en = ease[si].dir[i], inn = s.inner && s.gap && s.gap[i] > 0 ? s.inner[i] : null, sv = eg || inn || (s.rootOf < 0 && i < s.root) ? unit(cross(tan(s, i), s.O[i])) : null, gu = eg ? eg * dot(en, sv) : 0, gv = eg ? eg * dot(en, s.O[i]) : 0;   // the elbow's fill, across the strand and through it

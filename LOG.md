@@ -5013,3 +5013,47 @@ root curves while another runs straight to an elbow and breaks.
 
 On the cliff the roots run straight out on the plateau and break at an
 elbow over the lip. Path only; worst ring share unmoved.
+
+## Foliage: plumes at the tips, after a wrong first pass
+
+First pass withdrawn: single leaf cards scattered along the branch lines.
+That is the naive version -- cards bedded into the wood, each reading as
+its own sticker, no silhouette. Kept in runs/028-foliage/leaves.js with
+what it is missing written at the bottom, because the plumbing (wind
+channels, atlas indexing, the placement walk) is reusable.
+
+What a game actually builds is hierarchical, and the references are Ori:
+long sinuous dark wood, each branch ending in ONE pale feathery plume,
+the crown a few big soft masses rather than a dome. That suits this tree,
+whose shoots already end in horns -- a horn is a tip and a tip takes a
+plume.
+
+`runs/028-foliage/sprays.js`. A plume is a fan of low-poly ribbons, each
+bending away from the branch's line, drooping under itself and tapering
+to a point, so it has a silhouette from any angle and catches light along
+its length. Not two crossed sheets. The atlas cell is a frond -- a midrib
+with leaves along it over a soft underlay -- so one ribbon reads as a
+whole spray rather than a leaf.
+
+Three things were wrong on the way and each is a knob now:
+
+      the fan sprayed evenly about the branch axis, which makes a radial
+      starburst. A plume is a SWEEP: `flat` squashes the fan into one
+      plane so the mass is elongated and flares past the tip.
+
+      the atlas was lace. Bigger rounder leaves and a soft underlay drawn
+      behind them give the cell a mass instead of a fringe.
+
+      the plumes were small and separate. Denser fans drawn closer about
+      the line merge into one soft mass per branch.
+
+Normals blend between the plume's outward axis and the ribbon's own face,
+so a plume shades as a mass without going dead flat. Wind rides in the
+colour channels: R sway along the ribbon, G a per-ribbon flutter, B a
+phase. Nothing reads them yet -- there is no wind shader here.
+
+Still missing, in the order that blocks the look: branchlets, a level of
+structure between the grown branch and the plume, which this tree has not
+got; a baked frond atlas with a normal and translucency map rather than
+one drawn on a canvas; canopy-volume placement so interior plumes fill
+and the shell is what is seen; and the LOD chain down to an impostor.

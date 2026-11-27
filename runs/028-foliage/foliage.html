@@ -31,6 +31,7 @@ select:focus-visible { outline: 2px solid var(--pick); outline-offset: 1px; }
 <script src="trees.js"></script>
 <script src="sketch/page7.js"></script>
 <script src="runs/028-foliage/leaves.js"></script>
+<script src="runs/028-foliage/sprays.js"></script>
 <script src="runs/028-foliage/foliage.js"></script>
 <script>
 const T = THREE, $ = (id) => document.getElementById(id);
@@ -60,6 +61,37 @@ function paint(sh) { const col = sh.mesh.geometry.attributes.color.array, on = $
 // A leaf atlas, drawn here because there are no texture assets in this repository. Four cells, each a cluster of
 // leaves on short stalks about the cell's middle, with alpha. A real one would be authored; the shape of the
 // problem is the same either way -- a card samples one cell and is cut out by alphaTest.
+
+// A frond atlas: two cells, each a feathery spray -- a midrib with small leaves along it, tapering to a point,
+// pale against dark wood as the references are. Drawn here because the repository has no texture assets; a real
+// one would be baked from geometry with a normal and a translucency map beside it.
+function frondAtlas() {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 512; const x = c.getContext('2d');
+  const rnd = (() => { let s = 90210; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
+  for (let cell = 0; cell < 2; cell++) {
+    const ox = cell * 256;
+    for (let i = 0; i < 40; i++) {
+      const v = i / 40, y = 496 - v * 470, half = 104 * Math.pow(1 - v, 0.6) + 5;
+      for (const sgn of [-1, 1]) {
+        const lean = 0.5 + 0.45 * rnd(), ll = half * (0.62 + 0.55 * rnd()), lw = 13 + 13 * rnd();
+        const px = ox + 128 + sgn * half * (0.25 + 0.5 * rnd()), py = y + (rnd() - 0.5) * 9;
+        const tone = 206 + Math.floor(rnd() * 44);
+        x.save(); x.translate(px, py); x.rotate(sgn * lean - Math.PI / 2);
+        x.fillStyle = 'rgb(' + (tone - 16) + ',' + tone + ',' + Math.min(255, tone + 10) + ')';
+        x.beginPath(); x.ellipse(0, 0, ll * 0.42, lw, 0, 0, Math.PI * 2); x.fill(); x.restore();
+      }
+    }
+    x.globalCompositeOperation = 'destination-over';
+    x.fillStyle = 'rgba(214,226,234,0.92)';
+    for (let i = 0; i < 26; i++) { const v = i / 26, y = 490 - v * 450, half = 92 * Math.pow(1 - v, 0.62) + 6;
+      x.beginPath(); x.ellipse(ox + 128, y, half * 0.78, 22, 0, 0, Math.PI * 2); x.fill(); }
+    x.globalCompositeOperation = 'source-over';
+    x.strokeStyle = 'rgba(190,206,214,0.9)'; x.lineWidth = 3;
+    x.beginPath(); x.moveTo(ox + 128, 500); x.lineTo(ox + 128, 26); x.stroke();
+  }
+  const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
+}
+const frondMat = new T.MeshStandardMaterial({ map: frondAtlas(), alphaTest: 0.42, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.8, metalness: 0 });
 function leafAtlas() {
   const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
   const rnd = (() => { let s = 12345; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
@@ -84,30 +116,25 @@ function addShape(i) {
   const s = Fantastic.build(i), g = new T.BufferGeometry(), col = new Float32Array(s.tone.length * 3);
   g.setAttribute('position', new T.BufferAttribute(s.pos, 3)); g.setAttribute('normal', new T.BufferAttribute(s.nrm, 3)); g.setAttribute('color', new T.BufferAttribute(col, 3)); g.setIndex(new T.BufferAttribute(s.idx, 1));
   const m = new T.Mesh(g, mat); m.castShadow = m.receiveShadow = true; scene.add(m);
-  // the leaves: a separate buffer hung on the same object, so it follows the wood wherever it is placed
+  // the plumes: one per branch tip, each a fan of bent tapering ribbons
   const gr = (window.__grown || [])[i];
-  if (gr && window.Foliage) {
-    const L = Foliage.cards(gr, { R0: (window.__R0 || [0.2])[i], seed: 7 + i,
-      under: +(new URLSearchParams(location.search).get('under') || 0.42),
-      every: +(new URLSearchParams(location.search).get('every') || 0.055),
-      size: +(new URLSearchParams(location.search).get('size') || 0.05),
-      cross: +(new URLSearchParams(location.search).get('cross') || 2) });
-    if (L.count) {
-      const lg = new T.BufferGeometry();
-      lg.setAttribute('position', new T.BufferAttribute(L.pos, 3));
-      lg.setAttribute('normal', new T.BufferAttribute(L.nrm, 3));
-      lg.setAttribute('uv', new T.BufferAttribute(L.uv, 2));
-      lg.setAttribute('wind', new T.BufferAttribute(L.col, 3));
-      lg.setIndex(new T.BufferAttribute(L.idx, 1));
-      const lm = new T.Mesh(lg, leafMat); lm.castShadow = true; lm.receiveShadow = true; m.add(lm);
-      window.__leafCount = (window.__leafCount || 0) + L.count;
-      window.__clusters = (window.__clusters || 0) + L.clusters;
+  if (gr && window.Sprays) {
+    const qs = new URLSearchParams(location.search);
+    const P = Sprays.build(gr, { R0: (window.__R0 || [0.2])[i], seed: 11 + i,
+      fan: +(qs.get('fan') || 7), len: +(qs.get('len') || 0.42), wide: +(qs.get('wide') || 0.1),
+      droop: +(qs.get('droop') || 0.3), spread: +(qs.get('spread') || 0.85),
+      flat: +(qs.get('flat') || 0.3), under: +(qs.get('under') || 0.3) });
+    if (P.count) {
+      const pg = new T.BufferGeometry();
+      pg.setAttribute('position', new T.BufferAttribute(P.pos, 3));
+      pg.setAttribute('normal', new T.BufferAttribute(P.nrm, 3));
+      pg.setAttribute('uv', new T.BufferAttribute(P.uv, 2));
+      pg.setAttribute('wind', new T.BufferAttribute(P.col, 3));
+      pg.setIndex(new T.BufferAttribute(P.idx, 1));
+      const pm = new T.Mesh(pg, frondMat); pm.castShadow = true; pm.receiveShadow = true; m.add(pm);
+      window.__strips = P.count; window.__plumes = P.plumes;
     }
   }
-
-  // the orb is its own thing: a plain ball, lit from within so it can be seen inside the wood, and lighting the wood round it a little
-  const ob = (Fantastic.orbs || [])[i];
-  if (ob) { const ball = new T.Mesh(new T.SphereGeometry(ob.r, 48, 32), orbMat); ball.position.set(ob.c[0], ob.c[1], ob.c[2]); m.add(ball); const glow = new T.PointLight(0xfff0d0, 0.9, ob.room * 4.5, 2); ball.add(glow); }
   const tag = document.createElement('div'); tag.className = 'tag'; tag.textContent = s.name; $('tags').append(tag);
   shapes.push({ mesh: m, tag, centre: s.centre, tone: s.tone, layer: s.layer }); paint(shapes[shapes.length - 1]);
 }

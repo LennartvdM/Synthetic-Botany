@@ -4512,3 +4512,51 @@ trunk radius will take out the waist and the bulge above it, leaving the
 base widest at the ground and narrowing upward. It will not touch the root
 tips, which the taper already fixed, and it will not touch the flatness of
 a band.
+
+### The flare was not it. The tree is on stilts.
+
+Lengthening the flare does not remove the waist or the bulge. It softens
+the waist and makes the bulge **bigger**:
+
+      flare  grip   equivalent radius at each 0.22 R0 up from the ground
+      0.07   0.6    1.13 0.74 0.76 0.76 0.87 0.89 0.98 1.12 1.21 1.15 0.98
+      0.2    0.6    1.13 0.76 0.72 0.88 1.03 1.27 1.36 1.36 1.29 1.25 1.09
+      0.35   0.6    1.00 0.85 0.83 0.97 1.12 1.33 1.42 1.38 1.29 1.19 1.13
+      0.6    0.6    1.15 0.99 1.05 1.20 1.38 1.49 1.55 1.53 1.47 1.31 1.08
+      0.35   0.8    1.38 1.16 1.08 1.41 1.54 1.70 1.74 1.67 1.57 1.38 1.22
+
+Not one of them is widest at the ground. The bulge sits at 1.3 to 1.5 R0
+up and grows with the flare, which says the flare is being applied there
+and not at the ground. So: where is the ground?
+
+      ground surface under the foot   y = 0.000
+      trunk base                      y = 0.380  = 1.90 trunk radii
+      roots leave the trunk at        y = 0.35 to 0.46, 1.75 to 2.28 R0
+      root tips                       y = -0.28, below ground
+
+**The trunk begins nearly two trunk radii in the air.** `sprout` has
+`p0 = [0, Q.perch * R0, 0]` with `perch` 1.9, so the tree is perched, and
+every root leaves the trunk up there and runs down to the ground. The only
+wood between the collar and the ground is the descending legs: that is the
+waist. The collar's flare swells in mid-air: that is the bulge. A swollen
+knot held above the ground on radiating legs is the growth read, and it is
+why three rounds aimed at paths, counts and girths all missed.
+
+The perch is a shape put in. It is there so the roots have somewhere
+visible to be, which is the same reasoning that gives a hand-placed
+profile, and the brief rules it out: every form has to come out of a rule.
+What should lift a trunk off the ground is its own flare -- wood piling up
+where it meets the ground -- not a number that holds it up.
+
+Retracting the prediction above: lengthening the flare was the wrong
+change, made on the wrong cause. The flare has no length worth having
+*and* it is in the wrong place; the second is what matters.
+
+**Prediction, before the change.** Bringing the perch down puts the collar
+at the ground, so the flare swells where the tree meets the ground rather
+than in the air. I expect the waist to go and the base to become widest at
+the ground and narrow upward. What I am unsure of: at perch 0 the roots may
+end up entirely buried and the foot may read as a post pushed into mud, in
+which case what lifts the trunk has to come from the flare itself and the
+flare's length becomes the next rule after all -- in the right place this
+time.

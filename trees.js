@@ -615,8 +615,14 @@
   // rule, and `share` is its main number (small: a leader with side shoots; a half: even forks and no leader).
   // Returns { strands, trunk, limbs } for grow(), and what it made (shoots, tips, deepest).
   function sprout(rule) {
-    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true, feet: 8, lap: 0.3, ground: null, site: [0, 0], roots: 0.55, perch: 0.7, uneven: 0.95 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
-    const length = (c) => Q.reach * (Q.twig + Math.sqrt(c / n)), Gq = Q.ground, inside = (p) => Math.abs(p[0]) < 0.9 && Math.abs(p[2]) < 0.9 && p[1] < 1.9 && (Gq ? Gq(p[0], p[1], p[2]) > 0.12 : p[1] > 0.3), laid = [];   // every point of every shoot so far
+    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true, feet: 8, lap: 0.3, ground: null, site: [0, 0], roots: 0.55, clear: 0.6, perch: 0, uneven: 0.95 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
+    const length = (c) => Q.reach * (Q.twig + Math.sqrt(c / n)), Gq = Q.ground, clearH = Q.clear * Q.foot;
+    // How close to the ground a shoot may grow. It was 0.12, an absolute distance, which does not scale: on a
+    // tree of half the girth it is twice the bar, and it was what stopped the trunk from standing on the ground
+    // at all. A share of the trunk's own width instead. `soft` is for the leader's first stretch: the tree
+    // starts at the ground and has to climb out of its own flare, and nothing else is let inside that.
+    const inside = (p, soft) => Math.abs(p[0]) < 0.9 && Math.abs(p[2]) < 0.9 && p[1] < 1.9 && (Gq ? Gq(p[0], p[1], p[2]) > (soft ? 0 : clearH) : p[1] > (soft ? 0 : 0.3));
+    const laid = [];   // every point of every shoot so far
     const open = (p) => { let d = Gq ? Math.max(0, Gq(p[0], p[1], p[2])) * 1.2 : 9; for (const q of laid) d = Math.min(d, H(p[0] - q[0], p[1] - q[1], p[2] - q[2])); return d; };   // (open: far from every shoot, and from the ground and any rock)
     let shoots = 0, tips = 0, deepest = 0;
     const shoot = (p, d, c, len, depth, lead) => {
@@ -626,7 +632,7 @@
       while (gone < len) {
         w = w.map((v) => 0.6 * v + 0.4 * (2 * r() - 1)); const al = dot(w, d), lift = Q.up * (lead ? 0.4 : 1);
         d = unit(d.map((v, k) => v + st * (Q.wander * (Q.kink ? 0.25 : 1.6) * (w[k] - d[k] * al) + (Q.kink ? 0 : lift) * (UP[k] - v * d[1]))));
-        const q = p.map((v, k) => v + d[k] * st); if (!inside(q) && pts.length >= 2) break; p = q; gone += st; pts.push(p); laid.push(p);
+        const q = p.map((v, k) => v + d[k] * st); if (!inside(q, lead && gone < Q.first * len) && pts.length >= 2) break; p = q; gone += st; pts.push(p); laid.push(p);
         if (c >= 2 && gone >= next && gone >= node && len - gone > 0.15) {
           const k = Math.max(1, Math.min(c - 1, Math.round(Q.share * c * (0.7 + 0.6 * r())))), kl = length(k), th = Q.spread * (0.75 + 0.5 * r()), T = d, N = unit(cross(T, Math.abs(T[1]) < 0.9 ? UP : [1, 0, 0])), B = cross(T, N);
           let best = null; for (let e = 0; e < 6; e++) { const ph = phase + turnN * GA + e * TAU / 6 + 0.5 * (r() - 0.5), side = N.map((v, j) => v * Math.cos(ph) + B[j] * Math.sin(ph)), dir = unit(T.map((v, j) => v * Math.cos(th) + side[j] * Math.sin(th))), probe = p.map((v, j) => v + dir[j] * kl * 0.6);

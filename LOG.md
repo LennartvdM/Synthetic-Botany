@@ -4909,3 +4909,27 @@ with the surface smoothed as it is, a near-square section reads as a
 tube... The section wasn't the thing. The length of the faces, and
 whether they touch the ground, were." I re-derived and re-ran that whole
 experiment this session without reading back.
+
+### Snaking: it is the swing flipping, not the swing being stronger
+
+The open request from the girth round -- "the roots need more turns, or
+at least some of them, it really has to snake" -- was still untouched.
+
+The machinery was already there. At each knuckle a nine-way fan of angles
+is scored, `P.snake` biases the turn toward the hand the root is
+currently swinging to, `P.kink` penalises going straight, and `hold`
+decides how often that hand changes.
+
+Raising `snake` is the obvious move and it is wrong: it pushes every
+corner the same way, so the root **corkscrews**. At 1.8 the roots coil
+round the trunk in a tight spiral instead of spreading. Snaking is turns
+that ALTERNATE, which is `hold`, and `hold` was hardcoded.
+
+`swap` scales it, 1 being what it was. At 0.4 the swing changes hand
+about twice as often: on the cliff a root zigzags down the face, and on
+the boulder the tree straddles the rock on bent kinked legs that grip
+over it and reach the ground.
+
+Path only, so the girth budget should not move, and it does not -- worst
+ring share across the nine trees 0.36, against 0.37 before and the
+round's standard of 0.40.

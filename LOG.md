@@ -4742,3 +4742,65 @@ wood going up the trunk rather than a skirt lying round it.
 **Noted, not chased:** a broad blue patch in the layer view is bark
 covering one whole face of the trunk, which is not what bark should read
 as. Separate from the roots.
+
+## The ground was lying on top of the evidence
+
+The viewer's floor was opaque, so every judgement in this thread was made
+with half the root system hidden under a disc. `soil` takes the floor
+away and colours what is beneath it: buried wood cold and dark, wood in
+the air its own colour. Nothing about the tree changes.
+
+One render with it found the fault that had defeated everything else.
+
+      hug = rad * (legHug - P.bury * sf - ...)
+
+**Burying was measured in root radii, not depth.** A root of radius 0.03
+at `bury` 1.5 went down 0.045 units. Every root skimmed the surface with
+only its underside beneath it, and the whole root system was a shallow
+disc lying in the ground plane. That is why the base kept reading flat
+whatever was done to girth, band width, collar, section or count: none of
+them can move a root pinned to within its own thickness of the surface.
+
+A depth in the ground is a depth in the ground, measured against the
+trunk's radius, which is the tree's own scale.
+
+      bury 1.5 (root radii) -> 0.6 (trunk radii)
+
+      0.3   roots still shallow, the descent barely reads
+      0.6   out, then down; the descent reads as travel
+      1.0   near-vertical plunges, ending abruptly: crab-like
+
+The depth alone emptied the foot, because roots now leave the ball
+downward instead of spreading inside it:
+
+      grip 1.0, before the depth fix   fill 0.234 to 0.288   4 flagged
+      grip 1.0, after                  fill 0.226 to 0.256   1 flagged
+      grip 0.9, after                  fill 0.179 to 0.224   none
+
+### Retracted: the buttress rule added wood
+
+I justified it as moving wood rather than adding it, then changed its
+numbers twice without re-checking that claim. At 0.88 width by 2.2 height
+by 1.7 depth the section is nearly double. plate.js caught it -- fill
+went from 2 flagged to 4 -- which is the first time in this session a
+measure corrected me rather than the reverse. Back to 0, kept in the code
+with the finding.
+
+Also overshot twice in opposite directions before that: at a 1.1 height
+boost the collar was a shelf, at 3.2 it was thin wavy fins. Both because
+the narrowing stayed at 0.55 of the cord while only the height moved, so
+every bit of height bought thinness.
+
+### Where the roots are now
+
+      feet 8 -> 5, roots 0.9 -> 1.1, grip 1.0 -> 0.9, bury in trunk radii
+
+      leaving     6 to 7 (3 wires)  ->  4 to 5 (2 wires)
+      fill        0.249 to 0.254    ->  0.179 to 0.224, none flagged
+      girth       .163 .083 .048 .024 .014 along a root
+      section     every root a fin on edge, 0.29 to 0.88 across over up
+
+Still open: ~0.2% of wood adrift in about 50 specks, mostly buried root
+tips and long-standing; root 17 runs buried inside another root's body;
+bark covers one whole face of the trunk; pages 10 and 11 and the other
+page-9 trees have not been looked at since any of this.

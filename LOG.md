@@ -5109,3 +5109,22 @@ branchlet and everything on it can sway as one.
 Still to do: the branchlets sprout anywhere the wood is thin enough,
 including low on the trunk where a tree would have shed them; the sprigs
 want clustering rather than even spacing; and the LOD chain is untouched.
+
+### A branchlet obeys its branch
+
+They were sprouting broadside and then wandering. The seat weighted the
+parent's tangent at 0.35 to 0.75 against 0.9 of lateral, so a branchlet
+left the branch sideways, and inside `grow` it turned by up to 0.22 a
+step with no memory of where it set out. A wire stuck into a branch, not
+a continuation of it.
+
+      seat     along the branch first, out from it second:
+               tangent x `lean` 1.25, lateral x `out` 0.4
+      growth   `hold` 0.55 pulls back toward the direction it set out on
+               every step, so it keeps its line; `wander` 0.22 -> 0.1
+      fork     carries on the way the branchlet was already going,
+               leaning off it rather than turning across it
+
+The canopy now follows the branch structure -- each branch's trajectory
+reads as continuing out through its own foliage -- instead of being a
+ball of wires with a tree inside it.

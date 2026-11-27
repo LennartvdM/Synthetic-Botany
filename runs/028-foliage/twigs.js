@@ -21,6 +21,7 @@
 
   function build(tree, opt) {
     const o = Object.assign({ from: 0.34, every: 0.07, len: 0.3, fork: 2, droop: 0.42, seg: 6,
+      lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
       sprigs: 5, size: 0.055, wide: 0.011, seed: 23, R0: 0.2 }, opt);
     const r = rng(o.seed * 374761393);
 
@@ -47,7 +48,9 @@
       const n = o.seg, pts = [p.slice()];
       for (let i = 1; i <= n; i++) {
         const u = i / n;
-        d = unit([d[0] + (r() - 0.5) * 0.22, d[1] - o.droop * u * 0.5 + (r() - 0.5) * 0.12, d[2] + (r() - 0.5) * 0.22]);
+        // it holds the line it set out on -- `hold` pulls back toward d0 every step -- so a branchlet reads as a
+        // continuation of its branch and not as a wire stuck into it. Only droop and a little noise bend it.
+        d = unit([0, 1, 2].map((c) => d[c] + o.hold * (d0[c] - d[c]) + (r() - 0.5) * o.wander - (c === 1 ? o.droop * u * 0.5 : 0)));
         p = [p[0] + d[0] * L / n, p[1] + d[1] * L / n, p[2] + d[2] * L / n];
         pts.push(p.slice());
       }
@@ -56,7 +59,8 @@
         const at = 2 + Math.floor(r() * (n - 3));
         const side = unit(cross3(d, Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0]));
         const ph = r() * Math.PI * 2;
-        const away = unit([0, 1, 2].map((i) => d[i] * 0.55 + (side[i] * Math.cos(ph) + cross3(d, side)[i] * Math.sin(ph)) * 0.85));
+        // a fork carries on the way the branchlet was already going, leaning off it rather than turning across it
+        const away = unit([0, 1, 2].map((i) => d[i] * 1.15 + (side[i] * Math.cos(ph) + cross3(d, side)[i] * Math.sin(ph)) * 0.42));
         grow(pts[at], away, L * (0.52 + 0.22 * r()), depth + 1, t0 + at / n);
       }
     };
@@ -64,7 +68,9 @@
       if (r() > s.grow) continue;
       const side = unit(cross3(s.d, s.o));
       const ph = r() * Math.PI * 2;
-      const out = unit([0, 1, 2].map((i) => s.d[i] * (0.35 + 0.4 * r()) + s.o[i] * Math.cos(ph) * 0.9 + side[i] * Math.sin(ph) * 0.9));
+      // along the branch first, out from it second: the trajectory of the core branch is what a branchlet obeys
+      const out = unit([0, 1, 2].map((i) => s.d[i] * o.lean * (0.8 + 0.5 * r())
+        + (s.o[i] * Math.cos(ph) + side[i] * Math.sin(ph)) * o.out * (0.6 + 0.8 * r())));
       grow(s.p, out, o.len * (0.7 + 0.6 * r()), 0, 0);
     }
     if (!paths.length) return { stem: null, leaf: null, twigs: 0, sprigs: 0 };

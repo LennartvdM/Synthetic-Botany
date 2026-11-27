@@ -33,13 +33,14 @@ g.Fantastic.fields.forEach((f, ti) => {
   const seen = new Int32Array(NX * NY * NZ).fill(-1), sizes = [], stack = new Int32Array(total + 16);
   let grp = 0;
   for (let a = 0; a < sol.length; a++) { if (!sol[a] || seen[a] >= 0) continue;
-    let sp2 = 0, cnt = 0; stack[sp2++] = a; seen[a] = grp;
+    let sp2 = 0, cnt = 0, cx = 0, cy = 0, cz = 0; stack[sp2++] = a; seen[a] = grp;
     while (sp2) { const c = stack[--sp2]; cnt++;
       const k = c % NZ, i = ((c - k) / NZ) % NX, j = ((c - k) / NZ - i) / NX;
+      cx += x0 + (i + 0.5) * STEP; cy += y0 + (j + 0.5) * STEP; cz += z0 + (k + 0.5) * STEP;
       const push = (ii, jj, kk) => { if (ii < 0 || jj < 0 || kk < 0 || ii >= NX || jj >= NY || kk >= NZ) return;
         const d = (jj * NX + ii) * NZ + kk; if (sol[d] && seen[d] < 0) { seen[d] = grp; stack[sp2++] = d; } };
       push(i + 1, j, k); push(i - 1, j, k); push(i, j + 1, k); push(i, j - 1, k); push(i, j, k + 1); push(i, j, k - 1); }
-    sizes.push({ cnt, lay: lay[a] }); grp++; }
+    sizes.push({ cnt, lay: lay[a], at: [cx / cnt, cy / cnt, cz / cnt] }); grp++; }
   sizes.sort((a, b) => b.cnt - a.cnt);
   const loose = sizes.slice(1), lost = loose.reduce((s, v) => s + v.cnt, 0);
   // what the loose pieces are made of: 0 band, 1 fine or torn, 2 sliver or shell plate, 3 bark, 4 scar, 6 root, 7 root off a root
@@ -49,4 +50,9 @@ g.Fantastic.fields.forEach((f, ti) => {
     ' bodies ' + String(sizes.length).padStart(3) + '   adrift ' + (lost / total * 100).toFixed(2) + '% of the wood' +
     (loose.length ? '   made of ' + Object.entries(byLayer).sort((a, b) => b[1] - a[1]).map(([k, v]) => v + ' ' + (NAME[k] || ('layer ' + k))).join(', ') +
       '   largest ' + loose.slice(0, 4).map((v) => (v.cnt / total * 100).toFixed(2) + '%').join(' ') : ''));
+  // where they are: height above the ground and distance from the trunk's axis, both in trunk radii
+  if (loose.length) { const R0 = foot[3];
+    const hi = loose.filter((o) => o.at[1] > 1.2).length, low = loose.filter((o) => o.at[1] <= 1.2).length;
+    console.log('             of those, ' + low + ' below 1.2 and ' + hi + ' above; first eight at (height, out) in trunk radii: ' +
+      loose.slice(0, 8).map((o) => '(' + (o.at[1] / R0).toFixed(1) + ', ' + (Math.hypot(o.at[0] - foot[0], o.at[2] - foot[2]) / R0).toFixed(1) + ')').join(' ')); }
 });

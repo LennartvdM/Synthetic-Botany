@@ -4830,3 +4830,52 @@ have the same idea I did.
 The honest fix is further back: the strands should not disperse at the
 foot at all. That is the `feet` family design, and it is a bigger change
 than anything in this round.
+
+## Reverted to b47ef12
+
+Everything in trees.js and the page files since `b47ef12` is reverted.
+Days of work on the roots made them worse, not better: a bulging foot
+spilling into bulging roots, which is the fault that was being complained
+about at the start of it.
+
+What went wrong, so it is not repeated:
+
+**The test case was degenerate.** Page 9's trees stand on `level`, a flat
+plane going on forever. Nearly every rule that makes a root interesting
+here is a rule about answering to ground -- seams, lips, nooks, the bite,
+going without where another body is ahead, gripping an edge. On a
+featureless plane none of them fire, and what is left is a root lying
+down. I read that as a fault and invented rule after rule to fix it:
+collar, skirt, elbow fill, band width, an edgewise buttress section, a
+heave, roots leaving at their own height. Four were tried and reverted.
+The flat sheets at the foot turned out to be load-bearing. Meanwhile the
+trees on real ground -- page 11's cliffs, boulders, cracked rock -- were
+fine the whole time and I never once looked at them.
+
+**And the method was wrong.** Work was fired off in the background and
+picked up later with the reasoning cold, so four rules in a row were
+changed on a hunch rather than on evidence, and each miss cost a full
+render cycle to discover.
+
+Kept, because they are tools and not rules:
+
+      runs/024-section   cuts across a root, drawn at true size
+      runs/025-flare     the foot on a vertical plane
+      runs/026-whole     is the organism one body
+      runs/021-girth     the linter, which had the bug it was written to
+                         catch: it returned early when the code before a
+                         comment ended in `;`, which is the shape of all
+                         nine accidents
+      sketchbook9.html   colour by layer and by strand, and `soil`, which
+                         takes the floor away and colours buried wood --
+                         an opaque floor hides the half of a root system
+                         the work is about
+
+Two real bugs were found and are lost in the revert, because at b47ef12
+the code they are in never runs (`bury` is 0 and level ground has no soft
+channel). Recorded here so they can be put back if that changes:
+
+      the burying term, and the vertical wave on a root's run, are both
+      scaled by the ROOT's own radius rather than a depth, so a root of
+      radius 0.03 descends 0.045 and undulates by 0.01. Nothing can move
+      a root off the plane while that is true.

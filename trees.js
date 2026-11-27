@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, sinew: 0.17, apart: 1, bury: 0.6, under: 0.5, wave: 0.5, forgive: 0.22, rank: 2.6, slack: 0.11, press: 1.3, forkBy: 0.42, clearFoot: 2.1, weave: 1, kink: 1.1, swallow: 0.95, bridge: 2.2, toe: 0.7, tip: 0.15, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 5, cling: 0.88, rise: 0, grip: 0.9, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, sinew: 0.17, apart: 1, bury: 0, forgive: 0.22, rank: 2.6, slack: 0.11, press: 1.3, forkBy: 0.42, clearFoot: 2.1, weave: 1, kink: 1.1, swallow: 0.95, bridge: 2.2, toe: 0.13, tip: 0.26, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 3, cling: 0.88, grip: 0.6, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, softAt = G && G.soft && P.bury ? G.soft : null, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -117,9 +117,9 @@
       // `flare`, under half a trunk's width. (A long smooth cone from trunk to tip is a carrot, not a root.)
       const sp1 = TAU * rw(), sl1 = 0.075 + 0.06 * rw(), sp2 = TAU * rw(), sl2 = 0.2 + 0.15 * rw();
       const sinew = (far) => 1 + P.sinew * (0.62 * Math.sin(sp1 + TAU * far / sl1) + 0.38 * Math.sin(sp2 + TAU * far / sl2));
-      const girth = (g, far) => sinew(far) * rho0 * (collar ? P.grip * (1 + (P.collar - 1) * Math.pow(Math.max(0, 1 - far / P.flare), 1.6)) : 1) * (1 - P.waste * g) * (Math.pow(Math.min(1, (1 - g) / P.toe), 0.7) * (1 - P.tip) + P.tip);
+      const girth = (g, far) => sinew(far) * rho0 * (collar ? P.grip * (1 + (P.collar - 1) * Math.pow(Math.max(0, 1 - far / P.flare), 1.6)) : 1) * (1 - P.waste * g) * (dives ? 1 : Math.pow(Math.min(1, (1 - g) / P.toe), 0.7) * (1 - P.tip) + P.tip);
       const room = (pr, own) => { if (Math.abs(pr[0]) > 0.97 || Math.abs(pr[2]) > 0.97) return 0; let near = 0.22; for (const q of rootPts) near = Math.min(near, H(pr[0] - q[0], pr[1] - q[1], pr[2] - q[2])); for (let e = 0; e < own; e++) near = Math.min(near, H(pr[0] - rx[e][0], pr[1] - rx[e][1], pr[2] - rx[e][2])); return near; };
-      for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = girth(g, gone), nn = gradG(pos[0], pos[1], pos[2]), nk = Math.min(1.4, nook(pos, nn) * P.seams), sf = softAt ? Math.max(0, Math.min(1, softAt(pos[0], pos[1], pos[2]))) * sstep(0, P.under, g) : 0, hug = rad * (legHug - P.knuckle * 0.6 * Math.max(0, 1 - since / 2.5)) - P.trunk[0][3] * P.bury * sf + P.trunk[0][3] * P.wave * Math.sin(wob * 1.7 + TAU * gone / (wl * 1.3)) - rad * P.seam * Math.max(0, nk) + rad * 0.5 * Math.max(0, Math.min(1, -nk)) - rad * P.bite * Math.max(0, 1 - Math.abs(nn[1]) - 0.45) / 0.3 * Math.max(hooked, Math.max(0, Math.min(1, nk)), 0.5 * Math.max(0, Math.sin(wob * 2 + TAU * gone / (wl * 0.55)))), want = c0 + (hug - c0) * sstep(0, P.dive + P.slant * steepness * Math.max(0, c0), gone) - (dives ? 0.3 * sstep(0.72, 1, g) : 0);
+      for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = girth(g, gone), nn = gradG(pos[0], pos[1], pos[2]), nk = Math.min(1.4, nook(pos, nn) * P.seams), sf = softAt ? Math.max(0, Math.min(1, softAt(pos[0], pos[1], pos[2]))) : 0, hug = rad * (legHug - P.bury * sf - P.knuckle * 0.6 * Math.max(0, 1 - since / 2.5)) - rad * P.seam * Math.max(0, nk) + rad * 0.5 * Math.max(0, Math.min(1, -nk)) - rad * P.bite * Math.max(0, 1 - Math.abs(nn[1]) - 0.45) / 0.3 * Math.max(hooked, Math.max(0, Math.min(1, nk)), 0.5 * Math.max(0, Math.sin(wob * 2 + TAU * gone / (wl * 0.55)))), want = c0 + (hug - c0) * sstep(0, P.dive + P.slant * steepness * Math.max(0, c0), gone) - (dives ? 0.3 * sstep(0.72, 1, g) : 0);
         let tt = h.map((v, k) => v - nn[k] * dot(h, nn)); const dn = UP.map((v, k) => -(v - nn[k] * nn[1])), dl = H(dn[0], dn[1], dn[2]); if (H(tt[0], tt[1], tt[2]) < 0.2) tt = dl > 1e-6 ? dn : cross(nn, [1, 0, 0]); tt = unit(tt);
         // On a face it cannot lie on, a root does not hang down it: it braces. It works across the fall line in
         // runs, turning hard at the end of each so the turns are corners and not a curve, and it bites in — it is
@@ -310,21 +310,13 @@
       // its root: the strand itself coming down from the foot of the trunk the way it faces there, heavy, and
       // most often going into the ground. A few stay on it and run out to a point.
       // (on ground nearly all roots go into it at their end; the old flat roots are left as they were)
-      // A root leaves the trunk at its own height, not all of them together at the ground. Upward this rule is
-      // already here: a family's members join the lead at a different height each, so the wood divides all the
-      // way up and there is no waist. Downward nothing did it -- every root began at the foot, so they left in
-      // one sheet at one level and lay side by side on the ground. Drawn per strand, over `rise` trunk radii,
-      // the ones that leave high run down and out while the ones that leave low hold the axis, and the envelope
-      // of the two is the flare. The trunk is not widened anywhere; the flare is what the roots leaving make.
-      const upBy = Math.min(Math.max(0, X.length - 6), Math.round(P.rise * R0 * (r() * r()) / ds));
-      if (upBy > 0) { X.splice(0, upBy); goal.splice(0, upBy); rho.splice(0, upBy); hold.splice(0, upBy); }
       const p0 = X[0], a0 = toClump(Math.atan2(p0[2] - trunk[0][2], p0[0] - trunk[0][0])), away = G ? [Math.cos(a0), 0, Math.sin(a0)] : H(p0[0] - trunk[0][0], p0[2] - trunk[0][2]) > 1e-4 ? unit([p0[0] - trunk[0][0], 0, p0[2] - trunk[0][2]]) : [1, 0, 0], len = P.roots * (0.5 + 0.5 * r()) * (0.7 + 0.3 * (s.rank || 1)), bend = 2.6 * (r() - 0.5), dives = r() < (G ? 0.9 : 0.75), rx = [], rr = [], rg = []; let q = p0, Kr = Math.max(6, Math.round(len / ds));
       if (!G) {
         for (let m = 1; m <= Kr; m++) { const g = m / Kr, t = bend * g * g, dir = [away[0] * Math.cos(t) - away[2] * Math.sin(t), 0, away[0] * Math.sin(t) + away[2] * Math.cos(t)], rad = rho[0] * (dives ? 0.5 + 0.5 * (1 - g) : 0.2 + 0.8 * Math.pow(1 - g, 0.8));
           q = [q[0] + dir[0] * ds, p0[1] + (rad * 0.6 - p0[1]) * sstep(0, 0.8, g) - (dives ? 0.35 * sstep(0.6, 1, g) : 0), q[2] + dir[2] * ds]; rx.push(q); rr.push(rad); rg.push(q); }
-      } else { s.dives = dives; const w = walk(p0, away, rho[0], len, dives, 1, s.rank || 1); for (let e = 0; e < w.rx.length; e++) { rx.push(w.rx[e]); rg.push(w.rx[e]); rr.push(w.rr[e]); rootPts.push(w.rx[e]); } Kr = rx.length; }
+      } else { const w = walk(p0, away, rho[0], len, dives, 1, s.rank || 1); for (let e = 0; e < w.rx.length; e++) { rx.push(w.rx[e]); rg.push(w.rx[e]); rr.push(w.rr[e]); rootPts.push(w.rx[e]); } Kr = rx.length; }
       s.root = Kr; s.K = Kr + X.length; const all = rx.reverse().concat(X), goals = rg.reverse().concat(goal);
-      s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho)); s.rhoGrown = Float64Array.from(s.rho);
+      s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho));
       // The shape a strand holds against tension is written in one frame all along it. A root's goal is the places
       // it was walked to; the trunk's is the bundle's centre line, which the strand stands off from. Read as one
       // frame, that step is a stretch, and the tension pulled the two apart: the join opened to four times a step,
@@ -607,11 +599,9 @@
         rho[j] = q.rho[i] + (q.rho[i + 1] - q.rho[i]) * u; if (gap) gap[j] = q.gap[i] + (q.gap[i + 1] - q.gap[i]) * u; O.push(unit([0, 1, 2].map((c) => q.O[i][c] + (q.O[i + 1][c] - q.O[i][c]) * u))); F.push(q.F[i] + (q.F[i + 1] - q.F[i]) * u); if (inner) inner.push(q.inner[u < 0.5 ? i : i + 1]); }
       for (let pass = 0; pass < 3; pass++) { const c = Float64Array.from(X); for (let j = 1; j < n - 1; j++) for (let e = 0; e < 3; e++) X[j * 3 + e] = 0.5 * c[j * 3 + e] + 0.25 * (c[(j - 1) * 3 + e] + c[(j + 1) * 3 + e]); }   // straight between the old points, then eased: this cannot loop
       let root = 0; if (q.root) { const at = L[Math.min(K - 1, q.root)]; root = Math.round((n - 1) * at / L[K - 1]); }
-      const grown = q.rhoGrown ? new Float64Array(n) : null;
-      if (grown) { let i2 = 0; for (let j = 0; j < n; j++) { const at = L[K - 1] * j / (n - 1); while (i2 < K - 2 && L[i2 + 1] < at) i2++; const u = Math.max(0, Math.min(1, (at - L[i2]) / ((L[i2 + 1] - L[i2]) || 1e-9))); grown[j] = q.rhoGrown[i2] + (q.rhoGrown[i2 + 1] - q.rhoGrown[i2]) * u; } }
-      return Object.assign({}, q, { X, rho, gap, O, F, inner, K: n, root, rhoGrown: grown || q.rhoGrown }); };
+      return Object.assign({}, q, { X, rho, gap, O, F, inner, K: n, root }); };
     if (P.fair !== false) for (let i = 0; i < S.length; i++) S[i] = fair(S[i]);
-    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, loop: !!s.loop, air: !!s.air, stem: s.stem === undefined ? -1 : s.stem, rootOf: s.rootOf === undefined ? -1 : s.rootOf, stub: s.limb >= 0 && limbs[s.limb] ? limbs[s.limb].L.stub || null : null, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam, rhoGrown: s.rhoGrown || null, dives: !!s.dives })).concat(threads), orb, marks: marks.map((v) => ({ c: v.c, a: v.a, e: v.e, r: v.r, d: v.d, kind: v.kind, limb: v.limb, asOrb: !!v.asOrb })), measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
+    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, loop: !!s.loop, air: !!s.air, stem: s.stem === undefined ? -1 : s.stem, rootOf: s.rootOf === undefined ? -1 : s.rootOf, stub: s.limb >= 0 && limbs[s.limb] ? limbs[s.limb].L.stub || null : null, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, marks: marks.map((v) => ({ c: v.c, a: v.a, e: v.e, r: v.r, d: v.d, kind: v.kind, limb: v.limb, asOrb: !!v.asOrb })), measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
   }
 
   // The tree's lines, grown and not given. A shoot carries some of the tree's strands. It grows in bouts: it runs
@@ -623,14 +613,8 @@
   // rule, and `share` is its main number (small: a leader with side shoots; a half: even forks and no leader).
   // Returns { strands, trunk, limbs } for grow(), and what it made (shoots, tips, deepest).
   function sprout(rule) {
-    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true, feet: 5, lap: 0.3, ground: null, site: [0, 0], roots: 1.1, clear: 0.6, perch: 0, uneven: 0.95 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
-    const length = (c) => Q.reach * (Q.twig + Math.sqrt(c / n)), Gq = Q.ground, clearH = Q.clear * Q.foot;
-    // How close to the ground a shoot may grow. It was 0.12, an absolute distance, which does not scale: on a
-    // tree of half the girth it is twice the bar, and it was what stopped the trunk from standing on the ground
-    // at all. A share of the trunk's own width instead. `soft` is for the leader's first stretch: the tree
-    // starts at the ground and has to climb out of its own flare, and nothing else is let inside that.
-    const inside = (p, soft) => Math.abs(p[0]) < 0.9 && Math.abs(p[2]) < 0.9 && p[1] < 1.9 && (Gq ? Gq(p[0], p[1], p[2]) > (soft ? 0 : clearH) : p[1] > (soft ? 0 : 0.3));
-    const laid = [];   // every point of every shoot so far
+    const Q = Object.assign({ strands: 18, seed: 1, share: 0.35, every: 0.1, first: 0.25, spread: 1.3, up: 0.4, wander: 0.5, reach: 1.15, tall: 1.1, twig: 0.22, foot: 0.2, step: 0.08, kink: 0.7, bout: 0.16, set: 0.8, snap: 0, as: 'mixed', least: 2, most: 0.25, regrow: true, feet: 8, lap: 0.3, ground: null, site: [0, 0], roots: 0.55, perch: 1.9, uneven: 0.95 }, rule), r = rng(Q.seed + 700), n = Q.strands, st = Q.step;
+    const length = (c) => Q.reach * (Q.twig + Math.sqrt(c / n)), Gq = Q.ground, inside = (p) => Math.abs(p[0]) < 0.9 && Math.abs(p[2]) < 0.9 && p[1] < 1.9 && (Gq ? Gq(p[0], p[1], p[2]) > 0.12 : p[1] > 0.3), laid = [];   // every point of every shoot so far
     const open = (p) => { let d = Gq ? Math.max(0, Gq(p[0], p[1], p[2])) * 1.2 : 9; for (const q of laid) d = Math.min(d, H(p[0] - q[0], p[1] - q[1], p[2] - q[2])); return d; };   // (open: far from every shoot, and from the ground and any rock)
     let shoots = 0, tips = 0, deepest = 0;
     const shoot = (p, d, c, len, depth, lead) => {
@@ -640,7 +624,7 @@
       while (gone < len) {
         w = w.map((v) => 0.6 * v + 0.4 * (2 * r() - 1)); const al = dot(w, d), lift = Q.up * (lead ? 0.4 : 1);
         d = unit(d.map((v, k) => v + st * (Q.wander * (Q.kink ? 0.25 : 1.6) * (w[k] - d[k] * al) + (Q.kink ? 0 : lift) * (UP[k] - v * d[1]))));
-        const q = p.map((v, k) => v + d[k] * st); if (!inside(q, lead && gone < Q.first * len) && pts.length >= 2) break; p = q; gone += st; pts.push(p); laid.push(p);
+        const q = p.map((v, k) => v + d[k] * st); if (!inside(q) && pts.length >= 2) break; p = q; gone += st; pts.push(p); laid.push(p);
         if (c >= 2 && gone >= next && gone >= node && len - gone > 0.15) {
           const k = Math.max(1, Math.min(c - 1, Math.round(Q.share * c * (0.7 + 0.6 * r())))), kl = length(k), th = Q.spread * (0.75 + 0.5 * r()), T = d, N = unit(cross(T, Math.abs(T[1]) < 0.9 ? UP : [1, 0, 0])), B = cross(T, N);
           let best = null; for (let e = 0; e < 6; e++) { const ph = phase + turnN * GA + e * TAU / 6 + 0.5 * (r() - 0.5), side = N.map((v, j) => v * Math.cos(ph) + B[j] * Math.sin(ph)), dir = unit(T.map((v, j) => v * Math.cos(th) + side[j] * Math.sin(th))), probe = p.map((v, j) => v + dir[j] * kl * 0.6);
@@ -687,10 +671,7 @@
   }
 
   // level ground at height 0, for a grown tree that is given no other. Marked, so that whoever draws the tree need not draw it.
-  // Level ground is soil. It said nothing about being soft, so `softAt` was null and a root on it could never go
-  // under: every root was pinned to the surface, and a bundle splaying open at the foot with nowhere to go but
-  // sideways is a flat disc. That was the plate. A ground that is nothing but ground is diggable everywhere.
-  const level = Object.assign((x, y, z) => y, { level: true, soft: () => 1 });
+  const level = Object.assign((x, y, z) => y, { level: true });
 
   const api = { grow, sprout };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Trees = api;

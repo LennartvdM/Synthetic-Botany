@@ -54,7 +54,7 @@
     // A round root cannot read as a buttress at a surface however it is buried: half of a round section is under
     // the ground, so what shows is always wider than it is tall. `butt` is how much of that edgewise section a
     // root has at its collar, fading out along the run. Area is near enough kept: 0.55 across for 2.1 up.
-    const butt = recipe.buttress === undefined ? 0.45 : recipe.buttress;
+    const butt = recipe.buttress === undefined ? 0 : recipe.buttress;
     const meet = (p, n, rho, qi, cap) => { let best = Infinity;
       for (const o of pts) { if (o[4] === qi) continue; const vx = o[0] - p[0], vy = o[1] - p[1], vz = o[2] - p[2], al = vx * n[0] + vy * n[1] + vz * n[2];
         if (al <= 0 || al > cap || al >= best) continue; const across = Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al)); if (across > rho + o[3]) continue; best = al + o[3] * 0.7; }

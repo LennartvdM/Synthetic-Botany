@@ -23,7 +23,7 @@
     const o = Object.assign({ from: 0.34, every: 0.07, len: 0.3, fork: 2, droop: 0.42, seg: 6,
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
       orders: 3, kids: 2, shrink: 0.56, open: 1.5, distal: 2.2,
-      sprigs: 5, size: 0.055, wide: 0.011, seed: 23, R0: 0.2 }, opt);
+      sprigs: 4, size: 0.062, wide: 0.011, seed: 23, R0: 0.2 }, opt);
     const r = rng(o.seed * 374761393);
 
     // where a branchlet may sprout: along a core branch, once the wood is thin enough to carry one
@@ -136,7 +136,7 @@
       for (let w = 0; w < 4; w++) {
         const sx = (w === 0 || w === 3) ? -1 : 1, sy = (w < 2) ? 0 : 1, k = v;
         for (let i = 0; i < 3; i++) {
-          lp[k * 3 + i] = L.p[i] + alongA[i] * sz * 1.5 * sy + across[i] * sz * 0.55 * sx;
+          lp[k * 3 + i] = L.p[i] + alongA[i] * sz * 1.7 * sy + across[i] * sz * 0.85 * sx;
           ln[k * 3 + i] = unit([0, 1, 2].map((j) => L.away[j] * 0.7 + face[j] * 0.3))[i];
           lc[k * 3 + i] = i === 0 ? L.u : i === 1 ? L.flut : L.phase;
         }

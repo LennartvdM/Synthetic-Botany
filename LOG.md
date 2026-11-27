@@ -5154,3 +5154,26 @@ Still to do: a few branchlets still sprout low on the trunk, where the
 shoot wood is thin near the foot and the distal weighting cannot see that
 it is low rather than far out. It wants a height or a light test beside
 the distance one.
+
+### Meagre sheets: the cell was mostly empty
+
+Not a direction problem. A sprig's leaves sat within a thirtieth of the
+cell's width of its midrib, so most of a 256-pixel cell was transparent
+and every sheet carried almost no ink. Overlapping more of them only
+thickened a scratchy texture; the sheet itself had nothing on it.
+
+      pairs     4 to 6   ->  6 to 9
+      leaf      ll 0.62 to 1.12 of reach, lw 11 to 19  ->  ll 0.88 to
+                1.23, lw 20 to 33, reaching most of the way out so
+                neighbours overlap and a sprig reads as continuous
+      depth     a darker sibling tucked behind each leaf, so a sprig has
+                some depth in it rather than one flat tone
+      card      1.5 x 1.1 of size  ->  1.7 x 1.7, the shape of its cell,
+                since a square sprig squeezed into a strip reads thinner
+                still
+
+Still a sprig and not a plume: six to nine pairs, not forty, and no
+underlay behind them.
+
+Size overshot once on the way -- at 0.1 with the filled cell the canopy
+swallowed the tree -- and sits at 0.062 with four sprigs a segment.

@@ -67,26 +67,29 @@ function paint(sh) { const col = sh.mesh.geometry.attributes.color.array, on = $
 // pale against dark wood as the references are. Drawn here because the repository has no texture assets; a real
 // one would be baked from geometry with a normal and a translucency map beside it.
 function frondAtlas() {
-  // A SPRIG, not a plume: a thin midrib with a handful of small leaves and a great deal of nothing. The cell used
-  // to hold a whole spray over a soft underlay, so one sheet did the work the plume is meant to do and fifteen of
-  // them overlapping came out as mush. Density belongs to the overlap and silhouette to the arrangement; a sheet
-  // only has to carry a few leaves. Four cells, of differing sparseness, so the overlap does not repeat.
+  // A sprig that FILLS its cell. It used to sit within a thirtieth of the cell's width of the midrib, so most of
+  // the cell was empty and every sheet came out meagre however many were overlapped. Still a sprig and not a
+  // plume -- six to nine pairs, not forty, and no underlay -- but the leaves are large, they reach most of the
+  // way out, and neighbours overlap so the sprig reads as continuous rather than as beads on a wire.
   const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
   const rnd = (() => { let s = 90210; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
   for (let cell = 0; cell < 4; cell++) {
-    const ox = (cell & 1) * 256, oy = (cell >> 1) * 256, pairs = 4 + (cell % 3);
-    x.strokeStyle = 'rgba(196,212,222,0.75)'; x.lineWidth = 2.2;
-    x.beginPath(); x.moveTo(ox + 128, oy + 246); x.lineTo(ox + 128, oy + 34); x.stroke();
+    const ox = (cell & 1) * 256, oy = (cell >> 1) * 256, pairs = 6 + (cell % 4);
+    x.strokeStyle = 'rgba(198,214,224,0.8)'; x.lineWidth = 3;
+    x.beginPath(); x.moveTo(ox + 128, oy + 250); x.lineTo(ox + 128, oy + 22); x.stroke();
     for (let i = 0; i < pairs; i++) {
-      const v = (i + 0.6) / (pairs + 0.5), y = oy + 240 - v * 200, reach = 86 * Math.pow(1 - v * 0.75, 0.8);
+      const v = (i + 0.45) / (pairs + 0.3), y = oy + 244 - v * 216, reach = 120 * Math.pow(1 - v * 0.62, 0.75);
       for (const sgn of [-1, 1]) {
-        if (rnd() < 0.12) continue;                       // a gap here and there, so the sprig is not a comb
-        const lean = 0.62 + 0.42 * rnd(), ll = reach * (0.62 + 0.5 * rnd()), lw = 11 + 8 * rnd();
-        const px = ox + 128 + sgn * reach * 0.34, py = y + (rnd() - 0.5) * 10;
-        const tone = 212 + Math.floor(rnd() * 38);
+        if (rnd() < 0.08) continue;
+        const lean = 0.5 + 0.4 * rnd(), ll = reach * (0.88 + 0.35 * rnd()), lw = 20 + 13 * rnd();
+        const px = ox + 128 + sgn * reach * 0.2, py = y + (rnd() - 0.5) * 12;
+        const tone = 214 + Math.floor(rnd() * 36);
         x.save(); x.translate(px, py); x.rotate(sgn * lean - Math.PI / 2);
-        x.fillStyle = 'rgb(' + (tone - 18) + ',' + tone + ',' + Math.min(255, tone + 8) + ')';
-        x.beginPath(); x.ellipse(ll * 0.3, 0, ll * 0.42, lw, 0, 0, Math.PI * 2); x.fill();
+        x.fillStyle = 'rgb(' + (tone - 20) + ',' + tone + ',' + Math.min(255, tone + 6) + ')';
+        x.beginPath(); x.ellipse(ll * 0.34, 0, ll * 0.46, lw, 0, 0, Math.PI * 2); x.fill();
+        // a darker sibling tucked behind, so a sprig has some depth in it rather than one flat tone
+        x.fillStyle = 'rgba(' + (tone - 54) + ',' + (tone - 34) + ',' + (tone - 24) + ',0.85)';
+        x.beginPath(); x.ellipse(ll * 0.24, lw * 0.5, ll * 0.33, lw * 0.72, 0.2, 0, Math.PI * 2); x.fill();
         x.restore();
       }
     }

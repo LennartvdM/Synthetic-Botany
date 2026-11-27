@@ -4473,3 +4473,42 @@ first sweep row was measuring that, and was reported before I caught it.
 Retracted. This is the ninth time a one-line edit in this file has been
 mangled by what surrounded it; the linter catches comments swallowing
 braces but had nothing to say about a dropped parenthesis.
+
+## The foot pinches where it should flare
+
+Taking the roots' girth down uncovered a mass at the foot, and the mass is
+not what it looked like from outside. `runs/025-flare/flare.js` cuts the
+tree on a vertical plane through its axis and draws what is solid; a
+companion sampling of horizontal slices gives the wood's area at each
+height. As an equivalent radius, in trunk radii:
+
+      at the ground           1.09
+      0.2 to 0.7 R0 above     0.74 to 0.77     a waist
+      1.76 R0 above           1.23             a bulge
+      2.9 R0 above            0.84
+
+The tree pinches at the ground and swells above it. A trunk is widest
+where it meets the ground and narrows from there up; this is an onion on a
+neck, with three to five roots radiating out of the neck. That is the
+growth read at the scale of the whole base, and no change to a single
+root's girth or to a band's width can reach it.
+
+The cause is the collar term of the same `girth` line:
+
+      P.grip * (1 + (P.collar - 1) * Math.pow(Math.max(0, 1 - far / P.flare), 1.6))
+
+`flare` is 0.07 against a trunk radius of 0.27, and `ds` is 0.035. So the
+multiplier falls from grip*collar = 1.2 to grip = 0.6 **in two steps**: the
+trunk hands its whole section to the roots across a tenth of its own
+radius, losing 64 percent of it on the way. Everything must neck there.
+There is no buttress because the flare has no length to be a buttress in.
+
+This is the ontology, not the drawing. A root does not begin at a line; a
+trunk becomes roots over a distance, and that distance is about the trunk's
+own width, not a thirtieth of it.
+
+**Prediction, before the change.** Lengthening the flare to the order of a
+trunk radius will take out the waist and the bulge above it, leaving the
+base widest at the ground and narrowing upward. It will not touch the root
+tips, which the taper already fixed, and it will not touch the flatness of
+a band.

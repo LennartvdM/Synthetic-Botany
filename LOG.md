@@ -4804,3 +4804,29 @@ Still open: ~0.2% of wood adrift in about 50 specks, mostly buried root
 tips and long-standing; root 17 runs buried inside another root's body;
 bark covers one whole face of the trunk; pages 10 and 11 and the other
 page-9 trees have not been looked at since any of this.
+
+### The sheets at the base are load-bearing
+
+The flat sheets are cream in the layer view: layer 0, trunk bands, not
+roots. And the band-width rule had a flaw of its own. It decided
+tile-versus-cord from `far`, a strand's distance from its bundle's axis,
+which cannot tell a strand WRAPPING a bundle from one that has dispersed.
+In the trunk `far` is large because the strand rides the bundle's edge --
+tile. At the foot `far` is large because the strands have splayed apart
+-- the opposite -- and the rule handed every one of them a wide tile.
+
+Asking it directly instead, by the gap to the nearest other strand, is
+the right question and gives a worse tree: **the base shreds**, a torn
+region where the surface has come apart. Those wide tiles are what holds
+the foot together as one body. Narrow them and the dispersed strands stop
+overlapping and leave gaps.
+
+So the sheets are not gratuitous, and this is not a drawing fault to be
+tuned away. The strands disperse at the foot and still have to make one
+surface; wide tiles are how. Reverted (`byNeighbour` 0), kept in the code
+with the finding, because the next person to look at those sheets will
+have the same idea I did.
+
+The honest fix is further back: the strands should not disperse at the
+foot at all. That is the `feet` family design, and it is a bigger change
+than anything in this round.

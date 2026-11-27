@@ -48,7 +48,7 @@
     // the width is right. Where the strand IS the body -- a root, a lone twig -- the tile has nothing to wrap and
     // just lies there, half again as wide as it is tall: a strap. So the width answers to how much of the body
     // the band has to cover. `free` already says which case it is. `cord` is the width when it covers all of it.
-    const byNbr = recipe.byNeighbour === undefined ? 1 : recipe.byNeighbour, cord = recipe.cord === undefined ? 0.85 : recipe.cord, cordAt = recipe.cordAt === undefined ? 1 : recipe.cordAt;
+    const byNbr = recipe.byNeighbour === undefined ? 0 : recipe.byNeighbour, cord = recipe.cord === undefined ? 0.85 : recipe.cord, cordAt = recipe.cordAt === undefined ? 1 : recipe.cordAt;
     // A buttress is a plate standing on edge. Near the trunk a root carries the whole leaning of the tree in one
     // plane, so its wood is tall and narrow there; further out, where it only pulls along itself, it is round.
     // A round root cannot read as a buttress at a surface however it is buried: half of a round section is under

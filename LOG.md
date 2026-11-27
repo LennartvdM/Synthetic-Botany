@@ -4422,3 +4422,54 @@ from trunk to tip and take the clubs off the ends. It will *not* fix the
 flatness: the width-to-height of a section is set by the band's `wide` and
 `high` in page 7, about 1.15 against 0.62, and no change to girth touches
 it. I expect tapering straps.
+
+### What the change did, against the prediction
+
+The exemption is gone and `toe` and `tip` are swept. One tree, five roots,
+girth at the tip over girth at the collar:
+
+      toe   tip     median   worst   roots ending over .45 of base
+      0.13  0.26     0.33    0.46    1 of 5      (the taper as it was, now reaching divers)
+      0.4   0.26     0.26    0.33    0
+      0.7   0.26     0.23    0.29    0
+      1.0   0.26     0.24    0.27    0
+      1.0   0.12     0.14    0.17    0
+      1.0   0.05     0.09    0.11    0
+      1.4   0.08     0.13    0.16    0
+
+`tip` sets how thin the end is; `toe` sets how early the fall starts and
+buys nothing past 1.0. The count of places where the girth rises along the
+run barely moves across the whole table, which is right: those are the
+sinew wave and the knuckle swells riding on the fall, and they are wanted.
+
+Chosen from the pictures, not the table: **toe 0.7, tip 0.15**. Below that
+the roots keep too little wood mid-run and read as fins; above it the ends
+are still stubby.
+
+The prediction held on both counts. The blunt ends are gone. The flatness
+is untouched -- the sections are still about half again as wide as they are
+tall, because that is what the band is.
+
+**What surprised me.** Thinning the roots did not just fix the ends, it
+uncovered a second mass. With fat roots the foot reads as a knot of legs
+and there is nothing to notice; at `tip` 0.05 the roots are thin enough
+that the foot behind them resolves into one smooth swollen dome. The dome
+was always there. The fat roots were hiding it.
+
+Colour by strand says what the dome is, and it is not an extra body. Each
+hue runs unbroken from a branch tip, down the trunk, and out into a root:
+one strand, the whole height of the tree. The foot is those same strands,
+each laying down a band, splayed side by side where they turn from trunk
+into root. There is no lump to take away. The mass *is* the bands being
+wide, which is the same fault as the flatness seen from further off.
+
+A third thing, noted and not yet chased: one strand's root leaves the trunk
+sideways at mid-height and stops blunt in the air. A root above the ground.
+
+**What broke.** Taking `(dives ? 1 : ...)` out took the brackets with it,
+so `* (1 - P.tip) + P.tip` stopped being the taper factor and started
+adding 0.26 to every girth -- a tenfold thickening on a root of 0.03. The
+first sweep row was measuring that, and was reported before I caught it.
+Retracted. This is the ninth time a one-line edit in this file has been
+mangled by what surrounded it; the linter catches comments swallowing
+braces but had nothing to say about a dropped parenthesis.

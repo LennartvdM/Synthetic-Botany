@@ -127,7 +127,8 @@ function addShape(i) {
       from: +(qs.get('from') || 0.34), every: +(qs.get('every') || 0.07), len: +(qs.get('len') || 0.3),
       fork: +(qs.get('fork') || 2), droop: +(qs.get('droop') || 0.42), sprigs: +(qs.get('sprigs') || 5),
       size: +(qs.get('size') || 0.055), wide: +(qs.get('wide') || 0.011),
-      lean: +(qs.get('lean') || 1.25), out: +(qs.get('out') || 0.4), hold: +(qs.get('hold') || 0.55), wander: +(qs.get('wander') || 0.1) });
+      lean: +(qs.get('lean') || 1.25), out: +(qs.get('out') || 0.4), hold: +(qs.get('hold') || 0.55), wander: +(qs.get('wander') || 0.1),
+      orders: +(qs.get('orders') || 3), kids: +(qs.get('kids') || 2), shrink: +(qs.get('shrink') || 0.56), open: +(qs.get('open') || 1.5), distal: +(qs.get('distal') || 2.2) });
     const hang = (buf, material, cast) => {
       if (!buf || !buf.idx.length) return;
       const g2 = new T.BufferGeometry();

@@ -22,6 +22,7 @@
   function build(tree, opt) {
     const o = Object.assign({ from: 0.34, every: 0.07, len: 0.3, fork: 2, droop: 0.42, seg: 6,
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
+      orders: 3, kids: 2, shrink: 0.56, open: 1.5, distal: 2.2,
       sprigs: 5, size: 0.055, wide: 0.011, seed: 23, R0: 0.2 }, opt);
     const r = rng(o.seed * 374761393);
 
@@ -34,6 +35,10 @@
         const p = [s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]];
         const step = H(p[0] - s.X[k * 3 - 3], p[1] - s.X[k * 3 - 2], p[2] - s.X[k * 3 - 1]);
         since += step; if (since < o.every) continue; since = 0;
+        // where along the branch: a tree carries its fine wood at the ends, not evenly down its length. Without
+        // this every branch is furred along its whole run and the tree is a hairy hand.
+        const tipness = (k - s.root) / Math.max(1, s.K - 1 - s.root);
+        if (r() > Math.pow(tipness, o.distal)) continue;
         const q = [s.X[k * 3 - 3], s.X[k * 3 - 2], s.X[k * 3 - 1]];
         seats.push({ p, d: unit([p[0] - q[0], p[1] - q[1], p[2] - q[2]]), o: s.O[k] || [0, 1, 0],
           grow: Math.min(1, (1 - rho / (o.from * o.R0)) * 1.3 + 0.25) });
@@ -55,13 +60,20 @@
         pts.push(p.slice());
       }
       paths.push({ pts, t0, t1: t0 + 1, depth });
-      if (depth < o.fork) {
-        const at = 2 + Math.floor(r() * (n - 3));
-        const side = unit(cross3(d, Math.abs(d[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0]));
-        const ph = r() * Math.PI * 2;
-        // a fork carries on the way the branchlet was already going, leaning off it rather than turning across it
-        const away = unit([0, 1, 2].map((i) => d[i] * 1.15 + (side[i] * Math.cos(ph) + cross3(d, side)[i] * Math.sin(ph)) * 0.42));
-        grow(pts[at], away, L * (0.52 + 0.22 * r()), depth + 1, t0 + at / n);
+      // The hierarchy. Each order is shorter than its parent and there are more of them, and they leave at a wider
+      // angle, so the thing opens out toward its end instead of running on as one wire. That is the burst: little
+      // at the base of a branchlet and a spray at the end of it.
+      if (depth + 1 < o.orders) {
+        const kids = depth === 0 ? o.kids : Math.max(1, o.kids - (r() < 0.35 ? 1 : 0));
+        for (let c = 0; c < kids; c++) {
+          const at = Math.max(1, Math.round(n * (0.45 + 0.5 * r())));
+          const dd = unit([pts[Math.min(n, at)][0] - pts[at - 1][0], pts[Math.min(n, at)][1] - pts[at - 1][1], pts[Math.min(n, at)][2] - pts[at - 1][2]]);
+          const side = unit(cross3(dd, Math.abs(dd[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0]));
+          const ph = (c / kids) * Math.PI * 2 + r() * 1.1;
+          const wide = o.out * o.open * (0.7 + 0.6 * r());
+          const away = unit([0, 1, 2].map((i) => dd[i] * 1.0 + (side[i] * Math.cos(ph) + cross3(dd, side)[i] * Math.sin(ph)) * wide));
+          grow(pts[at], away, L * o.shrink * (0.85 + 0.3 * r()), depth + 1, t0 + at / n);
+        }
       }
     };
     for (const s of seats) {
@@ -103,8 +115,10 @@
           sidx[b++] = q; sidx[b++] = q + 1; sidx[b++] = q + 2;
           sidx[b++] = q + 1; sidx[b++] = q + 3; sidx[b++] = q + 2; }
         // sprigs sit along the branchlet, not at its tip, and alternate sides as leaves do
-        if (i > 0 && i < N) for (let c = 0; c < o.sprigs; c++) if (r() < 0.5)
-          leafAt.push({ p: pa.pts[i], t, n, away, u, flut, phase, side: (c + i) % 2 ? 1 : -1, small: pa.depth > 0 });
+        // leaves ride the outer orders. An inner branchlet is structure; the mass belongs at the ends of it.
+        const share = pa.depth >= o.orders - 1 ? 1 : pa.depth === 0 ? 0.12 : 0.45;
+        if (i > 0 && i < N) for (let c = 0; c < o.sprigs; c++) if (r() < 0.5 * share)
+          leafAt.push({ p: pa.pts[i], t, n, away, u, flut, phase, side: (c + i) % 2 ? 1 : -1, small: pa.depth < o.orders - 1 });
       }
     }
 

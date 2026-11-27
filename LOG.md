@@ -5128,3 +5128,29 @@ a continuation of it.
 The canopy now follows the branch structure -- each branch's trajectory
 reads as continuing out through its own foliage -- instead of being a
 ball of wires with a tree inside it.
+
+### Hierarchy: the foliage bursts, instead of furring the wood
+
+Hairy hand palm. Branchlets of one length sprouted evenly along every
+core branch, so the tree was furred rather than massed. Two causes, both
+the absence of hierarchy:
+
+**Where.** Seats were placed wherever the wood was thin enough, evenly
+along the run. A tree carries its fine wood at the ENDS. `distal` 2.2
+weights a seat by how far along the branch it is, so the base of a branch
+is bare and its end is crowded.
+
+**What.** A branchlet was one order with a single fork. Now `orders` 3,
+each `shrink` 0.56 of its parent, `kids` 2 of them, leaving at `open` 1.5
+times the angle their parent did. Little at the base of a branchlet and a
+spray at the end of it -- the thing opens out instead of running on as
+one wire.
+
+And the leaves ride the outer orders: a share of 0.12 on the first, 0.45
+on the middle, all of it on the last. An inner branchlet is structure;
+the mass belongs at the ends of it.
+
+Still to do: a few branchlets still sprout low on the trunk, where the
+shoot wood is thin near the foot and the distal weighting cannot see that
+it is low rather than far out. It wants a height or a light test beside
+the distance one.

@@ -5081,3 +5081,31 @@ rather than being buried in it.
 Still off: the spray is too even, so a plume's silhouette is spiky where
 the references are soft and rounded, and a plume whose tip sits in open
 air floats free of the wood.
+
+### The branchlet level: the fine wood is flat
+
+The meshed branches are the CORE. Everything finer is flat -- a branchlet
+is a ribbon, two-dimensional in section, that sprouts from a core branch,
+forks a couple of times, droops under itself and carries sprigs along its
+length. A tree cannot afford tubes at that scale and does not need them:
+a twig against the sky is an edge and a silhouette, not a cylinder.
+
+This is the level that was missing all along, and it is why the plumes
+hung off the core tips floated free -- there was nothing between a thick
+horn and a leaf. `runs/028-foliage/twigs.js`.
+
+Sprigs sit ALONG the branchlets and alternate sides, rather than
+clustering at a tip, which is what gives the canopy depth: leaves at
+every distance from the viewer instead of in a shell.
+
+      core branch   meshed, as before
+      branchlet     a flat ribbon, forking twice, tapering, drooping
+      sprig         a small card on the branchlet, from the four-cell atlas
+
+Wind rides in the colour channels of both stems and sprigs -- R along the
+branchlet from its base, G a per-piece flutter, B a phase -- so a
+branchlet and everything on it can sway as one.
+
+Still to do: the branchlets sprout anywhere the wood is thin enough,
+including low on the trunk where a tree would have shed them; the sprigs
+want clustering rather than even spacing; and the LOD chain is untouched.

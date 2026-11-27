@@ -32,6 +32,7 @@ select:focus-visible { outline: 2px solid var(--pick); outline-offset: 1px; }
 <script src="sketch/page7.js"></script>
 <script src="runs/028-foliage/leaves.js"></script>
 <script src="runs/028-foliage/sprays.js"></script>
+<script src="runs/028-foliage/twigs.js"></script>
 <script src="runs/028-foliage/foliage.js"></script>
 <script>
 const T = THREE, $ = (id) => document.getElementById(id);
@@ -92,6 +93,7 @@ function frondAtlas() {
   }
   const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
 }
+const stemMat = new T.MeshStandardMaterial({ color: new T.Color(0x8e8375).convertSRGBToLinear(), side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.95, metalness: 0 });
 const frondMat = new T.MeshStandardMaterial({ map: frondAtlas(), alphaTest: 0.42, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.8, metalness: 0 });
 function leafAtlas() {
   const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
@@ -117,24 +119,27 @@ function addShape(i) {
   const s = Fantastic.build(i), g = new T.BufferGeometry(), col = new Float32Array(s.tone.length * 3);
   g.setAttribute('position', new T.BufferAttribute(s.pos, 3)); g.setAttribute('normal', new T.BufferAttribute(s.nrm, 3)); g.setAttribute('color', new T.BufferAttribute(col, 3)); g.setIndex(new T.BufferAttribute(s.idx, 1));
   const m = new T.Mesh(g, mat); m.castShadow = m.receiveShadow = true; scene.add(m);
-  // the plumes: one per branch tip, each a fan of bent tapering ribbons
+  // branchlets, flat, sprouting off the core branches, with sprigs along them
   const gr = (window.__grown || [])[i];
-  if (gr && window.Sprays) {
+  if (gr && window.Twigs) {
     const qs = new URLSearchParams(location.search);
-    const P = Sprays.build(gr, { R0: (window.__R0 || [0.2])[i], seed: 11 + i,
-      fan: +(qs.get('fan') || 7), len: +(qs.get('len') || 0.42), wide: +(qs.get('wide') || 0.1),
-      droop: +(qs.get('droop') || 0.3), spread: +(qs.get('spread') || 0.85),
-      flat: +(qs.get('flat') || 0.3), under: +(qs.get('under') || 0.3) });
-    if (P.count) {
-      const pg = new T.BufferGeometry();
-      pg.setAttribute('position', new T.BufferAttribute(P.pos, 3));
-      pg.setAttribute('normal', new T.BufferAttribute(P.nrm, 3));
-      pg.setAttribute('uv', new T.BufferAttribute(P.uv, 2));
-      pg.setAttribute('wind', new T.BufferAttribute(P.col, 3));
-      pg.setIndex(new T.BufferAttribute(P.idx, 1));
-      const pm = new T.Mesh(pg, frondMat); pm.castShadow = true; pm.receiveShadow = true; m.add(pm);
-      window.__strips = P.count; window.__plumes = P.plumes;
-    }
+    const W = Twigs.build(gr, { R0: (window.__R0 || [0.2])[i], seed: 23 + i,
+      from: +(qs.get('from') || 0.34), every: +(qs.get('every') || 0.07), len: +(qs.get('len') || 0.3),
+      fork: +(qs.get('fork') || 2), droop: +(qs.get('droop') || 0.42), sprigs: +(qs.get('sprigs') || 5),
+      size: +(qs.get('size') || 0.055), wide: +(qs.get('wide') || 0.011) });
+    const hang = (buf, material, cast) => {
+      if (!buf || !buf.idx.length) return;
+      const g2 = new T.BufferGeometry();
+      g2.setAttribute('position', new T.BufferAttribute(buf.pos, 3));
+      g2.setAttribute('normal', new T.BufferAttribute(buf.nrm, 3));
+      g2.setAttribute('uv', new T.BufferAttribute(buf.uv, 2));
+      g2.setAttribute('wind', new T.BufferAttribute(buf.col, 3));
+      g2.setIndex(new T.BufferAttribute(buf.idx, 1));
+      const mm = new T.Mesh(g2, material); mm.castShadow = cast; mm.receiveShadow = true; m.add(mm);
+    };
+    hang(W.stem, stemMat, true);
+    hang(W.leaf, frondMat, true);
+    window.__twigs = W.twigs; window.__sprigs = W.sprigs;
   }
   const tag = document.createElement('div'); tag.className = 'tag'; tag.textContent = s.name; $('tags').append(tag);
   shapes.push({ mesh: m, tag, centre: s.centre, tone: s.tone, layer: s.layer }); paint(shapes[shapes.length - 1]);

@@ -58,13 +58,19 @@
     // more it fills, eased in before the corner and out after it, and never further than there is free room
     // on that side (another strand, or an orb's room), so that nothing is made to pass through anything. Where
     // the bend is a split's join, the inside is the other half of the same body, and the fill is the crotch.
-    const gain = recipe.elbow === undefined ? 3 : recipe.elbow, pts = []; t.strands.forEach((q, qi) => { if (!q.thread) for (let i = 0; i < q.K; i++) pts.push([q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i], qi, q.fam]); });
+    const gain = recipe.elbow === undefined ? 3 : recipe.elbow, elbowFree = recipe.elbowFree === undefined ? 1 : recipe.elbowFree, pts = []; t.strands.forEach((q, qi) => { if (!q.thread) for (let i = 0; i < q.K; i++) pts.push([q.X[i * 3], q.X[i * 3 + 1], q.X[i * 3 + 2], q.rho[i], qi, q.fam]); });
     const roomToward = (p, n, want, rho, qi, fam) => { for (const o of pts) { if (o[4] === qi || (fam !== undefined && o[5] === fam)) continue; const d = [o[0] - p[0], o[1] - p[1], o[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dl > want + rho + o[3] + 0.02 || dot(d, n) < 0.3 * dl) continue; want = Math.min(want, Math.max(0, dl - rho - o[3] - 0.012)); }
       for (const o of rooms) { const q = to(o, p[0], p[1], p[2]), d = [q[0] - p[0], q[1] - p[1], q[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dot(d, n) > 0.3 * dl) want = Math.min(want, Math.max(0, dl - o.room - rho)); } return want; };
     const ease = t.strands.map((q, qi) => { const K = q.K, g = new Float64Array(K), dir = new Array(K).fill(null), room = new Float64Array(K).fill(9); if (q.thread || !gain || K < 7) return { g, dir };
       for (let i = 2; i < K - 2; i++) { const p = at(q, i), a = at(q, i - 2), b = at(q, i + 2), h = (H(b[0] - p[0], b[1] - p[1], b[2] - p[2]) + H(a[0] - p[0], a[1] - p[1], a[2] - p[2])) / 2 || 1e-9, T = tan(q, i);
         let kv = [0, 1, 2].map((j) => (a[j] + b[j] - 2 * p[j]) / (h * h)); const al = dot(kv, T); kv = kv.map((v, j) => v - T[j] * al); const kap = H(kv[0], kv[1], kv[2]), rho = q.rho[i]; if (kap * rho < 0.06) continue;
-        const n = kv.map((v) => v / kap); dir[i] = n; let want = rho * Math.min(1.5, gain * (kap * rho - 0.06));
+        const n = kv.map((v) => v / kap); dir[i] = n;
+        // The fill reaches toward whatever is near and stops a hair short of it. In the trunk that is the point:
+        // it is how a dozen strands fuse into one body. Along a root it is not -- a root's neighbour is another
+        // root, and filling to within a hair of it webs the two together, which is what made the foot a sheet.
+        // So the fill is for a body closing on itself, not for two bodies closing on each other.
+        const rootAt = q.rootOf >= 0 ? 1 : q.root > 0 ? 1 - sstep(q.root - 7, q.root - 2, i) : 0;
+        let want = rho * Math.min(1.5, gain * (kap * rho - 0.06)) * (1 - elbowFree * rootAt);
         for (const o of pts) { if (o[4] === qi || (q.fam !== undefined && o[5] === q.fam)) continue;
           const d = [o[0] - p[0], o[1] - p[1], o[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dl > want + rho + o[3] + 0.02 || dot(d, n) < 0.3 * dl) continue; want = Math.min(want, Math.max(0, dl - rho - o[3] - 0.012)); }
         for (const o of rooms) { const q = to(o, p[0], p[1], p[2]), d = [q[0] - p[0], q[1] - p[1], q[2] - p[2]], dl = H(d[0], d[1], d[2]); if (dot(d, n) > 0.3 * dl) want = Math.min(want, Math.max(0, dl - o.room - rho)); }

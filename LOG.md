@@ -5057,3 +5057,27 @@ structure between the grown branch and the plume, which this tree has not
 got; a baked frond atlas with a normal and translucency map rather than
 one drawn on a canvas; canopy-volume placement so interior plumes fill
 and the shell is what is seen; and the LOD chain down to an impostor.
+
+### A sheet carries a sprig, not a plume
+
+Too dense, and the cause was the balance between the atlas and the
+geometry. The cell held a whole spray -- a midrib, forty leaves, and a
+soft underlay drawn behind them to make it solid -- so one sheet already
+was a plume, and fifteen overlapping came out as mush. A sheet doing the
+work of a plume of sheets.
+
+The cell is a sprig now: a thin midrib, four to six pairs of small
+leaves, a gap here and there so it is not a comb, no underlay, and a
+great deal of nothing. Four cells of differing sparseness so the overlap
+does not repeat. Density belongs to the overlap, silhouette to the
+arrangement; a sheet only has to carry a few leaves.
+
+      cell      40 leaves + underlay  ->  8 to 12 leaves, no underlay
+      fan       15 ribbons per plume  ->  26
+
+Leaves read individually at the edges now and the branch enters the mass
+rather than being buried in it.
+
+Still off: the spray is too even, so a plume's silhouette is spiky where
+the references are soft and rounded, and a plume whose tip sits in open
+air floats free of the wood.

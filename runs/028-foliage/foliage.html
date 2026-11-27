@@ -66,28 +66,29 @@ function paint(sh) { const col = sh.mesh.geometry.attributes.color.array, on = $
 // pale against dark wood as the references are. Drawn here because the repository has no texture assets; a real
 // one would be baked from geometry with a normal and a translucency map beside it.
 function frondAtlas() {
-  const c = document.createElement('canvas'); c.width = 512; c.height = 512; const x = c.getContext('2d');
+  // A SPRIG, not a plume: a thin midrib with a handful of small leaves and a great deal of nothing. The cell used
+  // to hold a whole spray over a soft underlay, so one sheet did the work the plume is meant to do and fifteen of
+  // them overlapping came out as mush. Density belongs to the overlap and silhouette to the arrangement; a sheet
+  // only has to carry a few leaves. Four cells, of differing sparseness, so the overlap does not repeat.
+  const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
   const rnd = (() => { let s = 90210; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
-  for (let cell = 0; cell < 2; cell++) {
-    const ox = cell * 256;
-    for (let i = 0; i < 40; i++) {
-      const v = i / 40, y = 496 - v * 470, half = 104 * Math.pow(1 - v, 0.6) + 5;
+  for (let cell = 0; cell < 4; cell++) {
+    const ox = (cell & 1) * 256, oy = (cell >> 1) * 256, pairs = 4 + (cell % 3);
+    x.strokeStyle = 'rgba(196,212,222,0.75)'; x.lineWidth = 2.2;
+    x.beginPath(); x.moveTo(ox + 128, oy + 246); x.lineTo(ox + 128, oy + 34); x.stroke();
+    for (let i = 0; i < pairs; i++) {
+      const v = (i + 0.6) / (pairs + 0.5), y = oy + 240 - v * 200, reach = 86 * Math.pow(1 - v * 0.75, 0.8);
       for (const sgn of [-1, 1]) {
-        const lean = 0.5 + 0.45 * rnd(), ll = half * (0.62 + 0.55 * rnd()), lw = 13 + 13 * rnd();
-        const px = ox + 128 + sgn * half * (0.25 + 0.5 * rnd()), py = y + (rnd() - 0.5) * 9;
-        const tone = 206 + Math.floor(rnd() * 44);
+        if (rnd() < 0.12) continue;                       // a gap here and there, so the sprig is not a comb
+        const lean = 0.62 + 0.42 * rnd(), ll = reach * (0.62 + 0.5 * rnd()), lw = 11 + 8 * rnd();
+        const px = ox + 128 + sgn * reach * 0.34, py = y + (rnd() - 0.5) * 10;
+        const tone = 212 + Math.floor(rnd() * 38);
         x.save(); x.translate(px, py); x.rotate(sgn * lean - Math.PI / 2);
-        x.fillStyle = 'rgb(' + (tone - 16) + ',' + tone + ',' + Math.min(255, tone + 10) + ')';
-        x.beginPath(); x.ellipse(0, 0, ll * 0.42, lw, 0, 0, Math.PI * 2); x.fill(); x.restore();
+        x.fillStyle = 'rgb(' + (tone - 18) + ',' + tone + ',' + Math.min(255, tone + 8) + ')';
+        x.beginPath(); x.ellipse(ll * 0.3, 0, ll * 0.42, lw, 0, 0, Math.PI * 2); x.fill();
+        x.restore();
       }
     }
-    x.globalCompositeOperation = 'destination-over';
-    x.fillStyle = 'rgba(214,226,234,0.92)';
-    for (let i = 0; i < 26; i++) { const v = i / 26, y = 490 - v * 450, half = 92 * Math.pow(1 - v, 0.62) + 6;
-      x.beginPath(); x.ellipse(ox + 128, y, half * 0.78, 22, 0, 0, Math.PI * 2); x.fill(); }
-    x.globalCompositeOperation = 'source-over';
-    x.strokeStyle = 'rgba(190,206,214,0.9)'; x.lineWidth = 3;
-    x.beginPath(); x.moveTo(ox + 128, 500); x.lineTo(ox + 128, 26); x.stroke();
   }
   const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
 }

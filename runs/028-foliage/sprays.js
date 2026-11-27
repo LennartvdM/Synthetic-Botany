@@ -49,7 +49,7 @@
         // the strip leaves the tip along the branch, leans out into the fan, and sags as it goes
         const out = unit([0, 1, 2].map((i) => t.d[i] + side[i] * o.spread * (0.55 + 0.9 * r())));
         const L = o.len * scale * (0.7 + 0.6 * r()), W = o.wide * scale * (0.8 + 0.5 * r());
-        const flutter = r(), phase = r(), cell = r() < 0.5 ? 0 : 0.5;
+        const flutter = r(), phase = r(), cq = Math.floor(r() * 4), cu = (cq & 1) * 0.5, cv = (cq >> 1) * 0.5;
         // the plane the ribbon lies in: its own axis and a roll about it
         const rl = r() * Math.PI, u0 = unit(cross3(out, up)), v0 = cross3(out, u0);
         const face = [0, 1, 2].map((i) => u0[i] * Math.cos(rl) + v0[i] * Math.sin(rl));
@@ -64,7 +64,7 @@
             const sx = e ? 1 : -1;
             pos[vi * 3] = c[0] + across[0] * w * sx; pos[vi * 3 + 1] = c[1] + across[1] * w * sx; pos[vi * 3 + 2] = c[2] + across[2] * w * sx;
             nrm[vi * 3] = n[0]; nrm[vi * 3 + 1] = n[1]; nrm[vi * 3 + 2] = n[2];
-            uv[vi * 2] = cell + (e ? 0.5 : 0); uv[vi * 2 + 1] = u;
+            uv[vi * 2] = cu + (e ? 0.5 : 0); uv[vi * 2 + 1] = cv + u * 0.5;
             col[vi * 3] = u; col[vi * 3 + 1] = flutter; col[vi * 3 + 2] = phase;
             vi++;
           }

@@ -49,6 +49,12 @@
     // just lies there, half again as wide as it is tall: a strap. So the width answers to how much of the body
     // the band has to cover. `free` already says which case it is. `cord` is the width when it covers all of it.
     const cord = recipe.cord === undefined ? 0.85 : recipe.cord, cordAt = recipe.cordAt === undefined ? 1 : recipe.cordAt;
+    // A buttress is a plate standing on edge. Near the trunk a root carries the whole leaning of the tree in one
+    // plane, so its wood is tall and narrow there; further out, where it only pulls along itself, it is round.
+    // A round root cannot read as a buttress at a surface however it is buried: half of a round section is under
+    // the ground, so what shows is always wider than it is tall. `butt` is how much of that edgewise section a
+    // root has at its collar, fading out along the run. Area is near enough kept: 0.55 across for 2.1 up.
+    const butt = recipe.buttress === undefined ? 1 : recipe.buttress;
     const meet = (p, n, rho, qi, cap) => { let best = Infinity;
       for (const o of pts) { if (o[4] === qi) continue; const vx = o[0] - p[0], vy = o[1] - p[1], vz = o[2] - p[2], al = vx * n[0] + vy * n[1] + vz * n[2];
         if (al <= 0 || al > cap || al >= best) continue; const across = Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al)); if (across > rho + o[3]) continue; best = al + o[3] * 0.7; }
@@ -90,7 +96,8 @@
         let turned = false; if (k < s.root) { if (k1 > s.root) k1 = s.root;   // a piece never runs from root into trunk: they are different stuff, and tapered differently
           const sg = (j) => unit([0, 1, 2].map((c) => s.X[(j + 1) * 3 + c] - s.X[j * 3 + c])), d0 = sg(Math.min(K - 2, k + 1));
           for (let j = k + (walked ? 4 : 3); j < Math.min(k1, s.root); j++) { const t = dot(sg(j), d0); if (t < (walked ? 0.955 : 0.3)) { k1 = j; turned = t < 0.3; break; } } }
-        const k0 = first ? kA : Math.max(kA, k - backBy), n = k1 - k0, last = k1 === K - 1, wide = (fine ? 0.95 : 1.15) + 0.2 * r(), high = (fine ? 0.8 : 0.62) + 0.25 * r(), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, massW = 1.55 + 0.4 * r(), e = r(), ending = last ? 'own' : turned ? 'turn' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
+        const k0 = first ? kA : Math.max(kA, k - backBy), n = k1 - k0, last = k1 === K - 1, wide0 = (fine ? 0.95 : 1.15) + 0.2 * r(), high0 = (fine ? 0.8 : 0.62) + 0.25 * r(),
+          onEdge = butt * (s.rootOf < 0 && k1 <= s.root ? sstep(s.root - 18, s.root - 3, (k0 + k1) >> 1) : 0), wide = wide0 * (1 - 0.45 * onEdge), high = high0 * (1 + 1.1 * onEdge), stiff = chain ? 0.55 + 0.35 * r() : 0, proud = chain ? 0.1 + 0.25 * r() : 0, massW = 1.55 + 0.4 * r(), e = r(), ending = last ? 'own' : turned ? 'turn' : e < 0.4 ? 'point' : e < 0.75 ? 'blunt' : 'step';
         const A = at(s, k0), B = at(s, k1), C = [], O = [], W = [], Hh = [], D = [];
         for (let i = k0; i <= k1; i++) { const q = (i - k0) / n, base = at(s, i), rho = s.rho[i], off = [0, 1, 2].map((j) => A[j] + (B[j] - A[j]) * q - base[j]), far = H(off[0], off[1], off[2]) || 1e-9, stay = Math.min(stiff, 0.35 * rho / far);
           const no = nearOrb(base), tornHere = s.gap && s.inner && s.inner[i] ? Math.min(1, s.gap[i] / (1.2 * rho)) : 0, alone = 1 - sstep(0.9, 2.0, s.far[i] / rho), free = s.thread ? 1 : Math.max(no, tornHere, alone, s.rootOf >= 0 ? 1 : 1 - sstep(s.root - 7, s.root - 2, i)),   // the flare is still the body, and a root leaves it: mass runs down into a root's first steps and is gone a little further out

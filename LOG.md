@@ -4933,3 +4933,43 @@ over it and reach the ground.
 Path only, so the girth budget should not move, and it does not -- worst
 ring share across the nine trees 0.36, against 0.37 before and the
 round's standard of 0.40.
+
+### The bulging foot: one family swallowing a third of the tree
+
+Two sites, same code, one acceptable and one not -- the boulder passable,
+the cliff edge still spilling. A controlled pair, and far better evidence
+than anything the flat-plane chase produced.
+
+The foot probes could not see it: fill 0.190 against 0.170, both well
+inside the flag. Colour by layer could. The mass at the cliff's foot is
+red -- layer 6, root wood -- and it is ONE continuous lobe, with the
+trunk ending at a ragged edge above it. Not several roots merging.
+
+The girths say the same:
+
+      cliff edge   collar girths, in trunk radii   0.57 0.29 0.26 0.25 0.16
+      boulder                                      0.33 0.29 0.25 0.24 0.23 0.19 0.15
+
+One root at nearly twice the next. And it is not a drawing fault: a
+family of five strands out of eighteen must carry a third of the trunk's
+section, and sqrt(5/18) x R0 is 0.53. The pipe model is doing exactly
+what it should. The fault is that one family got five.
+
+      wt = Array.from({ length: P.feet }, () => Math.pow(0.1 + rd(), P.rank))
+
+At `rank` 2.6 that is a spread of about 500 to 1, so a family can swallow
+a third of the strands. The boulder simply drew more even weights, which
+is the whole of why it reads better.
+
+      rank 2.6   0.57 0.29 0.26 0.25 0.16          biggest/next 2.0
+      rank 1.8   0.46 0.32 0.29 0.27 0.25          1.4
+      rank 1.2   0.39 0.36 0.33 0.29 0.27 0.12     1.1, hierarchy gone
+
+`rank` 1.8. It keeps a clearly dominant root -- which is the hierarchy
+that was asked for -- without one that has to be a lobe. Worst ring share
+0.34, inside the 0.40 standard.
+
+`carry` was added while chasing this and does nothing for it: the
+family's share is weighted (k/root)^carry, which is 1 at the collar
+whatever the exponent, so the collar girth moves 0.57 to 0.59 across the
+whole range. Left in at 1.5, the old value.

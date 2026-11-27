@@ -4560,3 +4560,41 @@ end up entirely buried and the foot may read as a post pushed into mud, in
 which case what lifts the trunk has to come from the flare itself and the
 flare's length becomes the next rule after all -- in the right place this
 time.
+
+### Down off the stilts
+
+      perch 1.9   ground 1.10   waist 0.75   widest up the trunk 1.23
+      perch 1.2   ground 1.07   waist 0.90   widest up the trunk 1.25
+      perch 0.7   ground 1.28   waist 0.99   widest up the trunk 1.06
+
+At 0.7 the equivalent radius runs 1.28 at the ground, 0.99 just above it,
+then 0.84 to 0.90 up the trunk: widest where it meets the ground and
+narrowing from there. The onion is gone.
+
+The pictures agree, which they did not have to. In the four vertical cuts
+the wood now reaches the ground in all four planes; before it stopped
+short of it in two of them, and I had taken that for a cutting-plane
+artefact. It was not. The trunk widens into a flare that stands on the
+ground and the roots run out of the flare, instead of a knot in the air
+with legs reaching down.
+
+perch 0.3 and 0 are not evidence of anything: they grow no tree. `inside()`
+in sprout requires every shoot to stay more than 0.12 clear of the ground,
+so with `foot` 0.2 the trunk's base would start outside the region a shoot
+may occupy. That 0.12 is a second number put in at the foot and an
+absolute one, so it does not scale with the tree: the floor at 0.7 is its
+doing, not the tree's. A smaller tree will hit it differently. Same class
+of fault as the perch, and next.
+
+**What this cost to find.** Three rounds went to the roots' paths, their
+count, their snaking and their girth, and the complaint did not move,
+because all of those adjust things hanging off a base whose geometry was
+wrong. The ontology was: a trunk begins in the air at a given height, and
+roots are what reach down from it. It should be: a trunk stands on the
+ground, and what lifts it is its own flare.
+
+**Still open**, and deliberately not folded into this: a band is about
+1.25 rho across and 0.75 tall, so every root is a strap -- right for a
+trunk, where a dozen bands wrap a bundle, wrong for a root, where the
+strand is the whole body. And one strand's root still leaves the trunk
+sideways at mid-height and stops blunt in the air.

@@ -23,7 +23,7 @@
     const o = Object.assign({ from: 0.34, every: 0.07, len: 0.3, fork: 2, droop: 0.42, seg: 6,
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
       orders: 3, kids: 2, shrink: 0.56, open: 1.5, distal: 2.2,
-      core: 0.42, cores: 3,
+      core: 0.42, cores: 3, bend: 0,
       sprigs: 3, size: 0.05, wide: 0.011, seed: 23, R0: 0.2 }, opt);
     const r = rng(o.seed * 374761393);
 
@@ -137,7 +137,8 @@
         coreAt.push({ p: pa.pts[i], t, away, u });
       }
     }
-    const nC = coreAt.length, cp = new Float32Array(nC * 12), cn = new Float32Array(nC * 12), cuv = new Float32Array(nC * 8), cc = new Float32Array(nC * 12), cidx = new Uint32Array(nC * 6);
+    const COLS = o.bend > 0 ? 3 : 2, CV = COLS * 2, CI = (COLS - 1) * 6;
+    const nC = coreAt.length, cp = new Float32Array(nC * CV * 3), cn = new Float32Array(nC * CV * 3), cuv = new Float32Array(nC * CV * 2), cc = new Float32Array(nC * CV * 3), cidx = new Uint32Array(nC * CI);
     let cv = 0, ci = 0, cm = 0;
     for (const C of coreAt) {
       const sz = o.len * o.core * (0.78 + 0.5 * r());
@@ -147,19 +148,24 @@
       // the card stands across the view out of the canopy, turned a little so the two on a branchlet do not align
       const across = unit(cross3(C.away, face)), upc = unit(cross3(across, C.away));
       const flut = r(), phase = r();
-      for (let w = 0; w < 4; w++) {
-        const sx = (w === 0 || w === 3) ? -1 : 1, sy = (w < 2) ? -1 : 1, k = cv;
-        for (let i = 0; i < 3; i++) {
-          cp[k * 3 + i] = C.p[i] + across[i] * sz * 0.62 * sx + upc[i] * sz * 0.62 * sy + C.away[i] * sz * 0.1;
-          cn[k * 3 + i] = C.away[i];
-          cc[k * 3 + i] = i === 0 ? C.u : i === 1 ? flut : phase;
+      const base = cv;
+      for (let cx = 0; cx < COLS; cx++) {
+        const fx = COLS === 2 ? (cx ? 1 : -1) : (cx - 1);        // -1, 0, 1 when bent
+        const outAmt = o.bend * sz * (COLS === 3 && cx === 1 ? 1 : 0);
+        for (let ry = 0; ry < 2; ry++) {
+          const sy = ry ? 1 : -1, k = cv;
+          for (let i = 0; i < 3; i++) {
+            cp[k * 3 + i] = C.p[i] + across[i] * sz * 0.62 * fx + upc[i] * sz * 0.62 * sy + C.away[i] * (sz * 0.1 + outAmt);
+            cn[k * 3 + i] = unit([0, 1, 2].map((j) => C.away[j] + across[j] * fx * o.bend * 0.8))[i];
+            cc[k * 3 + i] = i === 0 ? C.u : i === 1 ? flut : phase;
+          }
+          cuv[k * 2] = (fx + 1) / (COLS === 2 ? 2 : 2); cuv[k * 2 + 1] = ry;
+          cv++;
         }
-        cuv[k * 2] = (w === 0 || w === 3) ? 0 : 1; cuv[k * 2 + 1] = (w < 2) ? 0 : 1;
-        cv++;
       }
-      const o4 = cm * 4;
-      cidx[ci++] = o4; cidx[ci++] = o4 + 1; cidx[ci++] = o4 + 2;
-      cidx[ci++] = o4; cidx[ci++] = o4 + 2; cidx[ci++] = o4 + 3;
+      for (let cx = 0; cx < COLS - 1; cx++) { const q = base + cx * 2;
+        cidx[ci++] = q; cidx[ci++] = q + 2; cidx[ci++] = q + 3;
+        cidx[ci++] = q; cidx[ci++] = q + 3; cidx[ci++] = q + 1; }
       cm++;
     }
 

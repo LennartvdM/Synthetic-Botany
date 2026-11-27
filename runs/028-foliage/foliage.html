@@ -67,29 +67,28 @@ function paint(sh) { const col = sh.mesh.geometry.attributes.color.array, on = $
 // pale against dark wood as the references are. Drawn here because the repository has no texture assets; a real
 // one would be baked from geometry with a normal and a translucency map beside it.
 function frondAtlas() {
-  // A sprig that FILLS its cell. It used to sit within a thirtieth of the cell's width of the midrib, so most of
-  // the cell was empty and every sheet came out meagre however many were overlapped. Still a sprig and not a
-  // plume -- six to nine pairs, not forty, and no underlay -- but the leaves are large, they reach most of the
-  // way out, and neighbours overlap so the sprig reads as continuous rather than as beads on a wire.
+  // Slender leaves SPREAD across the cell, not fat ones huddled at the midrib. The cell read meagre because its
+  // leaves clustered within a thirtieth of its width and the sides were empty; fattening them fixed the emptiness
+  // and made foam -- round discs merging into one white mass with no leaf in it. The answer to empty sides is to
+  // reach into them. Eight to eleven pairs, long and narrow, pointed, set well out from the rib, with daylight
+  // between neighbours so a leaf is still a leaf when a dozen sheets overlap.
   const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
   const rnd = (() => { let s = 90210; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
+  const leaf = (ll, lw) => { x.beginPath(); x.moveTo(0, 0);
+    x.quadraticCurveTo(ll * 0.35, -lw, ll, 0); x.quadraticCurveTo(ll * 0.35, lw, 0, 0); x.fill(); };
   for (let cell = 0; cell < 4; cell++) {
-    const ox = (cell & 1) * 256, oy = (cell >> 1) * 256, pairs = 6 + (cell % 4);
-    x.strokeStyle = 'rgba(198,214,224,0.8)'; x.lineWidth = 3;
-    x.beginPath(); x.moveTo(ox + 128, oy + 250); x.lineTo(ox + 128, oy + 22); x.stroke();
+    const ox = (cell & 1) * 256, oy = (cell >> 1) * 256, pairs = 8 + (cell % 4);
+    x.strokeStyle = 'rgba(198,214,224,0.7)'; x.lineWidth = 2.4;
+    x.beginPath(); x.moveTo(ox + 128, oy + 250); x.lineTo(ox + 128, oy + 20); x.stroke();
     for (let i = 0; i < pairs; i++) {
-      const v = (i + 0.45) / (pairs + 0.3), y = oy + 244 - v * 216, reach = 120 * Math.pow(1 - v * 0.62, 0.75);
+      const v = (i + 0.4) / (pairs + 0.25), y = oy + 246 - v * 222, reach = 118 * Math.pow(1 - v * 0.55, 0.8);
       for (const sgn of [-1, 1]) {
-        if (rnd() < 0.08) continue;
-        const lean = 0.5 + 0.4 * rnd(), ll = reach * (0.88 + 0.35 * rnd()), lw = 20 + 13 * rnd();
-        const px = ox + 128 + sgn * reach * 0.2, py = y + (rnd() - 0.5) * 12;
-        const tone = 214 + Math.floor(rnd() * 36);
-        x.save(); x.translate(px, py); x.rotate(sgn * lean - Math.PI / 2);
+        if (rnd() < 0.1) continue;
+        const lean = 0.42 + 0.4 * rnd(), ll = reach * (0.86 + 0.3 * rnd()), lw = 10 + 6 * rnd();
+        const tone = 214 + Math.floor(rnd() * 38);
+        x.save(); x.translate(ox + 128, y + (rnd() - 0.5) * 10); x.rotate(sgn * (Math.PI / 2 - lean));
         x.fillStyle = 'rgb(' + (tone - 20) + ',' + tone + ',' + Math.min(255, tone + 6) + ')';
-        x.beginPath(); x.ellipse(ll * 0.34, 0, ll * 0.46, lw, 0, 0, Math.PI * 2); x.fill();
-        // a darker sibling tucked behind, so a sprig has some depth in it rather than one flat tone
-        x.fillStyle = 'rgba(' + (tone - 54) + ',' + (tone - 34) + ',' + (tone - 24) + ',0.85)';
-        x.beginPath(); x.ellipse(ll * 0.24, lw * 0.5, ll * 0.33, lw * 0.72, 0.2, 0, Math.PI * 2); x.fill();
+        leaf(ll, lw);
         x.restore();
       }
     }
@@ -97,8 +96,8 @@ function frondAtlas() {
   const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
 }
 
-// TIER ONE's cell: a dense plume -- many leaves over a soft underlay, one cell filling the whole texture. This is
-// the cell that was wrong when a sheet had to BE the foliage; as a blocker behind a scatter of sprigs it is right.
+// TIER ONE's cell: a dense plume, many leaves over a soft underlay. Wrong when a sheet had to BE the foliage;
+// right as a blocker behind a scatter of sprigs.
 function plumeAtlas() {
   const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
   const rnd = (() => { let s = 4242; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
@@ -165,10 +164,28 @@ function addShape(i) {
       g2.setIndex(new T.BufferAttribute(buf.idx, 1));
       const mm = new T.Mesh(g2, material); mm.castShadow = cast; mm.receiveShadow = true; m.add(mm);
     };
-    hang(W.stem, stemMat, true);
-    hang(W.core, coreMat, true);          // the mass goes down first
-    hang(W.leaf, frondMat, true);
-    window.__twigs = W.twigs; window.__sprigs = W.sprigs;
+    const fol = new T.Group(); m.add(fol);
+    const build = (over) => {
+      while (fol.children.length) fol.remove(fol.children[0]);
+      const Z = Twigs.build(gr, Object.assign({ R0: (window.__R0 || [0.2])[i], seed: 23 + i,
+        from: +(qs.get('from') || 0.34), every: +(qs.get('every') || 0.08), len: +(qs.get('len') || 0.38),
+        droop: +(qs.get('droop') || 0.42), sprigs: 3, size: 0.05, wide: 0.011 }, over || {}));
+      const put = (buf, material, cast) => {
+        if (!buf || !buf.idx.length) return;
+        const g2 = new T.BufferGeometry();
+        g2.setAttribute('position', new T.BufferAttribute(buf.pos, 3));
+        g2.setAttribute('normal', new T.BufferAttribute(buf.nrm, 3));
+        g2.setAttribute('uv', new T.BufferAttribute(buf.uv, 2));
+        g2.setAttribute('wind', new T.BufferAttribute(buf.col, 3));
+        g2.setIndex(new T.BufferAttribute(buf.idx, 1));
+        const mm = new T.Mesh(g2, material); mm.castShadow = cast; mm.receiveShadow = true; fol.add(mm);
+      };
+      put(Z.stem, stemMat, true); put(Z.core, coreMat, true); put(Z.leaf, frondMat, true);
+      window.__counts = { twigs: Z.twigs, sprigs: Z.sprigs, cores: Z.cores };
+    };
+    build(null);
+    // the tree takes minutes to grow and the foliage takes milliseconds, so a hypothesis should not cost a regrow
+    window.__foliage = build;
   }
   const tag = document.createElement('div'); tag.className = 'tag'; tag.textContent = s.name; $('tags').append(tag);
   shapes.push({ mesh: m, tag, centre: s.centre, tone: s.tone, layer: s.layer }); paint(shapes[shapes.length - 1]);

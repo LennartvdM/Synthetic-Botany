@@ -117,7 +117,7 @@
       // `flare`, under half a trunk's width. (A long smooth cone from trunk to tip is a carrot, not a root.)
       const sp1 = TAU * rw(), sl1 = 0.075 + 0.06 * rw(), sp2 = TAU * rw(), sl2 = 0.2 + 0.15 * rw();
       const sinew = (far) => 1 + P.sinew * (0.62 * Math.sin(sp1 + TAU * far / sl1) + 0.38 * Math.sin(sp2 + TAU * far / sl2));
-      const girth = (g, far) => sinew(far) * rho0 * (collar ? P.grip * (1 + (P.collar - 1) * Math.pow(Math.max(0, 1 - far / P.flare), 1.6)) : 1) * (1 - P.waste * g) * (dives ? 1 : Math.pow(Math.min(1, (1 - g) / P.toe), 0.7) * (1 - P.tip) + P.tip);
+      const girth = (g, far) => sinew(far) * rho0 * (collar ? P.grip * (1 + (P.collar - 1) * Math.pow(Math.max(0, 1 - far / P.flare), 1.6)) : 1) * (1 - P.waste * g) * Math.pow(Math.min(1, (1 - g) / P.toe), 0.7) * (1 - P.tip) + P.tip;
       const room = (pr, own) => { if (Math.abs(pr[0]) > 0.97 || Math.abs(pr[2]) > 0.97) return 0; let near = 0.22; for (const q of rootPts) near = Math.min(near, H(pr[0] - q[0], pr[1] - q[1], pr[2] - q[2])); for (let e = 0; e < own; e++) near = Math.min(near, H(pr[0] - rx[e][0], pr[1] - rx[e][1], pr[2] - rx[e][2])); return near; };
       for (let m = 1; m <= most && prog < len; m++) { const g = Math.min(1, prog / len), rad = girth(g, gone), nn = gradG(pos[0], pos[1], pos[2]), nk = Math.min(1.4, nook(pos, nn) * P.seams), sf = softAt ? Math.max(0, Math.min(1, softAt(pos[0], pos[1], pos[2]))) : 0, hug = rad * (legHug - P.bury * sf - P.knuckle * 0.6 * Math.max(0, 1 - since / 2.5)) - rad * P.seam * Math.max(0, nk) + rad * 0.5 * Math.max(0, Math.min(1, -nk)) - rad * P.bite * Math.max(0, 1 - Math.abs(nn[1]) - 0.45) / 0.3 * Math.max(hooked, Math.max(0, Math.min(1, nk)), 0.5 * Math.max(0, Math.sin(wob * 2 + TAU * gone / (wl * 0.55)))), want = c0 + (hug - c0) * sstep(0, P.dive + P.slant * steepness * Math.max(0, c0), gone) - (dives ? 0.3 * sstep(0.72, 1, g) : 0);
         let tt = h.map((v, k) => v - nn[k] * dot(h, nn)); const dn = UP.map((v, k) => -(v - nn[k] * nn[1])), dl = H(dn[0], dn[1], dn[2]); if (H(tt[0], tt[1], tt[2]) < 0.2) tt = dl > 1e-6 ? dn : cross(nn, [1, 0, 0]); tt = unit(tt);
@@ -314,9 +314,9 @@
       if (!G) {
         for (let m = 1; m <= Kr; m++) { const g = m / Kr, t = bend * g * g, dir = [away[0] * Math.cos(t) - away[2] * Math.sin(t), 0, away[0] * Math.sin(t) + away[2] * Math.cos(t)], rad = rho[0] * (dives ? 0.5 + 0.5 * (1 - g) : 0.2 + 0.8 * Math.pow(1 - g, 0.8));
           q = [q[0] + dir[0] * ds, p0[1] + (rad * 0.6 - p0[1]) * sstep(0, 0.8, g) - (dives ? 0.35 * sstep(0.6, 1, g) : 0), q[2] + dir[2] * ds]; rx.push(q); rr.push(rad); rg.push(q); }
-      } else { const w = walk(p0, away, rho[0], len, dives, 1, s.rank || 1); for (let e = 0; e < w.rx.length; e++) { rx.push(w.rx[e]); rg.push(w.rx[e]); rr.push(w.rr[e]); rootPts.push(w.rx[e]); } Kr = rx.length; }
+      } else { s.dives = dives; const w = walk(p0, away, rho[0], len, dives, 1, s.rank || 1); for (let e = 0; e < w.rx.length; e++) { rx.push(w.rx[e]); rg.push(w.rx[e]); rr.push(w.rr[e]); rootPts.push(w.rx[e]); } Kr = rx.length; }
       s.root = Kr; s.K = Kr + X.length; const all = rx.reverse().concat(X), goals = rg.reverse().concat(goal);
-      s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho));
+      s.X = Float64Array.from(all.flat()); s.goal = Float64Array.from(goals.flat()); s.rho = Float64Array.from(rr.reverse().concat(rho)); s.rhoGrown = Float64Array.from(s.rho);
       // The shape a strand holds against tension is written in one frame all along it. A root's goal is the places
       // it was walked to; the trunk's is the bundle's centre line, which the strand stands off from. Read as one
       // frame, that step is a stretch, and the tension pulled the two apart: the join opened to four times a step,
@@ -599,9 +599,11 @@
         rho[j] = q.rho[i] + (q.rho[i + 1] - q.rho[i]) * u; if (gap) gap[j] = q.gap[i] + (q.gap[i + 1] - q.gap[i]) * u; O.push(unit([0, 1, 2].map((c) => q.O[i][c] + (q.O[i + 1][c] - q.O[i][c]) * u))); F.push(q.F[i] + (q.F[i + 1] - q.F[i]) * u); if (inner) inner.push(q.inner[u < 0.5 ? i : i + 1]); }
       for (let pass = 0; pass < 3; pass++) { const c = Float64Array.from(X); for (let j = 1; j < n - 1; j++) for (let e = 0; e < 3; e++) X[j * 3 + e] = 0.5 * c[j * 3 + e] + 0.25 * (c[(j - 1) * 3 + e] + c[(j + 1) * 3 + e]); }   // straight between the old points, then eased: this cannot loop
       let root = 0; if (q.root) { const at = L[Math.min(K - 1, q.root)]; root = Math.round((n - 1) * at / L[K - 1]); }
-      return Object.assign({}, q, { X, rho, gap, O, F, inner, K: n, root }); };
+      const grown = q.rhoGrown ? new Float64Array(n) : null;
+      if (grown) { let i2 = 0; for (let j = 0; j < n; j++) { const at = L[K - 1] * j / (n - 1); while (i2 < K - 2 && L[i2 + 1] < at) i2++; const u = Math.max(0, Math.min(1, (at - L[i2]) / ((L[i2 + 1] - L[i2]) || 1e-9))); grown[j] = q.rhoGrown[i2] + (q.rhoGrown[i2 + 1] - q.rhoGrown[i2]) * u; } }
+      return Object.assign({}, q, { X, rho, gap, O, F, inner, K: n, root, rhoGrown: grown || q.rhoGrown }); };
     if (P.fair !== false) for (let i = 0; i < S.length; i++) S[i] = fair(S[i]);
-    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, loop: !!s.loop, air: !!s.air, stem: s.stem === undefined ? -1 : s.stem, rootOf: s.rootOf === undefined ? -1 : s.rootOf, stub: s.limb >= 0 && limbs[s.limb] ? limbs[s.limb].L.stub || null : null, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam })).concat(threads), orb, marks: marks.map((v) => ({ c: v.c, a: v.a, e: v.e, r: v.r, d: v.d, kind: v.kind, limb: v.limb, asOrb: !!v.asOrb })), measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
+    return { strands: S.map((s) => ({ X: s.X, rho: s.rho, O: s.O, far: s.F, K: s.K, root: s.root, limb: s.limb, give: s.give, snapped: s.snapped, loop: !!s.loop, air: !!s.air, stem: s.stem === undefined ? -1 : s.stem, rootOf: s.rootOf === undefined ? -1 : s.rootOf, stub: s.limb >= 0 && limbs[s.limb] ? limbs[s.limb].L.stub || null : null, vine: !!s.child, inner: s.inner || null, gap: s.gap || null, fam: s.fam, rhoGrown: s.rhoGrown || null, dives: !!s.dives })).concat(threads), orb, marks: marks.map((v) => ({ c: v.c, a: v.a, e: v.e, r: v.r, d: v.d, kind: v.kind, limb: v.limb, asOrb: !!v.asOrb })), measure: { worstOverlap: worst, touching: pairs, overlapping: over, forks, strands: S.length, threads: threads.length }, recipe: P };
   }
 
   // The tree's lines, grown and not given. A shoot carries some of the tree's strands. It grows in bouts: it runs

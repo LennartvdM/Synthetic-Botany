@@ -4369,3 +4369,56 @@ and counting what was actually in it.
 
       page 9's lines, from here   3124a3e482 a6955d0811 8edf224e71 95442327a8 adbe75f371
       page 7's four, unchanged    e387ada36c 17dc01b122 a61f129179 b2eac9db5f
+
+## A root is a cylinder cut off blunt
+
+Three rounds of work on the root plate went to the roots' *paths* -- how
+many leave, where they divide, how they snake -- and the complaint did not
+move. It was never the paths.
+
+Two things had to change before I could see it. The first was framing: I
+had been judging trees in seven-panel contact sheets at a few hundred
+pixels each, and then, when that failed, in close crops of one foot. Both
+are useless. A crop cannot show a root's end, and the end is where the
+fault is. `shots.cjs` now takes a radius of 0 to mean *frame the whole
+shape from its bounding sphere* -- every root tip in the picture, or the
+picture is thrown away. The second was colour: `f.whoAt` reports which
+strand owns the surface at a place, and the viewer paints each strand its
+own hue, so a pile of swellings can be told from one root's own flaring.
+
+With the whole tree in frame the reading is plain. The roots are flat
+straps, not cords; they end blunt, in rounded paddles; and they lie over
+each other in layers. A strap that snakes is still a strap, which is why
+every change to the paths left it alone.
+
+`runs/024-section/section.js` cuts across each root at five stations,
+ordered trunk to tip, and draws the sections at their true size with the
+strand's girth circle behind them. Drawn, not scored -- but the numbers
+beside them settle it. The girth, trunk to tip:
+
+      root  8   .036 .030 .023 .031 .035      ends as thick as it began
+      root 14   .072 .034 .034 .040 .026
+      root 16   .054 .051 .020 .014 .018
+      root 17   .046 .043 .031 .027 .033
+      root 15   .114 .096 .030 .022 .016      the one clean taper
+
+Four of five get fatter again near their far end. The cause is one line,
+`trees.js` 120:
+
+      (dives ? 1 : Math.pow(Math.min(1, (1 - g) / P.toe), 0.7) * (1 - P.tip) + P.tip)
+
+With a ground, `dives` is true for nine roots in ten, so nine in ten get no
+taper whatever: they hold their girth to the end, modulated only by the
+`sinew` wave (17%) and the knuckle swells (55%), and stop. And `toe` at
+0.13 means the tenth tapers over the last eighth of its run only -- flat,
+then a cliff -- bottoming out at `tip`, a quarter of base girth.
+
+That is a blunt club at the end of a near-cylinder, which is what reads as
+a growth.
+
+**Prediction, before the change.** Making the fall continuous over the
+whole run and dropping the dive exemption will make the sections shrink
+from trunk to tip and take the clubs off the ends. It will *not* fix the
+flatness: the width-to-height of a section is set by the band's `wide` and
+`high` in page 7, about 1.15 against 0.62, and no change to girth touches
+it. I expect tapering straps.

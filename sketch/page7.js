@@ -43,6 +43,7 @@
     // a strand reached toward the middle of its bundle however far that was, so the foot, where the bundle is
     // widest, swelled to three times the wood that is in it.)
     const mass = recipe.mass === undefined ? 1 : recipe.mass;
+    const skirtOn = recipe.skirt === undefined ? 1 : recipe.skirt;
     const meet = (p, n, rho, qi, cap) => { let best = Infinity;
       for (const o of pts) { if (o[4] === qi) continue; const vx = o[0] - p[0], vy = o[1] - p[1], vz = o[2] - p[2], al = vx * n[0] + vy * n[1] + vz * n[2];
         if (al <= 0 || al > cap || al >= best) continue; const across = Math.sqrt(Math.max(0, vx * vx + vy * vy + vz * vz - al * al)); if (across > rho + o[3]) continue; best = al + o[3] * 0.7; }
@@ -100,7 +101,7 @@
           let skirt = 0;
           if (sv && s.rootOf < 0 && i < s.root) { const near = sstep(s.root - 10, s.root - 1, i);
             if (near > 0.02) { const lft = meet(base, sv, rho, si, 3.5 * rho), rgt = meet(base, [-sv[0], -sv[1], -sv[2]], rho, si, 3.5 * rho);
-              skirt = near * Math.max(0, Math.min(lft, rgt) - 0.95 * rho); } }
+              skirt = skirtOn * near * Math.max(0, Math.min(lft, rgt) - 0.95 * rho); } }
           C.push([0, 1, 2].map((j) => base[j] + off[j] * stay + s.O[i][j] * rho * lift + (sv ? sv[j] * (gu + lipU) / 2 : 0) + (hm ? s.inner[i][j] * hm : 0))); O.push(s.O[i]); W.push(Math.max(0.006, Math.min(wCap, rho * w * front * back + (Math.abs(gu) + Math.abs(lipU)) / 2 + skirt))); Hh.push(rho * high * (0.6 + 0.4 * front) + Math.max(0, gv) * 0.5); D.push(deepHere + Math.max(0, -gv)); }
         const w1 = W[W.length - 1], end = ending === 'own' ? (s.snapped ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()), step: r() < 0.5 ? { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.8 + 1.4 * r()) } : null } : { skew: 0 })
           : ending === 'turn' ? { skew: 0.6 * (r() - 0.5) } : ending === 'step' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.2 * r()), step: { u: 0.5 * (r() - 0.5), side: r() < 0.5 ? -1 : 1, a: w1 * (0.9 + 1.2 * r()) } } : ending === 'blunt' ? { skew: (r() < 0.5 ? -1 : 1) * (1.8 + 1.4 * r()) } : { skew: 0 };
@@ -110,7 +111,7 @@
         { const dsl = H(B[0] - at(s, k1 - 1)[0], B[1] - at(s, k1 - 1)[1], B[2] - at(s, k1 - 1)[2]) || 0.035, cutLen = ending === 'point' ? 0.3 * n * dsl : (end.skew ? 2 * Math.abs(end.skew) * w1 : 0) + (end.step ? end.step.a : 0); backBy = clamp(Math.ceil(cutLen / dsl) + 2, 3, Math.max(3, n - 2)); }
         // a part that has torn from another is thickest on its far side and thins to a lip toward the tear
         const mid = (k0 + k1) >> 1, inn = s.inner && s.inner[mid], sg = inn ? dot(inn, unit(cross(tan(s, mid), s.O[mid]))) : 0, torn = Math.abs(sg) > 0.4 ? Math.sign(sg) : 0, e1 = 0.2 + 0.5 * r(), e2 = 0.2 + 0.5 * r(), rd = clamp(ridge0 + 0.4 * (r() - 0.5), -0.6, 0.6);
-        all.push(Object.assign(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? -0.4 * torn : rd, eL: torn < 0 ? 0.3 : torn > 0 ? 0.55 : e1, eR: torn > 0 ? 0.3 : torn < 0 ? 0.55 : e2, feather: torn, featherAmt: 0.78 }, s.thread ? { skew: 0 } : end)), { layer: k1 <= s.root ? (s.rootOf >= 0 ? 7 : 6) : fine || torn || (s.gap && s.gap[mid] > 0) ? 1 : 0 }));   // 6, 7: root, and root that parted off a root
+        all.push(Object.assign(shard(Object.assign({ C, O, W, Hh, D, deep: Math.max(...D), seed: 1 + Math.floor(r() * 1e6), wiggle: 1, ridge: torn ? -0.4 * torn : rd, eL: torn < 0 ? 0.3 : torn > 0 ? 0.55 : e1, eR: torn > 0 ? 0.3 : torn < 0 ? 0.55 : e2, feather: torn, featherAmt: 0.78 }, s.thread ? { skew: 0 } : end)), { who: si, layer: k1 <= s.root ? (s.rootOf >= 0 ? 7 : 6) : fine || torn || (s.gap && s.gap[mid] > 0) ? 1 : 0 }));   // 6, 7: root, and root that parted off a root
         count[fine ? 'fine' : 'bands'] = (count[fine ? 'fine' : 'bands'] || 0) + 1; k = k1; first = false;
       }
     }
@@ -131,14 +132,14 @@
           const a2 = side * 1.6 + 0.5 * Math.sin(q * 3.1 + sd % 7);
           const dir = [0, 1, 2].map((i) => o[i] * Math.cos(a2) + sv[i] * Math.sin(a2));
           C.push([0, 1, 2].map((i) => p[i] + dir[i] * rho * 0.78)); O.push(dir); W.push(Math.max(0.003, rho * wide * fine)); Hh.push(rho * high * (0.4 + 0.6 * fine)); D.push(rho * 0.7); }
-        all.push(Object.assign(shard({ C, O, W, Hh, D, deep: Math.max(...D), seed: sd, wiggle: 1, ridge: rd, eL, eR, skew: 0 }), { layer: 2 })); count.slivers++;
+        all.push(Object.assign(shard({ C, O, W, Hh, D, deep: Math.max(...D), seed: sd, wiggle: 1, ridge: rd, eL, eR, skew: 0 }), { layer: 2, who: t.strands.indexOf(s) })); count.slivers++;
       } }
     if (!recipe.bare) for (const s of thick) for (let j = 0; j < 2; j++) {   // slivers
       const u = r(), len = 10 + Math.floor(18 * r()), side = (r() < 0.5 ? -1 : 1) * (0.25 + 0.5 * r()), lift = 0.3 + 0.7 * r(), wide = 0.3 + 0.25 * r(), high = 0.3 + 0.2 * r(), sd = 1 + Math.floor(r() * 1e6), rd = 0.8 * (r() - 0.5), eL = 0.1 + 0.6 * r(), eR = 0.1 + 0.6 * r(), st = u < 0.6 ? stretch(s, len) : null; if (!st) continue;
       const C = [], O = [], W = [], Hh = [], D = [];
       for (let k = st[0]; k <= st[1]; k++) { const q = (k - st[0]) / len, o = s.O[k], sv = unit(cross(tan(s, k), o)), rho = s.rho[k], fine = Math.min(1, q / 0.3, (1 - q) / 0.5), p = at(s, k);
         C.push([0, 1, 2].map((i) => p[i] + o[i] * rho * (0.5 + lift * q * q) + sv[i] * rho * side)); O.push(o); W.push(Math.max(0.004, rho * wide * fine)); Hh.push(rho * high * (0.5 + 0.5 * fine)); D.push(rho * 0.5); }
-      all.push(Object.assign(shard({ C, O, W, Hh, D, deep: Math.max(...D), seed: sd, wiggle: 1, ridge: rd, eL, eR, skew: 0 }), { layer: 2 })); count.slivers++;
+      all.push(Object.assign(shard({ C, O, W, Hh, D, deep: Math.max(...D), seed: sd, wiggle: 1, ridge: rd, eL, eR, skew: 0 }), { layer: 2, who: t.strands.indexOf(s) })); count.slivers++;
     }
     // the shell
     const shell = [], room = 0.012, rigid = 0.5;
@@ -161,7 +162,7 @@
         const K = makePlate(s, k0, k1, forward, ...rest); if (!K) break; const n = K.C.length, hit = new Uint8Array(n);
         for (let k = 0; k < n; k++) { const T = unit([0, 1, 2].map((i) => K.C[Math.min(n - 1, k + 1)][i] - K.C[Math.max(0, k - 1)][i])), sv = unit(cross(T, K.O[k])), up = cross(sv, T);
           for (let a = -3; a <= 3 && !hit[k]; a++) for (const v of [0, K.Hh[k] * 0.6]) { const pt = [0, 1, 2].map((i) => K.C[k][i] + sv[i] * K.W[k] * a * 0.31 + up[i] * v); if (shell.some((A) => A.f(pt[0], pt[1], pt[2]) < room)) { hit[k] = 1; break; } } }
-        if (!hit.some((h) => h)) { const sh = Object.assign(shard(K), { layer: 2 }); all.push(sh); shell.push(sh); count.plates++; if (go) count.cut++; return; }
+        if (!hit.some((h) => h)) { const sh = Object.assign(shard(K), { layer: 2, who: t.strands.indexOf(s) }); all.push(sh); shell.push(sh); count.plates++; if (go) count.cut++; return; }
         let best = [0, -1], from = 0; for (let k = 0; k <= n; k++) if (k === n || hit[k]) { if (k - 1 - from > best[1] - best[0]) best = [from, k - 1]; from = k + 1; }
         const a = best[0] + (best[0] > 0 ? 1 : 0), b = best[1] - (best[1] < n - 1 ? 1 : 0); if (b - a < 6) break;
         if (forward) { const z = k0; k0 = z + a; k1 = z + b; } else { const z = k1; k1 = z - a; k0 = z - b; }
@@ -280,8 +281,14 @@
     // which layer the surface belongs to at a place: that of whichever piece is nearest there
     // the ground the tree was given, if any, is part of what is shown: its own layer, and no part of the wood
     const o = t.orb, gr = recipe.ground && !recipe.ground.level ? recipe.ground : null, f = gr ? (x, y, z) => Math.min(solid(x, y, z), gr(x, y, z)) : (x, y, z) => solid(x, y, z);
+    // which STRAND the surface belongs to at a place -- the same nearest-piece rule as layerAt, reporting the root instead of the kind.
+    // an aid, not a rule: it is what the colour-by-root view is drawn from, so a pile of lobes can be read as one root or several.
+    f.whoAt = (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); let d = 9, w = -1; if (b) for (const i of b) { const v = all[i].f(x, y, z); if (v < d) { d = v; w = all[i].who === undefined ? -1 : all[i].who; } } if (gr && gr(x, y, z) < d) w = -1; return w; };
     f.layerAt = (x, y, z) => { const b = grid.get(key(Math.floor(x / cell), Math.floor(y / cell), Math.floor(z / cell))); let d = 9, l = 0; if (b) for (const i of b) { const v = all[i].f(x, y, z); if (v < d) { d = v; l = all[i].layer || 0; } } if (gr && gr(x, y, z) < d) l = 5; return l; };
-    f.orb = o && !o.empty ? o : null; f.marks = wounds; f.measure = t.measure; f.count = count; f.recipe = recipe; return f;
+    f.orb = o && !o.empty ? o : null; f.marks = wounds; f.measure = t.measure; f.count = count; f.recipe = recipe;
+    // the settled strands, kept on the field so a probe can cut across a root it can see
+    f.tree = t;
+    return f;
   }
   // the same four trees. bare: bands only, so the body can be judged by itself. eyes: 0, because these four are
   // the record of what was approved and are kept as they were; eyes came later and belong to the grown trees.
@@ -293,5 +300,5 @@
   ];
   if (typeof location !== 'undefined') { const only = new URLSearchParams(location.search).get('only'); if (only) { const keep = only.split(',').map(Number).map((i) => S[i]).filter(Boolean); S.length = 0; S.push(...keep); } }   // ?only=2 builds just that tree
   window.Trees7 = { tree };   // later pages build on this
-  window.Fantastic = { fields: S.map((s) => s[1]), names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), measures: S.map((s) => s[1].measure), counts: S.map((s) => s[1].count), build: (i) => { const g = mesh(S[i][1], S[i][0], S[i][2] || 0.0095, 2.05), n = g.pos.length / 3; g.layer = new Uint8Array(n); for (let q = 0; q < n; q++) g.layer[q] = S[i][1].layerAt(g.pos[q * 3] - g.nrm[q * 3] * 0.004, g.pos[q * 3 + 1] - g.nrm[q * 3 + 1] * 0.004, g.pos[q * 3 + 2] - g.nrm[q * 3 + 2] * 0.004); return g; }, mesh, kit: Fantastic.kit };
+  window.Fantastic = { fields: S.map((s) => s[1]), names: S.map((s) => s[0]), orbs: S.map((s) => s[1].orb), measures: S.map((s) => s[1].measure), counts: S.map((s) => s[1].count), build: (i) => { const g = mesh(S[i][1], S[i][0], S[i][2] || 0.0095, 2.05), n = g.pos.length / 3; g.layer = new Uint8Array(n); g.who = new Int16Array(n); for (let q = 0; q < n; q++) { const px = g.pos[q * 3] - g.nrm[q * 3] * 0.004, py = g.pos[q * 3 + 1] - g.nrm[q * 3 + 1] * 0.004, pz = g.pos[q * 3 + 2] - g.nrm[q * 3 + 2] * 0.004; g.layer[q] = S[i][1].layerAt(px, py, pz); g.who[q] = S[i][1].whoAt(px, py, pz); } return g; }, mesh, kit: Fantastic.kit };
 })();

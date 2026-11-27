@@ -4644,3 +4644,67 @@ in a trunk `free` is 0, along a root it is 1, and a branch of six strands
 is still a bundle. The rule can be uniform. `cord` is the width when the
 band covers the whole body; `cordAt` 0 restores the old behaviour exactly,
 so the baseline in the sweep is the real one and not an approximation.
+
+## The root plate was the ground, not the roots
+
+Level ground had no soft channel. `softAt` is `G && G.soft && P.bury`, and
+sprout hands grow `ground: Q.ground || level` where `level` is bare. So on
+every tree not given a ground of its own, **no root could ever go under**.
+They were pinned to the surface by construction, and a bundle of twenty
+strands splaying open at the foot with nowhere to go but sideways is a
+flat disc. That disc is the root plate.
+
+Not the girth. Not the band width. Not the collar, the skirt, the elbow
+fill or the trunk's profile. Each of those was adjusted on a hunch and
+each turned out innocent; all are back at their old values, with the
+reasoning kept:
+
+      skirt       already clamped to nothing by neighbouring wood;
+                  0 and 1 measure identically (33.1% against 33.2%)
+      collar      1.0 changes nothing visible
+      elbow fill  stopping it webbing roots changes nothing visible
+      rise        empties the base rather than flaring it: a strand that
+                  gives up its lower run takes that wood with it
+
+What found it, after those four misses, was a transect: walk sideways from
+a root's line and print what is there at each tenth of a trunk radius --
+solid or not, which layer, which strand.
+
+      strand 8 step 13, girth 0.29 R0:
+      root/8 root/8 root/8 root/8 band/16 band/16 band/16 band/16
+      root/16 root/8 root/8 root/8 band/8 band/8 band/8 band/16 ...
+
+The wood runs unbroken for 2.4 trunk radii and belongs to a dozen strands
+in turn. Each band is its own girth wide and no more. Strands 15 and 16,
+measured the same way, are 0.1 R0 of their own wood on girths of 0.07 and
+0.10. **The bands were never wrong.**
+
+That also kills one more of my measures. "Widest single band 4.9x its
+girth" took the furthest point owned by a strand anywhere along the ray,
+not its contiguous width -- and ownership alternates. Strand 8's own band
+is 0.3 R0 on a girth of 0.29 R0: 1.0x, exactly right. Retracted.
+
+      level ground is soil, and soil can be dug: level.soft = () => 1
+      bury 0 -> 1.5
+
+      bury 0     a flat plate, two strands' wedges spread across the foot
+      bury 1.0   the plate shrinks, some roots still lying on it
+      bury 1.4   a flaring base, roots arching out and diving under
+      bury 1.8   tighter, slightly less root showing
+      bury 2.1   the plate is gone and so are the roots: a post in soil
+
+1.5 keeps the roots declaring themselves while the plate goes.
+
+### On measures, for the fourth time
+
+Four measures in this round answered questions I was not asking: wood in a
+wide disc (counts roots running through the slice as trunk), trunk-body
+profile (right about the trunk, and the trunk was never the problem), the
+furthest-owned-point width (ownership alternates), and the flare sweep
+(invalidated by the stilt it was measured on). Each gave a clean table.
+The picture was right every time and I argued with it four times.
+
+The rule I keep relearning, now stated as sharply as I can: **a measure is
+a claim about where the fault is, and if that claim is wrong the number
+will be clean.** The way out is not a better number but a reading that
+cannot be aggregated -- what is at this place, and whose is it.

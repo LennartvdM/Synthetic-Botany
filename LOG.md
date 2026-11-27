@@ -4879,3 +4879,33 @@ channel). Recorded here so they can be put back if that changes:
       scaled by the ROOT's own radius rather than a depth, so a root of
       radius 0.03 descends 0.045 and undulates by 0.01. Nothing can move
       a root off the plane while that is true.
+
+### The bulging foot was the invariant, broken again
+
+`b47ef12` raised `grip` 0.5 -> 0.6 and left `collar` at 2, so the product
+went to 1.2. Line 68 of trees.js says what that means: "`collar` x `grip`
+is about 1: the two are set together." Every root left the trunk a fifth
+over its share, and that is the bulging trunk floor spilling into bulging
+roots.
+
+This is the third time through that door. The round that fixed the huge
+girths broke it the same way (0.8 x 2 = 1.28) and recorded the lesson
+directly under the comment; `b47ef12` did it again at a smaller size
+while I was looking at root COUNT and not at girth at all.
+
+      grip 0.6, collar 2       worst ring share 0.48
+      grip 0.6, collar 1.667   worst ring share 0.45
+      grip 0.5, collar 2       worst ring share 0.37
+
+Raising the collar alone barely moves it: the collar acts over `flare`,
+the first 0.07 of a run, and the loaded rings are past it. The ring
+shares are `grip`. So the approved pair is restored exactly -- grip 0.5,
+collar 2, product 1 -- and every site is at or under 0.37 against the
+round's own standard of 0.40.
+
+Noted for the next round: the paste of that round also records that the
+edgewise section was already tried and rejected -- "at a root's girth,
+with the surface smoothed as it is, a near-square section reads as a
+tube... The section wasn't the thing. The length of the faces, and
+whether they touch the ground, were." I re-derived and re-ran that whole
+experiment this session without reading back.

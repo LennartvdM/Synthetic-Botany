@@ -30,7 +30,7 @@
   function frames(P) { let N = null; return P.map((p, i) => { const T = unit([0, 1, 2].map((k) => P[Math.min(P.length - 1, i + 1)][k] - P[Math.max(0, i - 1)][k])); N = unit((N || [1, 0, 0.2]).map((v, k, A) => v - T[k] * dot(A, T))); return [T, N, cross(T, N)]; }); }
 
   function grow(recipe) {
-    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, sinew: 0.17, apart: 1, bury: 0, forgive: 0.22, rank: 2.6, slack: 0.11, press: 1.3, forkBy: 0.42, clearFoot: 2.1, weave: 1, kink: 1.1, swallow: 0.95, bridge: 2.2, toe: 0.7, tip: 0.15, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 5, cling: 0.88, grip: 1.0, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
+    const P = Object.assign({ strands: 8, fill: 0.75, uneven: 0.5, twist: 0.5, taut: 0.3, stiff: 0.05, hug: 0.15, bind: 0.004, roots: 0.6, wind: 1.1, mixed: false, lmax: 0, set: 0, swell: 1, feet: 0, lap: 0, ground: null, down: 0.6, crease: 3.2, seam: 0.55, seams: 7, hem: 2.2, leg: 0.16, knuckle: 0.55, knee: 0.3, sinew: 0.17, apart: 1, bury: 0, forgive: 0.22, rank: 2.6, slack: 0.11, press: 1.3, forkBy: 0.42, clearFoot: 2.1, weave: 1, kink: 1.1, swallow: 0.95, bridge: 2.2, toe: 0.7, tip: 0.15, snake: 1, air: 0.18, reach: 0.6, eyes: 0.4, hang: 0.3, bold: 0.35, brace: 0.12, bite: 1.8, forks: 1, dive: 0.12, slant: 0.75, clumps: 5, cling: 0.88, rise: 0, grip: 1.0, collar: 2, flare: 0.07, waste: 0.25, clear: 1, settle: 0, giving: 0.75, passes: 1500, ds: 0.035, seed: 1, trunk: [[0, 0.14, 0, 0.27], [0, 1.6, 0, 0.1]], limbs: [], orb: null }, recipe);
     // The ground, if the tree is given one: any function of a place that is how far it is outside the ground (less than
     // nothing inside). Without one the ground is the level at height 0, as it always was. (A grown tree is always given one, level if nothing else, so that its roots are walked.)
     const G = P.ground, softAt = G && G.soft && P.bury ? G.soft : null, gradG = G ? (x, y, z) => { const e = 0.008; return unit([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); } : null, rootPts = [];
@@ -310,6 +310,14 @@
       // its root: the strand itself coming down from the foot of the trunk the way it faces there, heavy, and
       // most often going into the ground. A few stay on it and run out to a point.
       // (on ground nearly all roots go into it at their end; the old flat roots are left as they were)
+      // A root leaves the trunk at its own height, not all of them together at the ground. Upward this rule is
+      // already here: a family's members join the lead at a different height each, so the wood divides all the
+      // way up and there is no waist. Downward nothing did it -- every root began at the foot, so they left in
+      // one sheet at one level and lay side by side on the ground. Drawn per strand, over `rise` trunk radii,
+      // the ones that leave high run down and out while the ones that leave low hold the axis, and the envelope
+      // of the two is the flare. The trunk is not widened anywhere; the flare is what the roots leaving make.
+      const upBy = Math.min(Math.max(0, X.length - 6), Math.round(P.rise * R0 * (r() * r()) / ds));
+      if (upBy > 0) { X.splice(0, upBy); goal.splice(0, upBy); rho.splice(0, upBy); hold.splice(0, upBy); }
       const p0 = X[0], a0 = toClump(Math.atan2(p0[2] - trunk[0][2], p0[0] - trunk[0][0])), away = G ? [Math.cos(a0), 0, Math.sin(a0)] : H(p0[0] - trunk[0][0], p0[2] - trunk[0][2]) > 1e-4 ? unit([p0[0] - trunk[0][0], 0, p0[2] - trunk[0][2]]) : [1, 0, 0], len = P.roots * (0.5 + 0.5 * r()) * (0.7 + 0.3 * (s.rank || 1)), bend = 2.6 * (r() - 0.5), dives = r() < (G ? 0.9 : 0.75), rx = [], rr = [], rg = []; let q = p0, Kr = Math.max(6, Math.round(len / ds));
       if (!G) {
         for (let m = 1; m <= Kr; m++) { const g = m / Kr, t = bend * g * g, dir = [away[0] * Math.cos(t) - away[2] * Math.sin(t), 0, away[0] * Math.sin(t) + away[2] * Math.cos(t)], rad = rho[0] * (dives ? 0.5 + 0.5 * (1 - g) : 0.2 + 0.8 * Math.pow(1 - g, 0.8));

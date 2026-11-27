@@ -4988,3 +4988,28 @@ against.
 
 `rootEyes` 0. Limb eyes stay. The draw is still taken either way, so no
 rng stream shifts and nothing else about the tree moves.
+
+### Lizard tails: a root turning constantly is a curve, not a knuckle
+
+The roots read as tails -- smooth, continuous undulation, no tension and
+no elbows. The knuckle machinery was all there and never fired, because
+of the spacing:
+
+      legLeft = max(2, round(P.leg * (1 - 0.38 * weave) * (0.3 + 1.9 * r^2.5) / ds))
+
+`leg` 0.16 over `ds` 0.035 is 4.6 steps, times (1 - 0.38) for weave, times
+a mean 0.84, is a corner every two or three steps. A root that turns
+every other step is turning continuously, which is a curve. There were no
+straight runs for a knuckle to interrupt.
+
+`leg` 0.16 -> 0.4. And the hybrid comes free from the draw already being
+heavy-tailed: r^2.5 keeps most legs short and lets a few run long, so one
+root curves while another runs straight to an elbow and breaks.
+
+      0.16   a tail: continuous undulation
+      0.28   still a tail, the roots curve smoothly into hooks
+      0.40   straight runs that break at hard corners, and the knuckle
+             swell lands on the break where it can be seen
+
+On the cliff the roots run straight out on the plateau and break at an
+elbow over the lip. Path only; worst ring share unmoved.

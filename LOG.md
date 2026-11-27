@@ -5177,3 +5177,32 @@ underlay behind them.
 
 Size overshot once on the way -- at 0.1 with the filled cell the canopy
 swallowed the tree -- and sits at 0.062 with four sprigs a segment.
+
+## Two tiers: a blocker and a garnish
+
+The thing that kept breaking it was asking one asset to be both the mass
+and the edge. A dense cell makes mush when it is the whole foliage; a
+sparse one makes scratch. Both cells already existed -- the dense plume
+from the first attempt and the sparse sprig from the second -- and each
+was being made to do the other's job.
+
+      tier one   a few big cards of the DENSE plume cell, set inside each
+                 branchlet system where its wood is thickest. They block,
+                 they hold the silhouette, they give the canopy a solid
+                 middle. Nothing finer can do it: a sparse sprig blown up
+                 only reads as a bigger sparse sprig.
+      tier two   small sprigs scattered along the branchlets, over and
+                 past the cores, breaking their edge and carrying detail.
+
+Drawn in that order, mass first. The dense cell that was wrong as the
+whole foliage is right as a blocker behind a scatter.
+
+      core 1.35 x the branchlet length   a dome that swallowed the crown
+      core 0.42, three a system          fills one branchlet system
+
+The canopy has solidity in its middle and a broken fringe, which is what
+neither tier could give on its own.
+
+Still to do: the core cards are flat discs turned to face out of the
+canopy, so they will swing when the camera orbits. They want either a
+slight bend or a third card crossing, and the LOD chain is still untouched.

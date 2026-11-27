@@ -23,7 +23,8 @@
     const o = Object.assign({ from: 0.34, every: 0.07, len: 0.3, fork: 2, droop: 0.42, seg: 6,
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
       orders: 3, kids: 2, shrink: 0.56, open: 1.5, distal: 2.2,
-      sprigs: 4, size: 0.062, wide: 0.011, seed: 23, R0: 0.2 }, opt);
+      core: 0.42, cores: 3,
+      sprigs: 3, size: 0.05, wide: 0.011, seed: 23, R0: 0.2 }, opt);
     const r = rng(o.seed * 374761393);
 
     // where a branchlet may sprout: along a core branch, once the wood is thin enough to carry one
@@ -122,7 +123,47 @@
       }
     }
 
-    // sprigs: a small card each, rolled about the branchlet and tipped out from it
+    // TIER ONE: the core. A few big cards with the dense plume cell, sitting inside each branchlet system where
+    // its wood is thickest. They are the mass -- they block, they hold the silhouette, they give the canopy a
+    // solid middle. Nothing finer can do that job: a sparse sprig blown up only reads as a bigger sparse sprig.
+    const coreAt = [];
+    for (const pa of paths) {
+      if (pa.depth !== 0) continue;
+      const N = pa.pts.length;
+      for (let c = 0; c < o.cores; c++) {
+        const u = 0.35 + 0.42 * (c + r()) / o.cores, i = Math.min(N - 2, Math.max(1, Math.round(u * (N - 1))));
+        const t = unit([pa.pts[i + 1][0] - pa.pts[i][0], pa.pts[i + 1][1] - pa.pts[i][1], pa.pts[i + 1][2] - pa.pts[i][2]]);
+        const away = unit([pa.pts[i][0] - mid[0], pa.pts[i][1] - mid[1] + 0.05, pa.pts[i][2] - mid[2]]);
+        coreAt.push({ p: pa.pts[i], t, away, u });
+      }
+    }
+    const nC = coreAt.length, cp = new Float32Array(nC * 12), cn = new Float32Array(nC * 12), cuv = new Float32Array(nC * 8), cc = new Float32Array(nC * 12), cidx = new Uint32Array(nC * 6);
+    let cv = 0, ci = 0, cm = 0;
+    for (const C of coreAt) {
+      const sz = o.len * o.core * (0.78 + 0.5 * r());
+      const roll = r() * Math.PI * 2;
+      const u0 = unit(cross3(C.t, C.away)), v0 = cross3(C.t, u0);
+      const face = [0, 1, 2].map((i) => u0[i] * Math.cos(roll) + v0[i] * Math.sin(roll));
+      // the card stands across the view out of the canopy, turned a little so the two on a branchlet do not align
+      const across = unit(cross3(C.away, face)), upc = unit(cross3(across, C.away));
+      const flut = r(), phase = r();
+      for (let w = 0; w < 4; w++) {
+        const sx = (w === 0 || w === 3) ? -1 : 1, sy = (w < 2) ? -1 : 1, k = cv;
+        for (let i = 0; i < 3; i++) {
+          cp[k * 3 + i] = C.p[i] + across[i] * sz * 0.62 * sx + upc[i] * sz * 0.62 * sy + C.away[i] * sz * 0.1;
+          cn[k * 3 + i] = C.away[i];
+          cc[k * 3 + i] = i === 0 ? C.u : i === 1 ? flut : phase;
+        }
+        cuv[k * 2] = (w === 0 || w === 3) ? 0 : 1; cuv[k * 2 + 1] = (w < 2) ? 0 : 1;
+        cv++;
+      }
+      const o4 = cm * 4;
+      cidx[ci++] = o4; cidx[ci++] = o4 + 1; cidx[ci++] = o4 + 2;
+      cidx[ci++] = o4; cidx[ci++] = o4 + 2; cidx[ci++] = o4 + 3;
+      cm++;
+    }
+
+    // TIER TWO: the garnish. Small sprigs on the branchlets, breaking the core's edge and giving it detail.
     const nL = leafAt.length, lp = new Float32Array(nL * 12), ln = new Float32Array(nL * 12), lu = new Float32Array(nL * 8), lc = new Float32Array(nL * 12), lidx = new Uint32Array(nL * 6);
     let v = 0, ii = 0, made = 0;
     for (const L of leafAt) {
@@ -150,8 +191,9 @@
     }
     return {
       stem: { pos: sp, nrm: sn, uv: su, col: sc, idx: sidx.subarray(0, b) },
+      core: { pos: cp, nrm: cn, uv: cuv, col: cc, idx: cidx.subarray(0, ci) },
       leaf: { pos: lp, nrm: ln, uv: lu, col: lc, idx: lidx.subarray(0, ii) },
-      twigs: paths.length, sprigs: made };
+      twigs: paths.length, sprigs: made, cores: cm };
   }
   window.Twigs = { build };
 })();

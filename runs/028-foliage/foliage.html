@@ -96,6 +96,28 @@ function frondAtlas() {
   }
   const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
 }
+
+// TIER ONE's cell: a dense plume -- many leaves over a soft underlay, one cell filling the whole texture. This is
+// the cell that was wrong when a sheet had to BE the foliage; as a blocker behind a scatter of sprigs it is right.
+function plumeAtlas() {
+  const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
+  const rnd = (() => { let s = 4242; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
+  x.fillStyle = 'rgba(226,236,242,0.96)';
+  for (let i = 0; i < 58; i++) {
+    const a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), 0.62) * 196;
+    x.beginPath(); x.ellipse(256 + Math.cos(a) * rr, 256 + Math.sin(a) * rr * 0.86, 52 + rnd() * 44, 40 + rnd() * 34, rnd() * 3, 0, Math.PI * 2); x.fill();
+  }
+  for (let i = 0; i < 150; i++) {
+    const a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), 0.5) * 232;
+    const px = 256 + Math.cos(a) * rr, py = 256 + Math.sin(a) * rr * 0.9;
+    const ll = 26 + rnd() * 34, lw = 12 + rnd() * 12, tone = 206 + Math.floor(rnd() * 44);
+    x.save(); x.translate(px, py); x.rotate(a + (rnd() - 0.5) * 1.4);
+    x.fillStyle = 'rgb(' + (tone - 24) + ',' + tone + ',' + Math.min(255, tone + 6) + ')';
+    x.beginPath(); x.ellipse(0, 0, ll * 0.5, lw, 0, 0, Math.PI * 2); x.fill(); x.restore();
+  }
+  const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
+}
+const coreMat = new T.MeshStandardMaterial({ map: plumeAtlas(), alphaTest: 0.5, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.84, metalness: 0 });
 const stemMat = new T.MeshStandardMaterial({ color: new T.Color(0x8e8375).convertSRGBToLinear(), side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.95, metalness: 0 });
 const frondMat = new T.MeshStandardMaterial({ map: frondAtlas(), alphaTest: 0.42, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.8, metalness: 0 });
 function leafAtlas() {
@@ -130,6 +152,7 @@ function addShape(i) {
       from: +(qs.get('from') || 0.34), every: +(qs.get('every') || 0.07), len: +(qs.get('len') || 0.3),
       fork: +(qs.get('fork') || 2), droop: +(qs.get('droop') || 0.42), sprigs: +(qs.get('sprigs') || 5),
       size: +(qs.get('size') || 0.055), wide: +(qs.get('wide') || 0.011),
+      core: +(qs.get('core') || 1.35), cores: +(qs.get('cores') || 2),
       lean: +(qs.get('lean') || 1.25), out: +(qs.get('out') || 0.4), hold: +(qs.get('hold') || 0.55), wander: +(qs.get('wander') || 0.1),
       orders: +(qs.get('orders') || 3), kids: +(qs.get('kids') || 2), shrink: +(qs.get('shrink') || 0.56), open: +(qs.get('open') || 1.5), distal: +(qs.get('distal') || 2.2) });
     const hang = (buf, material, cast) => {
@@ -143,6 +166,7 @@ function addShape(i) {
       const mm = new T.Mesh(g2, material); mm.castShadow = cast; mm.receiveShadow = true; m.add(mm);
     };
     hang(W.stem, stemMat, true);
+    hang(W.core, coreMat, true);          // the mass goes down first
     hang(W.leaf, frondMat, true);
     window.__twigs = W.twigs; window.__sprigs = W.sprigs;
   }

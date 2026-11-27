@@ -687,7 +687,10 @@
   }
 
   // level ground at height 0, for a grown tree that is given no other. Marked, so that whoever draws the tree need not draw it.
-  const level = Object.assign((x, y, z) => y, { level: true });
+  // Level ground is soil. It said nothing about being soft, so `softAt` was null and a root on it could never go
+  // under: every root was pinned to the surface, and a bundle splaying open at the foot with nowhere to go but
+  // sideways is a flat disc. That was the plate. A ground that is nothing but ground is diggable everywhere.
+  const level = Object.assign((x, y, z) => y, { level: true, soft: () => 1 });
 
   const api = { grow, sprout };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Trees = api;

@@ -4708,3 +4708,37 @@ The rule I keep relearning, now stated as sharply as I can: **a measure is
 a claim about where the fault is, and if that claim is wrong the number
 will be clean.** The way out is not a better number but a reading that
 cannot be aggregated -- what is at this place, and whose is it.
+
+## Better roots: fewer, heavier, and the buttress climbs
+
+`feet` 8 -> 5, `roots` 0.9 -> 1.1. The foot was too solid and the roots
+too slight to show once clear of it; plate.js and the picture agreed for
+once, fill 0.249 to 0.254 against a healthy 0.17 to 0.23. Eight roots'
+worth of collar wood crowded into one place is what filled it, and each
+root was then too thin to read by the time it left.
+
+      A  roots 1.4, feet 8             longer, still lost in the base
+      B  roots 1.1, feet 5             long arms reaching, arching,
+                                       diving; a tighter base. Taken.
+      C  roots 1.4, feet 5, grip 1.2   massive trunk, blocky base, roots
+                                       breaking into disconnected chunks
+
+      leaving   6 to 7 (3 wires)  ->  4 to 5 (1 to 2 wires)
+
+### What the apron was
+
+The flat apron under the trunk survived the skirt, the collar, the elbow
+fill and `rise` -- four guesses, four misses. Colouring by layer settled
+it in one render: it is **red, layer 6, root bands**. Five roots' collars
+merging into a low ring round the trunk, with the roots running out of
+it. That is a root flare and it is right; what is wrong is its
+proportion. It spreads sideways and barely rises.
+
+A buttress climbs. The height boost at the collar was 1.1 at most, on a
+band 0.62 rho tall, so the fin stood a fraction of a trunk radius proud
+of the ground and read as a shelf. 3.2 now, so the collar is a wall of
+wood going up the trunk rather than a skirt lying round it.
+
+**Noted, not chased:** a broad blue patch in the layer view is bark
+covering one whole face of the trunk, which is not what bark should read
+as. Separate from the roots.

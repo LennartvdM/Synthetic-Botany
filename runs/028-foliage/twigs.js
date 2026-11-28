@@ -25,18 +25,30 @@
       orders: 3, kids: 3, shrink: 0.56, open: 1.5, distal: 2.2, sprout: 0.2, inner: 0.5,
       core: 0.5, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 2, mid: null,
       sprigs: 2, size: 0.056, wide: 0.0055, seed: 23, R0: 0.2,
-      node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8, vary: 0.4 }, opt);
+      node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8, vary: 0.4, bunch: 0 }, opt);
     const r = rng(o.seed * 374761393);
 
     // where a branchlet may sprout: along a core branch, once the wood is thin enough to carry one
     const seats = [];
     for (const s of tree.strands) {
-      if (s.loop) continue; let since = 1e9;
+      if (s.loop) continue; let since = 1e9, gap = o.every;
       for (let k = Math.max(s.root, 1); k < s.K; k++) {
         const rho = s.rho[k]; if (rho > o.from * o.R0) { since = 1e9; continue; }
         const p = [s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]];
         const step = H(p[0] - s.X[k * 3 - 3], p[1] - s.X[k * 3 - 2], p[2] - s.X[k * 3 - 1]);
-        since += step; if (since < o.every) continue; since = 0;
+        // `bunch`: the chance the next gap is a short one, so branchlets come in clusters with bare wood
+        // between rather than at a constant interval, which is a comb and not a branch. It works on a stub at
+        // `every` 0.07 -- twos and threes with gaps -- and it is OFF, because at the seat density a crown wants
+        // it cannot work at all. A gap shorter than the strand's own sample spacing is not shorter, and at
+        // `every` 0.03 the gaps are ALREADY at that floor: the short gap cannot shorten, only the long gap can
+        // lengthen, and the dial thins the crown by a quarter instead of clustering it. Clustering needs seats
+        // that are not already as close as the wood can carry them.
+        // Before that it was a heavy-tailed gap, which did not cluster either: powering a uniform draw by 3
+        // gives a tail of only 2.2x the mean.
+        // drawn ONCE when a seat is taken and held until the next, not redrawn every step: redrawn, the seat
+        // fires on the smallest of a dozen draws and the dial reads as "more seats" whatever its shape.
+        since += step; if (since < gap) continue;
+        since = 0; gap = o.bunch ? (r() < o.bunch ? o.every * 0.2 : o.every * (1 + 1.7 * o.bunch)) : o.every;
         // where along the branch: a tree carries its fine wood at the ends, not evenly down its length. Without
         // this every branch is furred along its whole run and the tree is a hairy hand.
         const tipness = (k - s.root) / Math.max(1, s.K - 1 - s.root);

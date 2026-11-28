@@ -5472,3 +5472,45 @@ beyond four cells and their mirrors. `deep` bakes into the texture what
 is really light failing to reach the inside of a crown, and so cannot
 answer to where the sun is. No baked atlas with normal and translucency
 maps. No LOD chain.
+
+## Clustering, and a floor that forbids it
+
+Branchlet seats arrive at a constant interval, which is a comb and not
+a branch, so `bunch` makes the next gap a short one with some chance
+and lengthens the gaps that are not short to match. On a stub at
+`every` 0.07 it does what it should: twos and threes with bare wood
+between, at the same count.
+
+It is off, because at the seat density a crown wants it cannot work at
+all. A gap shorter than the strand's own sample spacing is not shorter.
+At `every` 0.03 the gaps are ALREADY at that floor -- that is what the
+earlier finding about `every` 0.022 and 0.030 giving the same tree was
+saying -- so the short gap cannot shorten and only the long gap can
+lengthen. The dial thinned the crown by a quarter, 600 branchlets to
+448, and clustered nothing. Clustering needs seats that are not already
+as close as the wood can carry them, which would mean resampling the
+strands finer, which is a change to the tree and not to the foliage.
+
+Two wrong versions before that one, both the same kind of mistake:
+
+- A heavy-tailed gap, the obvious first try. Powering a uniform draw by
+  3 gives a tail of only 2.2 times the mean, so it read as "more
+  seats" and nothing else.
+- The gap redrawn on EVERY step rather than once when a seat is taken.
+  The seat then fires on the smallest of a dozen draws, so whatever
+  shape the distribution has, the dial reads as "more seats". Counts
+  went 70, 94, 191 across the range; held properly they go 70, 69, 82,
+  which is a dial that changes the arrangement and not the density.
+
+And a confound in the bench, caught before it was believed: the light
+test was still on, culling the stub's seats by a crown geometry a stub
+does not have. A grid about seat spacing has to switch it off.
+
+### The frond's four cells
+
+They differed only in how many pairs they carried, which is four near
+copies. A long slender frond and a short broad one are different
+leaves: `H` and `reach` now vary with the cell too, and with the mirror
+that is eight to draw the garnish from. Each ends in a terminal
+leaflet, where before the rachis ran past the last pair as a bare
+spike.

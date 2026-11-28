@@ -44,7 +44,7 @@
   // RIGHT half: the left one has to be turned past the half-circle to face the other way.
   function drawFrond(x, H, reach0, pairs, rnd, base, span) {
     x.strokeStyle = leafTone(rnd, base, span * 0.4); x.lineWidth = Math.max(0.7, H * 0.011);
-    x.beginPath(); x.moveTo(0, 0); x.lineTo(0, -H); x.stroke();
+    x.beginPath(); x.moveTo(0, 0); x.lineTo(0, -H * 0.97); x.stroke();
     for (let i = 0; i < pairs; i++) {
       const v = (i + 0.4) / (pairs + 0.25), y = -v * H, reach = reach0 * Math.pow(1 - v * 0.55, 0.8);
       for (const sgn of [-1, 1]) {
@@ -55,6 +55,11 @@
         x.fillStyle = leafTone(rnd, base, span); drawLeaf(x, ll, lw); x.restore();
       }
     }
+    // a frond ends in a terminal leaflet, not in a bare spike of rachis
+    x.save(); x.translate(0, -H * 0.93); x.rotate(-Math.PI / 2);
+    x.fillStyle = leafTone(rnd, base, span);
+    drawLeaf(x, reach0 * 0.52 * (0.85 + 0.3 * rnd()), reach0 * 0.11);
+    x.restore();
   }
 
   // TIER TWO's cell: one frond, four of them, at a size where a single card is a readable spray.
@@ -62,8 +67,12 @@
     const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
     const rnd = (() => { let s = 90210; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
     for (let cell = 0; cell < 4; cell++) {
-      x.save(); x.translate((cell & 1) * 256 + 128, (cell >> 1) * 256 + 240);
-      drawFrond(x, 206, 100, 8 + (cell % 4), rnd, 214, 38);
+      // the four cells differ in more than how many pairs they carry: a long slender frond and a short broad
+      // one are different leaves, and with the mirror that is eight to draw the garnish from rather than four
+      // near-copies.
+      const H = 196 + cell * 10, reach = 118 - cell * 11;
+      x.save(); x.translate((cell & 1) * 256 + 128, (cell >> 1) * 256 + 246 - (206 - H) * 0.5);
+      drawFrond(x, H, reach, 7 + cell * 2, rnd, 214, 38);
       x.restore();
     }
     const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;

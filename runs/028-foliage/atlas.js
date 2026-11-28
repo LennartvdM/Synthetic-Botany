@@ -28,8 +28,8 @@
   // All of these are much gentler than they were. The depth is the crown's job now (`shade` in twigs.js, which
   // darkens by how deep in the crown a piece sits); the cell's own shading is only the leaf-scale part of it,
   // and when it tried to carry the whole thing it both fought the volume and crushed the darks.
-  const TEX = { blunt: 0.6, lift: 36, range: 1, green: 0, rake: 1.0, deep: 62, grain: 1.6,
-    heart: 10, under: 12, root: 26, wash: 0.14, stalk: 0.45 };
+  const TEX = { blunt: 0.6, lift: 36, range: 1, green: 0, rake: 1.0, deep: 62, grain: 1, body: 1, spray: 1,
+    heart: 34, under: 12, root: 26, wash: 0.3, stalk: 0.45 };
   const DEF = Object.assign({}, TEX);
 
   function drawLeaf(x, ll, lw) {
@@ -104,33 +104,92 @@
     const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
   }
 
-  // TIER ONE's cell: the same frond, many times over, small and packed and turned every which way, under a
-  // sparser bed of larger ones. It blocks; it is not asked to be a readable spray, and nothing in it is a shape
-  // the garnish does not also have.
+  // TIER ONE's cell: a mass, PAINTED, with leaves at the same size as the garnish's standing in and over it.
+  //
+  // It used to be the same frond shrunk and stamped over and over until the cell filled. That is how you get
+  // density out of a stamp and it is not how foliage looks: the inside of a canopy is not made of smaller
+  // leaves than the outside, and a cell full of miniatures reads as a different, finer plant behind the real
+  // one. The plume card and the garnish card carry the same pixels per world unit, so a frond drawn here at
+  // half the garnish's pixel size IS half the size in the tree.
+  //
+  // So the density comes from a body instead. An airbrushed mass is laid down first -- soft dabs built up
+  // until the middle is solid, thinning to a ragged edge -- and the leaves go on at full size, thick enough
+  // round the rim to make the silhouette leafy and scattered enough over the middle to say what the mass is
+  // made of. The body is where the shading goes, because it is the only part of the cell continuous enough to
+  // take a gradient without the step from one leaf to the next reading as the shading itself.
   function plumeAtlas() {
     const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
     const rnd = (() => { let s = 4242; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
-    const G = TEX.grain || 1;
-    for (const pass of [0, 1]) {
-      const n = Math.round((pass ? 62 : 22) * G), far = pass ? 164 : 132;
-      for (let i = 0; i < n; i++) {
-        const a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), pass ? 0.5 : 0.72) * far;
-        const H = ((pass ? 120 : 172) + rnd() * 54) / G;
-        // the bed is UNDER the top pass and belongs below it in value. It was the paler of the two, which is
-        // the one thing a layer beneath another cannot be.
-        // `heart` then darkens by where in the cell a frond fell: the middle of a plume is the inside of a
-        // handful of foliage and sees no sky; its rim is the outside and sees nothing else.
-        const lit = pass ? 226 : 212 - TEX.under;
-        x.save(); x.translate(256 + Math.cos(a) * rr, 256 + Math.sin(a) * rr * 0.92); x.rotate(rnd() * Math.PI * 2);
-        drawFrond(x, H, H * (0.26 + 0.1 * rnd()), 6 + Math.floor(rnd() * 5), rnd,
-          lit - TEX.deep - TEX.heart * (1 - rr / far), 30);
-        x.restore();
-      }
+    const deep = TEX.deep;
+    // A frond is 0.077 of a world unit and this card is 0.32 across, so about four of them fit: around 110
+    // pixels in a 512 cell, and no amount of canvas resolution changes that. Drawn at half it, as this cell
+    // did, the core is a finer plant standing behind the real one.
+    const LEAF = 104;
+    const dab = (px, py, R, t, al) => {
+      const col = leafTone(rnd, t, 0).slice(4, -1), g = x.createRadialGradient(px, py, 0, px, py, R);
+      g.addColorStop(0, 'rgba(' + col + ',' + al + ')');
+      g.addColorStop(0.55, 'rgba(' + col + ',' + (al * 0.46) + ')');
+      g.addColorStop(1, 'rgba(' + col + ',0)');
+      x.fillStyle = g; x.fillRect(px - R, py - R, R * 2, R * 2);
+    };
+    // Clumps, not a rosette. Scattered evenly by angle the cell comes out radially symmetric, a snowflake,
+    // and foliage is lumpy: a few knots of leaves that run together where they meet.
+    const CL = 8, hub = [[256, 256, 52 + rnd() * 18]];
+    for (let i = 1; i < CL; i++) {
+      const a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), 0.45) * 72;
+      hub.push([256 + Math.cos(a) * rr, 256 + Math.sin(a) * rr * 0.95, 38 + rnd() * 28]);
     }
-    // and a continuous fall into the middle over the top of it all, so the step from one frond to the next
-    // does not read as the shading
-    const gr = x.createRadialGradient(256, 250, 8, 256, 256, 184);
-    gr.addColorStop(0, 'rgba(0,0,0,0.62)'); gr.addColorStop(0.5, 'rgba(0,0,0,0.34)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    const at = (reach) => { const h = hub[Math.floor(rnd() * CL)], a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), 0.6) * h[2] * reach;
+      return [h[0] + Math.cos(a) * rr, h[1] + Math.sin(a) * rr * 0.95]; };
+    const fall = (px, py) => Math.min(1, Math.hypot(px - 256, py - 256) / 150);
+
+    // 1. THE LEAVES UNDER. Full size, every which way, enough of them to be a thicket.
+    const n = Math.round(52 * TEX.grain);
+    for (let i = 0; i < n; i++) {
+      const p = at(1.0), H = LEAF * (0.86 + 0.34 * rnd());
+      x.save(); x.translate(p[0], p[1]); x.rotate(rnd() * Math.PI * 2);
+      drawFrond(x, H, H * (0.5 + 0.12 * rnd()), 6 + Math.floor(rnd() * 5), rnd,
+        226 - deep - TEX.heart * (1 - fall(p[0], p[1])) * 0.8, 50);
+      x.restore();
+    }
+
+    // 2. THE VEIL. Airbrushed over what is already there, thick through the middle and thin at the rim, so
+    // the leaves inside DISSOLVE into a mass while the ones at the edge keep their shape. This is the step
+    // that was missing: the density was coming from more and smaller stamps, where it should come from
+    // painting the ones that are there together. It is darker than they are, being the part of the mass no
+    // light reaches, and being continuous it can hold a gradient -- which is where the shading goes, rather
+    // than in the step from one leaf to the next.
+    for (let i = 0; i < Math.round(420 * TEX.body); i++) {
+      const p = at(1.25), f = fall(p[0], p[1]);
+      dab(p[0], p[1], 24 + rnd() * 44,
+        226 - deep - TEX.under - 22 - TEX.heart * (1 - f) + Math.floor(rnd() * 14), 0.44 * (1 - 0.6 * f));
+    }
+    for (let i = 0; i < Math.round(900 * TEX.spray); i++) {
+      const p = at(1.5), f = fall(p[0], p[1]);
+      dab(p[0], p[1], 2 + rnd() * 7, 226 - deep - 16 - TEX.heart * (1 - f) + Math.floor(rnd() * 34), 0.45);
+    }
+
+    // 3. THE LEAVES OVER. Half at the rim of a clump, turned outward, where a leaf has a silhouette to break;
+    // half anywhere, so the middle keeps leaves standing ON the mass. A veil that leaves nothing showing
+    // through it is not a mass of foliage, it is a smudge -- the interior should read as the same leaves,
+    // lower in contrast, not as the absence of them.
+    const m = Math.round(46 * TEX.grain);
+    for (let i = 0; i < m; i++) {
+      const rim = i % 2 === 0;
+      const h = hub[Math.floor(rnd() * CL)], a = rnd() * Math.PI * 2;
+      const k = rim ? h[2] * 1.28 : Math.pow(rnd(), 0.6) * h[2] * 0.9;
+      const px = h[0] + Math.cos(a) * k, py = h[1] + Math.sin(a) * k * 0.95;
+      const out = Math.atan2(py - 256, px - 256), H = LEAF * (0.9 + 0.3 * rnd());
+      x.save(); x.translate(px, py);
+      x.rotate(rim ? out + Math.PI / 2 + (rnd() - 0.5) * 2.2 : rnd() * Math.PI * 2);
+      drawFrond(x, H, H * (0.5 + 0.12 * rnd()), 6 + Math.floor(rnd() * 5), rnd,
+        226 - deep - TEX.heart * (1 - fall(px, py)) * (rim ? 0.35 : 0.8), 50);
+      x.restore();
+    }
+
+    // 4. and a continuous fall into the middle over the top of it all
+    const gr = x.createRadialGradient(256, 240, 10, 256, 256, 200);
+    gr.addColorStop(0, 'rgba(0,0,0,0.58)'); gr.addColorStop(0.5, 'rgba(0,0,0,0.28)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
     wash(x, gr, 0, 0, 512, 512);
     const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
   }
@@ -176,7 +235,7 @@
     return m;
   }
 
-  const coreMat = unfold(new T.MeshStandardMaterial({ map: plumeAtlas(), vertexColors: true, alphaTest: 0.5, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.84, metalness: 0 }));
+  const coreMat = unfold(new T.MeshStandardMaterial({ map: plumeAtlas(), vertexColors: true, alphaTest: 0.42, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.84, metalness: 0 }));
   const stemMat = unfold(new T.MeshStandardMaterial({ vertexColors: true, color: new T.Color(0x796d5f).convertSRGBToLinear(), side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.95, metalness: 0 }));
   const frondMat = unfold(new T.MeshStandardMaterial({ map: frondAtlas(), vertexColors: true, alphaTest: 0.42, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.8, metalness: 0 }));
 

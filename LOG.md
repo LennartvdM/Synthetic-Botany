@@ -5627,3 +5627,42 @@ whole range living between 0.6 and 1.0, with the RANDOM per-branchlet
 term occupying as much of it as the two terms that describe form.
 Shading that varies as much at random as it does with the form reads as
 noise. `vary` went from 0.4 to 0.12.
+
+## The dense core was shrunken leaves stamped into a mess
+
+Named exactly, from reference: the blocker's density was coming from
+making the same frond SMALLER and stamping it until the cell filled.
+That is how you get density out of a stamp and it is not how foliage
+looks. The inside of a canopy is not made of smaller leaves than the
+outside; a cell full of miniatures reads as a finer plant standing
+behind the real one.
+
+The arithmetic says the same. A frond is 0.077 of a world unit. The
+garnish card is 0.095 across with the frond filling its cell, and the
+plume card is 0.32 across, so a frond drawn here belongs at about 110
+pixels in a 512 cell -- about four across the card, and no amount of
+canvas resolution changes that. `grain` 1.6 drew them at 75 to 109.
+
+The cell is painted now, in the order a painter would:
+
+      1   leaves under, full size, every which way, in seven or eight
+          clumps rather than scattered evenly by angle -- scattered
+          evenly it comes out a rosette, and foliage is lumpy
+      2   a veil of airbrushed dabs over them, thick through the middle
+          and thin at the rim, so the leaves inside DISSOLVE into a
+          mass while the ones at the edge keep their shape
+      3   leaves over: half at a clump's rim turned outward, where a
+          leaf has a silhouette to break; half anywhere, so the middle
+          keeps leaves standing ON the mass
+
+`grain` is how MANY leaves now, not how small. `body` and `spray` are
+the veil and its speckle.
+
+The veil is the part that took three goes. Too thin and the cell is
+leaves with a smudge behind them; too thick and the interior is erased
+and reads as a hole, which is not a mass of foliage either -- the
+inside should be the same leaves at lower contrast, not the absence of
+them. Painting them together is also what makes the shading possible:
+the veil is the only part of the cell continuous enough to hold a
+gradient, where before the step from one leaf to the next was itself
+reading as the shading.

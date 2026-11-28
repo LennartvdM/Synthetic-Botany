@@ -144,9 +144,13 @@ function look(m) {
   const bb = new T.Box3().setFromObject(grid);
   centre = bb.getCenter(new T.Vector3());
   radius = bb.getSize(new T.Vector3()).length() * 0.5;
-  // fit the bounding sphere, with room to spare. Every time this has been a multiplier under one, the pictures
-  // came back cropped and nothing in them could be judged.
-  const d = radius / Math.sin((cam.fov * Math.PI / 180) / 2) * 1.08;
+  // fit the box's width and height against the camera's own, separately. A bounding SPHERE fits too, and
+  // throws away most of the frame whenever the grid is wider than it is tall -- which is whenever there are
+  // more columns than rows, which is usually. Room to spare either way: every time this has been a multiplier
+  // under one the pictures came back cropped and nothing in them could be judged.
+  const sz = bb.getSize(new T.Vector3()).toArray();
+  const tv = Math.tan((cam.fov * Math.PI / 180) / 2), th = tv * cam.aspect;
+  const d = Math.max(sz[ax] * 0.5 / th, sz[ay] * 0.5 / tv) * 1.1 + radius * 0.35;
   const l = Math.hypot(dir[0], dir[1], dir[2]);
   cam.position.set(centre.x + dir[0] / l * d, centre.y + dir[1] / l * d, centre.z + dir[2] / l * d);
   cam.up.set(up[0], up[1], up[2]);

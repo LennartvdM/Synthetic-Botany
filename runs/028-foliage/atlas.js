@@ -89,9 +89,9 @@
     const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
   }
 
-  const coreMat = new T.MeshStandardMaterial({ map: plumeAtlas(), alphaTest: 0.5, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.84, metalness: 0 });
-  const stemMat = new T.MeshStandardMaterial({ color: new T.Color(0x796d5f).convertSRGBToLinear(), side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.95, metalness: 0 });
-  const frondMat = new T.MeshStandardMaterial({ map: frondAtlas(), alphaTest: 0.42, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.8, metalness: 0 });
+  const coreMat = new T.MeshStandardMaterial({ map: plumeAtlas(), vertexColors: true, alphaTest: 0.5, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.84, metalness: 0 });
+  const stemMat = new T.MeshStandardMaterial({ vertexColors: true, color: new T.Color(0x796d5f).convertSRGBToLinear(), side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.95, metalness: 0 });
+  const frondMat = new T.MeshStandardMaterial({ map: frondAtlas(), vertexColors: true, alphaTest: 0.42, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.8, metalness: 0 });
 
   window.Atlas = { TEX, drawLeaf, drawFrond, plumeAtlas, frondAtlas, coreMat, stemMat, frondMat,
     // a pair of materials with their own freshly drawn maps, for a bench showing several atlases at once

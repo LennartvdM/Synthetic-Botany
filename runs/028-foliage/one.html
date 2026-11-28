@@ -86,6 +86,7 @@ function put(buf, material, cast, into) {
   g.setAttribute('position', new T.BufferAttribute(buf.pos, 3));
   g.setAttribute('normal', new T.BufferAttribute(buf.nrm, 3));
   g.setAttribute('uv', new T.BufferAttribute(buf.uv, 2));
+  g.setAttribute('color', new T.BufferAttribute(buf.tin, 3));
   g.setIndex(new T.BufferAttribute(buf.idx, 1));
   const m = new T.Mesh(g, material); m.castShadow = cast; m.receiveShadow = true; into.add(m);
 }

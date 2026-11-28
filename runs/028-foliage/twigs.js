@@ -25,7 +25,7 @@
       orders: 3, kids: 3, shrink: 0.56, open: 1.5, distal: 2.2, sprout: 0.2, inner: 0.5,
       core: 0.75, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 1, mid: null,
       sprigs: 2, size: 0.056, wide: 0.0055, seed: 23, R0: 0.2,
-      node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8 }, opt);
+      node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8, vary: 0.4 }, opt);
     const r = rng(o.seed * 374761393);
 
     // where a branchlet may sprout: along a core branch, once the wood is thin enough to carry one
@@ -123,11 +123,17 @@
     // across the canopy, which is what the close views kept showing.
     let sv = 0, si = 0;
     for (const pa of paths) sv += pa.pts.length * 4, si += (pa.pts.length - 1) * 12;
-    const sp = new Float32Array(sv * 3), sn = new Float32Array(sv * 3), su = new Float32Array(sv * 2), sc = new Float32Array(sv * 3), sidx = new Uint32Array(si);
+    const sp = new Float32Array(sv * 3), sn = new Float32Array(sv * 3), su = new Float32Array(sv * 2), sc = new Float32Array(sv * 3), st = new Float32Array(sv * 3), sidx = new Uint32Array(si);
     let a = 0, b = 0;
     const leafAt = [];
     for (const pa of paths) {
+      // `vary`: one tone per branchlet, carried by its stem, its plumes and its sprigs alike. A canopy built
+      // from one texture is one value everywhere however many cards are in it; a tone per branchlet gives it the
+      // patchiness a crown has, and costs a vertex attribute rather than a second texture.
       const base = a, N = pa.pts.length, flut = r(), phase = r();
+      // centred, not one-sided: a tone drawn from [1 - vary, 1] only ever darkens, so the crown goes dimmer
+      // rather than patchier, and a measure of its spread comes back saying the values narrowed.
+      pa.tone = 1 + o.vary * (r() - 0.5);
       const away = unit([pa.pts[0][0] - mid[0], pa.pts[0][1] - mid[1] + 0.05, pa.pts[0][2] - mid[2]]);
       for (let i = 0; i < N; i++) {
         const u = i / (N - 1);
@@ -144,6 +150,7 @@
             sn[a * 3] = nm[0]; sn[a * 3 + 1] = nm[1]; sn[a * 3 + 2] = nm[2];
             su[a * 2] = e; su[a * 2 + 1] = u;
             sc[a * 3] = pa.t0 * 0.3 + u * 0.7; sc[a * 3 + 1] = flut; sc[a * 3 + 2] = phase;
+            st[a * 3] = st[a * 3 + 1] = st[a * 3 + 2] = pa.tone;
             a++;
           }
         }
@@ -160,7 +167,7 @@
         if (i > 0 && i % o.node === 0) { const nd = i / o.node;
           for (let c = 0; c < o.sprigs; c++) if (r() < 0.5 * share * o.node) {
             const roll = o.turn ? (nd * o.turn + c / o.sprigs) * Math.PI * 2 : r() * Math.PI * 2;
-            leafAt.push({ p: pa.pts[i], t, n, away, u, flut, phase, roll, side: (c + i) % 2 ? 1 : -1, small: pa.depth < o.orders - 1 });
+            leafAt.push({ p: pa.pts[i], t, n, away, u, flut, phase, roll, tone: pa.tone, side: (c + i) % 2 ? 1 : -1, small: pa.depth < o.orders - 1 });
           } }
       }
     }
@@ -178,11 +185,11 @@
         const u = 0.35 + 0.42 * (c + r()) / o.cores, i = Math.min(N - 2, Math.max(1, Math.round(u * (N - 1))));
         const t = unit([pa.pts[i + 1][0] - pa.pts[i][0], pa.pts[i + 1][1] - pa.pts[i][1], pa.pts[i + 1][2] - pa.pts[i][2]]);
         const away = unit([pa.pts[i][0] - mid[0], pa.pts[i][1] - mid[1] + 0.05, pa.pts[i][2] - mid[2]]);
-        coreAt.push({ p: pa.pts[i], t, away, u, L: pa.L });
+        coreAt.push({ p: pa.pts[i], t, away, u, L: pa.L, tone: pa.tone });
       }
     }
     const COLS = o.bend > 0 ? 3 : 2, CV = COLS * 2, CI = (COLS - 1) * 6;
-    const nC = coreAt.length, cp = new Float32Array(nC * CV * 3), cn = new Float32Array(nC * CV * 3), cuv = new Float32Array(nC * CV * 2), cc = new Float32Array(nC * CV * 3), cidx = new Uint32Array(nC * CI);
+    const nC = coreAt.length, cp = new Float32Array(nC * CV * 3), cn = new Float32Array(nC * CV * 3), cuv = new Float32Array(nC * CV * 2), cc = new Float32Array(nC * CV * 3), ct = new Float32Array(nC * CV * 3), cidx = new Uint32Array(nC * CI);
     let cv = 0, ci = 0, cm = 0;
     for (const C of coreAt) {
       // sized against the twig that carries it, not against the first order, so a plume on a child is a child's
@@ -214,6 +221,7 @@
             cp[k * 3 + i] = C.p[i] + across[i] * sz * 0.62 * fx + upc[i] * sz * 0.62 * o.long * sy + out[i] * (sz * 0.1 + outAmt);
             cn[k * 3 + i] = unit([0, 1, 2].map((j) => out[j] + across[j] * fx * o.bend * 0.8))[i];
             cc[k * 3 + i] = i === 0 ? C.u : i === 1 ? flut : phase;
+            ct[k * 3 + i] = C.tone === undefined ? 1 : C.tone;
           }
           cuv[k * 2] = (fx + 1) / (COLS === 2 ? 2 : 2); cuv[k * 2 + 1] = ry;
           cv++;
@@ -233,7 +241,7 @@
     // edge-on, which is where a canopy shows its worst: the garnish thins out exactly on the branchlets whose
     // seats happen to face across the view, and the thinning moves as the camera does.
     const TU = Math.max(1, Math.round(o.tuft));
-    const nL = leafAt.length, lp = new Float32Array(nL * TU * 12), ln = new Float32Array(nL * TU * 12), lu = new Float32Array(nL * TU * 8), lc = new Float32Array(nL * TU * 12), lidx = new Uint32Array(nL * TU * 6);
+    const nL = leafAt.length, lp = new Float32Array(nL * TU * 12), ln = new Float32Array(nL * TU * 12), lu = new Float32Array(nL * TU * 8), lc = new Float32Array(nL * TU * 12), lt = new Float32Array(nL * TU * 12), lidx = new Uint32Array(nL * TU * 6);
     let v = 0, ii = 0, made = 0;
     for (const L of leafAt) {
       const sz = o.size * (0.62 + 0.7 * r()) * (L.small ? 0.78 : 1);
@@ -263,6 +271,7 @@
             lp[k * 3 + i] = L.p[i] + alongA[i] * sz * 1.7 * sy + wide[i] * sz * 0.85 * sx;
             ln[k * 3 + i] = unit([0, 1, 2].map((j) => nrm[j] + (L.away[j] - nrm[j]) * o.norm))[i];
             lc[k * 3 + i] = i === 0 ? L.u : i === 1 ? L.flut : L.phase;
+            lt[k * 3 + i] = L.tone === undefined ? 1 : L.tone;
           }
           lu[k * 2] = cu + ((w === 0 || w === 3) ? 0 : 0.5); lu[k * 2 + 1] = cv + (sy ? 0.5 : 0);
           v++;
@@ -274,9 +283,9 @@
       made++;
     }
     return {
-      stem: { pos: sp, nrm: sn, uv: su, col: sc, idx: sidx.subarray(0, b) },
-      core: { pos: cp, nrm: cn, uv: cuv, col: cc, idx: cidx.subarray(0, ci) },
-      leaf: { pos: lp, nrm: ln, uv: lu, col: lc, idx: lidx.subarray(0, ii) },
+      stem: { pos: sp, nrm: sn, uv: su, col: sc, tin: st, idx: sidx.subarray(0, b) },
+      core: { pos: cp, nrm: cn, uv: cuv, col: cc, tin: ct, idx: cidx.subarray(0, ci) },
+      leaf: { pos: lp, nrm: ln, uv: lu, col: lc, tin: lt, idx: lidx.subarray(0, ii) },
       twigs: paths.length, sprigs: made, cores: cm };
   }
   window.Twigs = { build };

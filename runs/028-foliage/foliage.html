@@ -91,6 +91,7 @@ function addShape(i) {
         g2.setAttribute('normal', new T.BufferAttribute(buf.nrm, 3));
         g2.setAttribute('uv', new T.BufferAttribute(buf.uv, 2));
         g2.setAttribute('wind', new T.BufferAttribute(buf.col, 3));
+        g2.setAttribute('color', new T.BufferAttribute(buf.tin, 3));
         g2.setIndex(new T.BufferAttribute(buf.idx, 1));
         const mm = new T.Mesh(g2, material); mm.castShadow = cast; mm.receiveShadow = true; fol.add(mm);
       };

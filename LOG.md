@@ -5514,3 +5514,47 @@ leaves: `H` and `reach` now vary with the cell too, and with the mirror
 that is eight to draw the garnish from. Each ends in a terminal
 leaflet, where before the rachis ran past the last pair as a bare
 spike.
+
+## Shading baked into the cells
+
+A card is flat, so the only depth it can have is painted on it. Without
+this a plume is one value from its heart to its rim and reads as a
+cut-out of foliage rather than a handful of it.
+
+      heart   how much darker a frond drawn near the middle of a plume
+              cell is than one at its rim. The middle of a plume is the
+              inside of a handful of foliage and sees no sky; the rim is
+              the outside and sees nothing else.
+      under   the bed pass darker than the top pass. It was the PALER of
+              the two, which is the one thing a layer beneath another
+              cannot be, and it had been that way since the plume cell
+              was first drawn.
+      root    a frond darker toward the base of its rachis. Those
+              leaflets sit under the ones beyond them and under whatever
+              else the branchlet carries; the tip is what stands in the
+              light.
+      wash    a continuous fall over the top of all of it -- radial into
+              the plume's middle, and from the stalk upward along a
+              garnish frond -- so the step from one frond to the next
+              does not itself read as the shading.
+
+The wash goes on with `source-atop`, which keeps it inside the leaves'
+own alpha. `multiply` would have filled the gaps between them with an
+opaque grey haze, because multiplying into transparency gives grey.
+
+Swept on the cell itself before anything was grown: none is a flat pale
+disc; soft recesses the middle a little; strong takes the heart to near
+black and reads as a hole rather than a shadow. The default sits where
+the heart is in shadow and the rim catches light.
+
+At canopy range it is the difference between a grey fog with a crisp
+fringe and a crown with clumps in it: light masses against shadowed
+pockets, each spray at its own depth. It answers most of what the ream
+said about the blocker reading as cloud from far off -- not because the
+blocker got brighter, but because it stopped being ONE value.
+
+What it still does not do is answer to where the sun is. All of this is
+painted into the texture, so a plume's heart is dark whichever way the
+light comes from. That is the cheap answer and it is the right one for
+a card; the honest one is a translucency or occlusion term, and it is
+still open.

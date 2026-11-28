@@ -20,12 +20,12 @@
   const rng = (s) => { let x = s >>> 0 || 1; return () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return ((x >>> 0) % 100000) / 100000; }; };
 
   function build(tree, opt) {
-    const o = Object.assign({ from: 0.34, every: 0.055, len: 0.5, fork: 2, droop: 0.42, seg: 6,
+    const o = Object.assign({ from: 0.34, every: 0.03, len: 0.5, fork: 2, droop: 0.42, seg: 6,
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
       orders: 3, kids: 3, shrink: 0.56, open: 1.5, distal: 2.2, sprout: 0.2, inner: 0.5,
       core: 0.75, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 1, mid: null,
-      sprigs: 3, size: 0.045, wide: 0.0062, seed: 23, R0: 0.2,
-      node: 1, turn: 0, pitch: 0.5, splay: 1.1, fall: 0.35, lie: 0, norm: 0.7 }, opt);
+      sprigs: 2, size: 0.056, wide: 0.0055, seed: 23, R0: 0.2,
+      node: 1, turn: 0, pitch: 0.5, splay: 1.1, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8 }, opt);
     const r = rng(o.seed * 374761393);
 
     // where a branchlet may sprout: along a core branch, once the wood is thin enough to carry one
@@ -50,6 +50,28 @@
     // that grows one branchlet has to say where the rest of the tree would have been, or every card faces up.
     const mid = o.mid ? o.mid.slice() : [0, 0, 0];
     if (!o.mid) for (const s of seats) for (let i = 0; i < 3; i++) mid[i] += s.p[i] / Math.max(1, seats.length);
+
+    // Where the light is. Nothing above asks how deep in the crown a seat sits -- only how thick its wood is and
+    // how near the end of its branch -- so wood thin enough at the bottom of the tree is furred like wood at the
+    // top, and a tree carries foliage down to its root plate where it would long since have shed it.
+    // `light` is how much of that falls to height within the crown, `rim` how much to distance from its middle.
+    // Both read the crown the seats themselves describe, so nothing is placed: the shape of the lit region comes
+    // out of where the wood went.
+    if ((o.light || o.rim) && seats.length > 2) {
+      let y0 = Infinity, y1 = -Infinity, rmax = 1e-9;
+      for (const s of seats) {
+        y0 = Math.min(y0, s.p[1]); y1 = Math.max(y1, s.p[1]);
+        rmax = Math.max(rmax, H(s.p[0] - mid[0], 0, s.p[2] - mid[2]));
+      }
+      const keep = [];
+      for (const s of seats) {
+        const up = (s.p[1] - y0) / Math.max(1e-9, y1 - y0);
+        const out = H(s.p[0] - mid[0], 0, s.p[2] - mid[2]) / rmax;
+        const p = Math.pow(0.08 + 0.92 * up, o.light) * Math.pow(0.12 + 0.88 * out, o.rim);
+        if (r() < p) keep.push(s);
+      }
+      seats.length = 0; for (const s of keep) seats.push(s);
+    }
 
     // grow one branchlet: a drooping path that forks. returns a list of segments as {a,b,t0,t1,wa,wb}
     const paths = [];
@@ -207,7 +229,11 @@
     }
 
     // TIER TWO: the garnish. Small sprigs on the branchlets, breaking the core's edge and giving it detail.
-    const nL = leafAt.length, lp = new Float32Array(nL * 12), ln = new Float32Array(nL * 12), lu = new Float32Array(nL * 8), lc = new Float32Array(nL * 12), lidx = new Uint32Array(nL * 6);
+    // `tuft`: one card per sprig, or two crossed at right angles. One card is the cheap way and it disappears
+    // edge-on, which is where a canopy shows its worst: the garnish thins out exactly on the branchlets whose
+    // seats happen to face across the view, and the thinning moves as the camera does.
+    const TU = Math.max(1, Math.round(o.tuft));
+    const nL = leafAt.length, lp = new Float32Array(nL * TU * 12), ln = new Float32Array(nL * TU * 12), lu = new Float32Array(nL * TU * 8), lc = new Float32Array(nL * TU * 12), lidx = new Uint32Array(nL * TU * 6);
     let v = 0, ii = 0, made = 0;
     for (const L of leafAt) {
       const sz = o.size * (0.62 + 0.7 * r()) * (L.small ? 0.78 : 1);
@@ -223,20 +249,28 @@
       const across = unit([0, 1, 2].map((i) => outAx[i] + (ownAx[i] - outAx[i]) * o.lie));
       let trueN = unit(cross3(alongA, across));
       if (trueN[0] * L.away[0] + trueN[1] * L.away[1] + trueN[2] * L.away[2] < 0) trueN = trueN.map((q) => -q);
-      const cq = Math.floor(r() * 4), cu = (cq & 1) * 0.5, cv = (cq >> 1) * 0.5;
-      for (let w = 0; w < 4; w++) {
-        const sx = (w === 0 || w === 3) ? -1 : 1, sy = (w < 2) ? 0 : 1, k = v;
-        for (let i = 0; i < 3; i++) {
-          lp[k * 3 + i] = L.p[i] + alongA[i] * sz * 1.7 * sy + across[i] * sz * 0.85 * sx;
-          ln[k * 3 + i] = unit([0, 1, 2].map((j) => trueN[j] + (L.away[j] - trueN[j]) * o.norm))[i];
-          lc[k * 3 + i] = i === 0 ? L.u : i === 1 ? L.flut : L.phase;
+      const cq0 = Math.floor(r() * 4), cq1 = (cq0 + 1 + Math.floor(r() * 3)) % 4;
+      for (let c = 0; c < TU; c++) {
+        // the second card takes a DIFFERENT cell of the atlas. Two copies of one frond crossed at a right angle
+        // read as an asterisk wherever the pair is seen edge-on, because their midribs meet at a point and their
+        // leaflets answer each other exactly.
+        const cq = c ? cq1 : cq0, cu = (cq & 1) * 0.5, cv = (cq >> 1) * 0.5;
+        // the second card keeps the sprig's length and turns its width onto the sheet's own normal
+        const wide = c === 0 ? across : trueN, nrm = c === 0 ? trueN : across.map((q) => -q);
+        for (let w = 0; w < 4; w++) {
+          const sx = (w === 0 || w === 3) ? -1 : 1, sy = (w < 2) ? 0 : 1, k = v;
+          for (let i = 0; i < 3; i++) {
+            lp[k * 3 + i] = L.p[i] + alongA[i] * sz * 1.7 * sy + wide[i] * sz * 0.85 * sx;
+            ln[k * 3 + i] = unit([0, 1, 2].map((j) => nrm[j] + (L.away[j] - nrm[j]) * o.norm))[i];
+            lc[k * 3 + i] = i === 0 ? L.u : i === 1 ? L.flut : L.phase;
+          }
+          lu[k * 2] = cu + ((w === 0 || w === 3) ? 0 : 0.5); lu[k * 2 + 1] = cv + (sy ? 0.5 : 0);
+          v++;
         }
-        lu[k * 2] = cu + ((w === 0 || w === 3) ? 0 : 0.5); lu[k * 2 + 1] = cv + (sy ? 0.5 : 0);
-        v++;
+        const o4 = (made * TU + c) * 4;
+        lidx[ii++] = o4; lidx[ii++] = o4 + 1; lidx[ii++] = o4 + 2;
+        lidx[ii++] = o4; lidx[ii++] = o4 + 2; lidx[ii++] = o4 + 3;
       }
-      const o4 = made * 4;
-      lidx[ii++] = o4; lidx[ii++] = o4 + 1; lidx[ii++] = o4 + 2;
-      lidx[ii++] = o4; lidx[ii++] = o4 + 2; lidx[ii++] = o4 + 3;
       made++;
     }
     return {

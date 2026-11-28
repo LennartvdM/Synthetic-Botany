@@ -90,7 +90,7 @@
   }
 
   const coreMat = new T.MeshStandardMaterial({ map: plumeAtlas(), alphaTest: 0.5, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.84, metalness: 0 });
-  const stemMat = new T.MeshStandardMaterial({ color: new T.Color(0x6b6054).convertSRGBToLinear(), side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.95, metalness: 0 });
+  const stemMat = new T.MeshStandardMaterial({ color: new T.Color(0x796d5f).convertSRGBToLinear(), side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.95, metalness: 0 });
   const frondMat = new T.MeshStandardMaterial({ map: frondAtlas(), alphaTest: 0.42, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.8, metalness: 0 });
 
   window.Atlas = { TEX, drawLeaf, drawFrond, plumeAtlas, frondAtlas, coreMat, stemMat, frondMat,

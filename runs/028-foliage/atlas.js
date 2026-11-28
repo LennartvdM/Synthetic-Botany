@@ -98,17 +98,91 @@
     const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
   }
 
-  const coreMat = new T.MeshStandardMaterial({ map: plumeAtlas(), vertexColors: true, alphaTest: 0.5, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.84, metalness: 0 });
-  const stemMat = new T.MeshStandardMaterial({ vertexColors: true, color: new T.Color(0x796d5f).convertSRGBToLinear(), side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.95, metalness: 0 });
-  const frondMat = new T.MeshStandardMaterial({ map: frondAtlas(), vertexColors: true, alphaTest: 0.42, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.8, metalness: 0 });
+  // THE UNFOLDING. Not a tree growing: a tree that has already grown, arriving. Every piece of foliage carries
+  // when it is due (`birth`), what it swings from (`pivot`) and what it swings about (`axis`), and a single
+  // clock sweeps a front through them. A piece scales up from nothing about its own seat while it swings open
+  // through `uSwing`, so a frond unrolls off its twig the way a fern's crozier does rather than fading in where
+  // it will end up. `uOver` is how far it goes past its size before settling -- the overshoot is the whole
+  // reason it reads as sprung rather than keyframed.
+  //
+  // It is a vertex transform, so nothing is rebuilt per frame and the whole canopy is one clock.
+  const U = { uT: { value: 9 }, uWin: { value: 0.26 }, uSwing: { value: 2.3 }, uOver: { value: 1.35 } };
+  const PRE = `
+    attribute float birth;
+    attribute vec3 pivot;
+    attribute vec3 axis;
+    uniform float uT; uniform float uWin; uniform float uSwing; uniform float uOver;
+    float unfP; vec3 unfA; float unfAng; float unfE;
+    void unfInit() {
+      unfP = clamp((uT - birth) / max(1e-4, uWin), 0.0, 1.0);
+      float q = unfP - 1.0;
+      float c1 = 1.70158 * uOver, c3 = c1 + 1.0;
+      unfE = 1.0 + c3 * q * q * q + c1 * q * q;
+      unfA = normalize(axis + vec3(1e-5, 1e-5, 1e-5));
+      unfAng = (1.0 - unfP) * uSwing;
+    }
+    vec3 unfRot(vec3 v) {
+      float c = cos(unfAng), sn = sin(unfAng);
+      return v * c + cross(unfA, v) * sn + unfA * dot(unfA, v) * (1.0 - c);
+    }`;
+  function unfold(m) {
+    m.onBeforeCompile = (sh) => {
+      sh.uniforms.uT = U.uT; sh.uniforms.uWin = U.uWin; sh.uniforms.uSwing = U.uSwing; sh.uniforms.uOver = U.uOver;
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>' + PRE)
+        .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\n  unfInit();\n  objectNormal = unfRot(objectNormal);')
+        // `unfInit` again here, not only above: the DEPTH material's vertex shader has beginnormal_vertex
+        // inside an #ifdef it does not meet, so the shadow pass would transform by uninitialised values.
+        .replace('#include <begin_vertex>', 'unfInit();\n  vec3 transformed = pivot + unfRot(position - pivot) * unfE;');
+    };
+    m.customProgramCacheKey = () => 'unfold';
+    return m;
+  }
 
-  window.Atlas = { TEX, drawLeaf, drawFrond, plumeAtlas, frondAtlas, coreMat, stemMat, frondMat,
+  const coreMat = unfold(new T.MeshStandardMaterial({ map: plumeAtlas(), vertexColors: true, alphaTest: 0.5, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.84, metalness: 0 }));
+  const stemMat = unfold(new T.MeshStandardMaterial({ vertexColors: true, color: new T.Color(0x796d5f).convertSRGBToLinear(), side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.95, metalness: 0 }));
+  const frondMat = unfold(new T.MeshStandardMaterial({ map: frondAtlas(), vertexColors: true, alphaTest: 0.42, side: T.DoubleSide, shadowSide: T.DoubleSide, roughness: 0.8, metalness: 0 }));
+
+  // The wood on the same front. It is a single blob mesh with no branch axis per vertex to shrink toward, so
+  // it is revealed rather than grown: a fragment is kept once the front has passed it. The edge is broken up by
+  // the vertex's own position so the wood creeps along a limb instead of a clean sphere passing over it.
+  function reveal(m) {
+    m.onBeforeCompile = (sh) => {
+      sh.uniforms.uT = U.uT;
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>\n  attribute float birth;\n  varying float vBirth;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\n  vBirth = birth;');
+      // cut in `clipping_planes_fragment`, which the DEPTH material has too. Cut in `dithering_fragment` the
+      // shadow pass keeps every triangle, and the tree's whole shadow lies on the ground before the tree does.
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', '#include <common>\n  uniform float uT;\n  varying float vBirth;')
+        .replace('#include <clipping_planes_fragment>', 'if (vBirth > uT) discard;\n  #include <clipping_planes_fragment>');
+    };
+    m.customProgramCacheKey = () => 'reveal';
+    return m;
+  }
+
+  // The shadow pass draws with its own material, which knows nothing of the unfold: cards scaled to nothing
+  // still cast, so a canopy's whole shadow lies on the ground before a leaf of it is out. One of these per
+  // foliage mesh, carrying the same map and cutout so the shadow is leaf-shaped and not card-shaped.
+  function depthFor(m) {
+    const d = unfold(new T.MeshDepthMaterial({ depthPacking: T.RGBADepthPacking, side: T.DoubleSide }));
+    if (m.map) { d.map = m.map; d.alphaTest = m.alphaTest; }
+    return d;
+  }
+
+  window.Atlas = { TEX, drawLeaf, drawFrond, plumeAtlas, frondAtlas, coreMat, stemMat, frondMat, unfold, reveal, depthFor, U,
+    // the clock. `at` runs from 0 (nothing) to about 1 + uWin (everything)
+    clock: (at, over, swing, win) => { U.uT.value = at;
+      if (over !== undefined) U.uOver.value = over;
+      if (swing !== undefined) U.uSwing.value = swing;
+      if (win !== undefined) U.uWin.value = win; },
     // a pair of materials with their own freshly drawn maps, for a bench showing several atlases at once
     // without each cell overwriting the last one's texture
     make: (over) => {
       Object.assign(TEX, DEF, over || {});
-      const c = coreMat.clone(); c.map = plumeAtlas();
-      const f = frondMat.clone(); f.map = frondAtlas();
+      const c = unfold(coreMat.clone()); c.map = plumeAtlas();
+      const f = unfold(frondMat.clone()); f.map = frondAtlas();
       return { core: c, frond: f };
     },
     redraw: (over) => {

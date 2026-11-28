@@ -87,8 +87,11 @@ function put(buf, material, cast, into) {
   g.setAttribute('normal', new T.BufferAttribute(buf.nrm, 3));
   g.setAttribute('uv', new T.BufferAttribute(buf.uv, 2));
   g.setAttribute('color', new T.BufferAttribute(buf.tin, 3));
+  g.setAttribute('birth', new T.BufferAttribute(buf.bir, 1));
+  g.setAttribute('pivot', new T.BufferAttribute(buf.piv, 3));
+  g.setAttribute('axis', new T.BufferAttribute(buf.axs, 3));
   g.setIndex(new T.BufferAttribute(buf.idx, 1));
-  const m = new T.Mesh(g, material); m.castShadow = cast; m.receiveShadow = true; into.add(m);
+  const m = new T.Mesh(g, material); m.castShadow = cast; m.receiveShadow = true; m.customDepthMaterial = Atlas.depthFor(material); into.add(m);
 }
 
 // list: [{ n, o }] -- a name and the options that differ from the bench's own. Atlas settings ride in o.tex.
@@ -163,6 +166,8 @@ function look(m) {
   }
 }
 window.__look = (m) => { window.__mode = m; look(m); };
+// the growth clock: 0 is nothing out, about 1.3 is everything
+window.__clock = (at, over, swing, win) => { Atlas.clock(at, over, swing, win); look(mode); };
 function fit() { const el = $('stage'); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setSize(el.clientWidth, el.clientHeight, false); cam.aspect = el.clientWidth / el.clientHeight; cam.updateProjectionMatrix(); look(mode); }
 new ResizeObserver(fit).observe($('stage'));
 fit();

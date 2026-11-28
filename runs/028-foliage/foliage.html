@@ -53,7 +53,7 @@ const fill = new T.DirectionalLight(0xcfe3ee, 0.2); fill.position.set(-5, 3, -4)
 const floor = new T.Group(); floor.rotation.x = -Math.PI / 2;
 floor.add(new T.Mesh(new T.CircleGeometry(40, 64), new T.MeshBasicMaterial({ color: new T.Color(0x41565f).convertSRGBToLinear() })));
 const shade = new T.Mesh(new T.CircleGeometry(40, 64), new T.ShadowMaterial({ opacity: 0.3 })); shade.position.z = 0.002; shade.receiveShadow = true; floor.add(shade); scene.add(floor);
-const mat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, side: T.DoubleSide, shadowSide: T.DoubleSide });
+const mat = Atlas.reveal(new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, side: T.DoubleSide, shadowSide: T.DoubleSide }));
 const clay = new T.Color(0xe7e0d4).convertSRGBToLinear(), deep = new T.Color(0x9a7f78).convertSRGBToLinear();
 
 const shapes = [], orbMat = new T.MeshStandardMaterial({ color: new T.Color(0xfff6e0).convertSRGBToLinear(), emissive: new T.Color(0xffe9b8).convertSRGBToLinear(), emissiveIntensity: 0.85, roughness: 0.6 });
@@ -69,7 +69,22 @@ const { TEX, drawLeaf, plumeAtlas, frondAtlas, coreMat, stemMat, frondMat } = At
 function addShape(i) {
   const s = Fantastic.build(i), g = new T.BufferGeometry(), col = new Float32Array(s.tone.length * 3);
   g.setAttribute('position', new T.BufferAttribute(s.pos, 3)); g.setAttribute('normal', new T.BufferAttribute(s.nrm, 3)); g.setAttribute('color', new T.BufferAttribute(col, 3)); g.setIndex(new T.BufferAttribute(s.idx, 1));
+  // the wood's place in the same front the foliage reads. The ground is not the tree and is there from the
+  // start; everything else is due by how far it is from the foot.
+  {
+    const gr0 = (window.__grown || [])[i], n = s.pos.length / 3, bir = new Float32Array(n);
+    const F = gr0 && window.Twigs ? Twigs.front(gr0) : null;
+    for (let q = 0; q < n; q++) {
+      if (!F || (s.layer && s.layer[q] === 5)) { bir[q] = 0; continue; }
+      const dx = s.pos[q * 3] - F.foot[0], dy = s.pos[q * 3 + 1] - F.foot[1], dz = s.pos[q * 3 + 2] - F.foot[2];
+      bir[q] = Math.sqrt(dx * dx + dy * dy + dz * dz) / F.scale * 0.82 + (Math.sin(dx * 37 + dz * 29) * 0.5 + 0.5) * 0.05;
+    }
+    g.setAttribute('birth', new T.BufferAttribute(bir, 1));
+  }
   const m = new T.Mesh(g, mat); m.castShadow = m.receiveShadow = true; scene.add(m);
+  // the shadow pass has its own material, so wood the front has not reached yet casts a shadow unless this one
+  // is cut away too -- the tree's whole shadow lying on the ground before the tree is there
+  m.customDepthMaterial = Atlas.reveal(new T.MeshDepthMaterial({ depthPacking: T.RGBADepthPacking }));
   // branchlets, flat, sprouting off the core branches, with sprigs along them
   const gr = (window.__grown || [])[i];
   if (gr && window.Twigs) {
@@ -92,8 +107,11 @@ function addShape(i) {
         g2.setAttribute('uv', new T.BufferAttribute(buf.uv, 2));
         g2.setAttribute('wind', new T.BufferAttribute(buf.col, 3));
         g2.setAttribute('color', new T.BufferAttribute(buf.tin, 3));
+        g2.setAttribute('birth', new T.BufferAttribute(buf.bir, 1));
+        g2.setAttribute('pivot', new T.BufferAttribute(buf.piv, 3));
+        g2.setAttribute('axis', new T.BufferAttribute(buf.axs, 3));
         g2.setIndex(new T.BufferAttribute(buf.idx, 1));
-        const mm = new T.Mesh(g2, material); mm.castShadow = cast; mm.receiveShadow = true; fol.add(mm);
+        const mm = new T.Mesh(g2, material); mm.castShadow = cast; mm.receiveShadow = true; mm.customDepthMaterial = Atlas.depthFor(material); fol.add(mm);
       };
       put(Z.stem, stemMat, true); put(Z.core, coreMat, true); put(Z.leaf, frondMat, true);
       window.__counts = { twigs: Z.twigs, sprigs: Z.sprigs, cores: Z.cores };
@@ -151,5 +169,7 @@ window.__fit = (i, margin) => {
   target.copy(c); rad = bb.getSize(new T.Vector3()).length() * 0.5 / Math.sin((cam.fov * Math.PI / 180) / 2) * (margin || 1.06);
   place();
 };
+// the growth clock: 0 is nothing out, about 1.4 is everything
+window.__clock = (at, over, swing, win) => { Atlas.clock(at, over, swing, win); place(); };
 window.__cheats = { arrange, fit: window.__fit, set: (i, cut, a, p, r, ty, tint) => { if (tint !== undefined && $('tint').checked !== !!tint) { $('tint').checked = !!tint; $('key').hidden = !tint; shapes.forEach(paint); } $('which').value = i; $('cut').value = cut || 'none'; arrange(); if (a != null) az = a; if (p != null) pol = p; if (r) rad = r; if (ty != null) target.y = ty; place(); } };
 </script>

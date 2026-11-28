@@ -19,13 +19,27 @@
   const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
   const rng = (s) => { let x = s >>> 0 || 1; return () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return ((x >>> 0) % 100000) / 100000; }; };
 
+  // The growth front. A sphere swelling from the foot of the tree: everything the clock drives reads its own
+  // place from this, so the wood and the foliage share one front rather than each having its own.
+  function front(tree) {
+    const foot = [0, Infinity, 0]; let n = 0;
+    for (const s of tree.strands) for (let k = 0; k < s.K; k++) {
+      foot[0] += s.X[k * 3]; foot[2] += s.X[k * 3 + 2]; foot[1] = Math.min(foot[1], s.X[k * 3 + 1]); n++;
+    }
+    foot[0] /= Math.max(1, n); foot[2] /= Math.max(1, n);
+    let scale = 1e-9;
+    for (const s of tree.strands) for (let k = 0; k < s.K; k++)
+      scale = Math.max(scale, H(s.X[k * 3] - foot[0], s.X[k * 3 + 1] - foot[1], s.X[k * 3 + 2] - foot[2]));
+    return { foot, scale };
+  }
+
   function build(tree, opt) {
     const o = Object.assign({ from: 0.34, every: 0.03, len: 0.5, fork: 2, droop: 0.42, seg: 6,
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
       orders: 3, kids: 3, shrink: 0.56, open: 1.5, distal: 2.2, sprout: 0.2, inner: 0.5,
       core: 0.5, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 2, mid: null,
       sprigs: 2, size: 0.056, wide: 0.0055, seed: 23, R0: 0.2,
-      node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8, vary: 0.4, bunch: 0 }, opt);
+      node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8, vary: 0.4, bunch: 0, wave: 0.72, tier: 0.14 }, opt);
     const r = rng(o.seed * 374761393);
 
     // where a branchlet may sprout: along a core branch, once the wood is thin enough to carry one
@@ -63,6 +77,17 @@
     const mid = o.mid ? o.mid.slice() : [0, 0, 0];
     if (!o.mid) for (const s of seats) for (let i = 0; i < 3; i++) mid[i] += s.p[i] / Math.max(1, seats.length);
 
+    // How far out each seat is from the foot of the tree. Nothing in the form depends on it: it is the order in
+    // which the foliage is DUE, for a growth that unfolds rather than appearing all at once. A spherical front
+    // from the foot travels up and out, which is the order a tree's own growth would take if it took no time.
+    // Measured from the foot over ALL the wood, not over the seats: the wood then occupies the first part of
+    // the front and the foliage the last, and one clock drives both. Normalised over the seats alone the
+    // foliage fills the whole clock and a tree with growing wood would finish its trunk and its leaves at once.
+    {
+      const F = front(tree);
+      for (const st of seats) st.far = H(st.p[0] - F.foot[0], st.p[1] - F.foot[1], st.p[2] - F.foot[2]) / F.scale;
+    }
+
     // Where the light is. Nothing above asks how deep in the crown a seat sits -- only how thick its wood is and
     // how near the end of its branch -- so wood thin enough at the bottom of the tree is furred like wood at the
     // top, and a tree carries foliage down to its root plate where it would long since have shed it.
@@ -87,7 +112,7 @@
 
     // grow one branchlet: a drooping path that forks. returns a list of segments as {a,b,t0,t1,wa,wb}
     const paths = [];
-    const grow = (p0, d0, L, depth, t0) => {
+    const grow = (p0, d0, L, depth, t0, far) => {
       let p = p0.slice(), d = d0.slice();
       const n = o.seg, pts = [p.slice()];
       for (let i = 1; i <= n; i++) {
@@ -98,7 +123,7 @@
         p = [p[0] + d[0] * L / n, p[1] + d[1] * L / n, p[2] + d[2] * L / n];
         pts.push(p.slice());
       }
-      paths.push({ pts, t0, t1: t0 + 1, depth, L });
+      paths.push({ pts, t0, t1: t0 + 1, depth, L, far });
       // The hierarchy. Each order is shorter than its parent and there are more of them, and they leave at a wider
       // angle, so the thing opens out toward its end instead of running on as one wire. That is the burst: little
       // at the base of a branchlet and a spray at the end of it.
@@ -114,7 +139,7 @@
           const ph = (c / kids) * Math.PI * 2 + r() * 1.1;
           const wide = o.out * o.open * (0.7 + 0.6 * r());
           const away = unit([0, 1, 2].map((i) => dd[i] * 1.0 + (side[i] * Math.cos(ph) + cross3(dd, side)[i] * Math.sin(ph)) * wide));
-          grow(pts[at], away, L * o.shrink * (0.85 + 0.3 * r()), depth + 1, t0 + at / n);
+          grow(pts[at], away, L * o.shrink * (0.85 + 0.3 * r()), depth + 1, t0 + at / n, far);
         }
       }
     };
@@ -125,7 +150,7 @@
       // along the branch first, out from it second: the trajectory of the core branch is what a branchlet obeys
       const out = unit([0, 1, 2].map((i) => s.d[i] * o.lean * (0.8 + 0.5 * r())
         + (s.o[i] * Math.cos(ph) + side[i] * Math.sin(ph)) * o.out * (0.6 + 0.8 * r())));
-      grow(s.p, out, o.len * (0.7 + 0.6 * r()), 0, 0);
+      grow(s.p, out, o.len * (0.7 + 0.6 * r()), 0, 0, s.far || 0);
     }
     if (!paths.length) return { stem: null, leaf: null, twigs: 0, sprigs: 0 };
 
@@ -136,6 +161,13 @@
     let sv = 0, si = 0;
     for (const pa of paths) sv += pa.pts.length * 4, si += (pa.pts.length - 1) * 12;
     const sp = new Float32Array(sv * 3), sn = new Float32Array(sv * 3), su = new Float32Array(sv * 2), sc = new Float32Array(sv * 3), st = new Float32Array(sv * 3), sidx = new Uint32Array(si);
+    // when each piece is due, what it swings from, and what it swings about
+    const sb = new Float32Array(sv), svp = new Float32Array(sv * 3), sax = new Float32Array(sv * 3);
+    // `wave` is how much of the order comes from the front travelling out of the tree and how much from the
+    // branchlet's own inside-out. All of the first and none of the second is a tree that blinks on in rings.
+    // `tier` holds the two sheets back behind the wood that carries them, so a branchlet draws itself first and
+    // clothes itself after, rather than everything arriving at once in the same place.
+    const due = (far, local, off) => far * o.wave + Math.min(1, local) * (1 - o.wave) + (off || 0) * o.tier;
     let a = 0, b = 0;
     const leafAt = [];
     for (const pa of paths) {
@@ -143,6 +175,7 @@
       // from one texture is one value everywhere however many cards are in it; a tone per branchlet gives it the
       // patchiness a crown has, and costs a vertex attribute rather than a second texture.
       const base = a, N = pa.pts.length, flut = r(), phase = r();
+      const piv = pa.pts[0]; let ax0 = null;
       // centred, not one-sided: a tone drawn from [1 - vary, 1] only ever darkens, so the crown goes dimmer
       // rather than patchier, and a measure of its spread comes back saying the values narrowed.
       pa.tone = 1 + o.vary * (r() - 0.5);
@@ -154,6 +187,7 @@
         let n = unit([0, 1, 2].map((j) => away[j] - t[j] * (away[0] * t[0] + away[1] * t[1] + away[2] * t[2])));
         const across = unit(cross3(t, n));
         const w = o.wide * (1 - 0.72 * u) * (pa.depth ? 0.6 : 1);
+        if (!ax0) ax0 = across.slice();
         for (let pl = 0; pl < 2; pl++) {
           const ax = pl ? n : across, nm = pl ? across : n;
           for (let e = 0; e < 2; e++) {
@@ -163,6 +197,10 @@
             su[a * 2] = e; su[a * 2 + 1] = u;
             sc[a * 3] = pa.t0 * 0.3 + u * 0.7; sc[a * 3 + 1] = flut; sc[a * 3 + 2] = phase;
             st[a * 3] = st[a * 3 + 1] = st[a * 3 + 2] = pa.tone;
+            // a stem's own vertices are due in order along it, so it draws itself outward from its base rather
+            // than appearing whole
+            sb[a] = due(pa.far || 0, (pa.t0 + u) / 2.2);
+            for (let j = 0; j < 3; j++) { svp[a * 3 + j] = piv[j]; sax[a * 3 + j] = (ax0 || across)[j]; }
             a++;
           }
         }
@@ -179,7 +217,8 @@
         if (i > 0 && i % o.node === 0) { const nd = i / o.node;
           for (let c = 0; c < o.sprigs; c++) if (r() < 0.5 * share * o.node) {
             const roll = o.turn ? (nd * o.turn + c / o.sprigs) * Math.PI * 2 : r() * Math.PI * 2;
-            leafAt.push({ p: pa.pts[i], t, n, away, u, flut, phase, roll, tone: pa.tone, side: (c + i) % 2 ? 1 : -1, small: pa.depth < o.orders - 1 });
+            leafAt.push({ p: pa.pts[i], t, n, away, u, flut, phase, roll, tone: pa.tone, far: pa.far || 0, t0: pa.t0,
+            side: (c + i) % 2 ? 1 : -1, small: pa.depth < o.orders - 1 });
           } }
       }
     }
@@ -197,11 +236,12 @@
         const u = 0.35 + 0.42 * (c + r()) / o.cores, i = Math.min(N - 2, Math.max(1, Math.round(u * (N - 1))));
         const t = unit([pa.pts[i + 1][0] - pa.pts[i][0], pa.pts[i + 1][1] - pa.pts[i][1], pa.pts[i + 1][2] - pa.pts[i][2]]);
         const away = unit([pa.pts[i][0] - mid[0], pa.pts[i][1] - mid[1] + 0.05, pa.pts[i][2] - mid[2]]);
-        coreAt.push({ p: pa.pts[i], t, away, u, L: pa.L, tone: pa.tone });
+        coreAt.push({ p: pa.pts[i], t, away, u, L: pa.L, tone: pa.tone, far: pa.far || 0, t0: pa.t0 });
       }
     }
     const COLS = o.bend > 0 ? 3 : 2, CV = COLS * 2, CI = (COLS - 1) * 6;
     const nC = coreAt.length, cp = new Float32Array(nC * CV * 3), cn = new Float32Array(nC * CV * 3), cuv = new Float32Array(nC * CV * 2), cc = new Float32Array(nC * CV * 3), ct = new Float32Array(nC * CV * 3), cidx = new Uint32Array(nC * CI);
+    const cb = new Float32Array(nC * CV), cvp = new Float32Array(nC * CV * 3), cax = new Float32Array(nC * CV * 3);
     let cv = 0, ci = 0, cm = 0;
     for (const C of coreAt) {
       // sized against the twig that carries it, not against the first order, so a plume on a child is a child's
@@ -234,8 +274,10 @@
             cn[k * 3 + i] = unit([0, 1, 2].map((j) => out[j] + across[j] * fx * o.bend * 0.8))[i];
             cc[k * 3 + i] = i === 0 ? C.u : i === 1 ? flut : phase;
             ct[k * 3 + i] = C.tone === undefined ? 1 : C.tone;
+            cvp[k * 3 + i] = C.p[i]; cax[k * 3 + i] = across[i];
           }
           cuv[k * 2] = (fx + 1) / (COLS === 2 ? 2 : 2); cuv[k * 2 + 1] = ry;
+          cb[k] = due(C.far, (C.t0 + C.u) / 2.2, 0.55);
           cv++;
         }
       }
@@ -254,6 +296,7 @@
     // seats happen to face across the view, and the thinning moves as the camera does.
     const TU = Math.max(1, Math.round(o.tuft));
     const nL = leafAt.length, lp = new Float32Array(nL * TU * 12), ln = new Float32Array(nL * TU * 12), lu = new Float32Array(nL * TU * 8), lc = new Float32Array(nL * TU * 12), lt = new Float32Array(nL * TU * 12), lidx = new Uint32Array(nL * TU * 6);
+    const lb = new Float32Array(nL * TU * 4), lvp = new Float32Array(nL * TU * 12), lax = new Float32Array(nL * TU * 12);
     let v = 0, ii = 0, made = 0;
     for (const L of leafAt) {
       const sz = o.size * (0.62 + 0.7 * r()) * (L.small ? 0.78 : 1);
@@ -286,8 +329,10 @@
             ln[k * 3 + i] = unit([0, 1, 2].map((j) => nrm[j] + (L.away[j] - nrm[j]) * o.norm))[i];
             lc[k * 3 + i] = i === 0 ? L.u : i === 1 ? L.flut : L.phase;
             lt[k * 3 + i] = L.tone === undefined ? 1 : L.tone;
+            lvp[k * 3 + i] = L.p[i]; lax[k * 3 + i] = wide[i];
           }
           lu[k * 2] = cu + (((w === 0 || w === 3) !== mir) ? 0 : 0.5); lu[k * 2 + 1] = cv + (sy ? 0.5 : 0);
+          lb[k] = due(L.far === undefined ? 0 : L.far, (L.t0 === undefined ? 0 : L.t0 + L.u) / 2.2, 1);
           v++;
         }
         const o4 = (made * TU + c) * 4;
@@ -297,10 +342,10 @@
       made++;
     }
     return {
-      stem: { pos: sp, nrm: sn, uv: su, col: sc, tin: st, idx: sidx.subarray(0, b) },
-      core: { pos: cp, nrm: cn, uv: cuv, col: cc, tin: ct, idx: cidx.subarray(0, ci) },
-      leaf: { pos: lp, nrm: ln, uv: lu, col: lc, tin: lt, idx: lidx.subarray(0, ii) },
+      stem: { pos: sp, nrm: sn, uv: su, col: sc, tin: st, bir: sb, piv: svp, axs: sax, idx: sidx.subarray(0, b) },
+      core: { pos: cp, nrm: cn, uv: cuv, col: cc, tin: ct, bir: cb, piv: cvp, axs: cax, idx: cidx.subarray(0, ci) },
+      leaf: { pos: lp, nrm: ln, uv: lu, col: lc, tin: lt, bir: lb, piv: lvp, axs: lax, idx: lidx.subarray(0, ii) },
       twigs: paths.length, sprigs: made, cores: cm };
   }
-  window.Twigs = { build };
+  window.Twigs = { build, front };
 })();

@@ -1,0 +1,166 @@
+<title>One branchlet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root { color-scheme: dark; --void: #14242b; --panel: #0f1b21; --line: #2a3e46; --ink: #d9e2e3; --dim: #8298a0;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; --sans: system-ui, -apple-system, "Segoe UI", sans-serif; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--panel); color: var(--ink); font: 13px/1.4 var(--sans); display: flex; flex-direction: column; overflow: hidden; }
+#bar { padding: 8px 16px; border-bottom: 1px solid var(--line); color: var(--dim); font: 11.5px var(--mono); }
+#stage { position: relative; flex: 1; min-height: 0; background: var(--void); overflow: hidden; }
+#view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+.tag { position: absolute; transform: translate(-50%, 0); font: 11px var(--mono); color: var(--ink); background: rgba(15, 27, 33, 0.74); padding: 1px 7px; border-radius: 3px; white-space: nowrap; pointer-events: none; }
+</style>
+
+<div id="bar">one branchlet per cell, on a stub of core wood; the rest of the tree is a single point below, which the cards turn their faces from</div>
+<div id="stage"><canvas id="view" aria-label="Branchlets side by side"></canvas><div id="tags"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="runs/028-foliage/atlas.js"></script>
+<script src="runs/028-foliage/twigs.js"></script>
+<script>
+// A bench for one branchlet at a time. The whole-tree bench answers "does the canopy read", slowly, at a
+// distance, with every branchlet hidden behind its neighbours. This one answers "what is a branchlet", which is
+// the question the canopy is made of. No tree is grown: a stub of core wood is made by hand, thick at its base
+// and abruptly thin past a shoulder, and the generator seats one branchlet on it where the wood first becomes
+// thin enough to carry one. Nothing about the FOLIAGE is put in here -- only the wood it has to stand on.
+//
+// The shoulder is not decoration. A seat is taken at the FIRST step thin enough, so on an even taper that step
+// is always a hair under the threshold, where the generator gives a branchlet barely a third of a chance of
+// growing -- and a cell with no branchlet in it is not a quieter result, it is no result. Past a step the first
+// thin step is properly thin and the branchlet is certain.
+const T = THREE, $ = (id) => document.getElementById(id);
+const { coreMat, stemMat, frondMat } = Atlas;
+const renderer = new T.WebGLRenderer({ canvas: $('view'), antialias: true });
+renderer.outputEncoding = T.sRGBEncoding; renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+const scene = new T.Scene(); scene.background = new T.Color(0x14242b);
+const cam = new T.PerspectiveCamera(26, 1, 0.02, 300);
+scene.add(new T.HemisphereLight(0xeaf2f5, 0x3a4d55, 0.6));
+const sun = new T.DirectionalLight(0xfff3e2, 0.7); sun.position.set(3, 8, 4.5); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.004;
+Object.assign(sun.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8, near: 1, far: 40 }); scene.add(sun);
+const fill = new T.DirectionalLight(0xcfe3ee, 0.24); fill.position.set(-4, 2, -3); scene.add(fill);
+
+// The stub: thick wood to a shoulder, then a thin shoot, as if it had forked and the other fork were gone.
+const R0 = 0.2, K = 30, LEN = 0.66;
+const TREE = (() => {
+  const X = new Float32Array(K * 3), rho = new Float32Array(K), O = [];
+  for (let k = 0; k < K; k++) {
+    const u = k / (K - 1);
+    X[k * 3] = u * LEN; X[k * 3 + 1] = 0.07 * Math.sin(u * 1.6) - 0.03 * u * u; X[k * 3 + 2] = 0.05 * Math.sin(u * 2.4);
+    rho[k] = u < 0.3 ? 0.08 - 0.02 * u : 0.025 - 0.015 * (u - 0.3);
+    O.push([0, 1, 0]);
+  }
+  return { strands: [{ loop: false, root: 0, K, rho, X, O }] };
+})();
+const WOOD = (() => {
+  const s = TREE.strands[0], SIDES = 12, pos = [], nrm = [], idx = [];
+  for (let k = 0; k < K; k++) {
+    const p = [s.X[k * 3], s.X[k * 3 + 1], s.X[k * 3 + 2]], j0 = k < K - 1 ? k + 1 : k - 1;
+    const t = new T.Vector3(s.X[j0 * 3] - p[0], s.X[j0 * 3 + 1] - p[1], s.X[j0 * 3 + 2] - p[2]).normalize();
+    if (k === K - 1) t.negate();
+    const a = new T.Vector3(0, 1, 0).cross(t).normalize(), b = new T.Vector3().crossVectors(t, a);
+    for (let j = 0; j < SIDES; j++) {
+      const th = (j / SIDES) * Math.PI * 2, n = new T.Vector3().addScaledVector(a, Math.cos(th)).addScaledVector(b, Math.sin(th));
+      pos.push(p[0] + n.x * s.rho[k], p[1] + n.y * s.rho[k], p[2] + n.z * s.rho[k]); nrm.push(n.x, n.y, n.z);
+      if (k < K - 1) { const q = k * SIDES + j, q2 = k * SIDES + (j + 1) % SIDES;
+        idx.push(q, q2, q + SIDES, q2, q2 + SIDES, q + SIDES); }
+    }
+  }
+  const g = new T.BufferGeometry();
+  g.setAttribute('position', new T.BufferAttribute(new Float32Array(pos), 3));
+  g.setAttribute('normal', new T.BufferAttribute(new Float32Array(nrm), 3));
+  g.setIndex(idx); return g;
+})();
+const barkMat = new T.MeshStandardMaterial({ color: new T.Color(0xa08d7c).convertSRGBToLinear(), roughness: 0.95 });
+
+// The canopy's middle sits below the stub: the branch is a low one and its cards face the sky. That is a
+// choice of viewpoint, not of form -- it puts the faces where a camera can see them and the stacking where a
+// second camera can.
+const MID = [0.33, -1.25, 0];
+const grid = new T.Group(); scene.add(grid);
+let cells = [], centre = new T.Vector3(), radius = 1;
+
+function put(buf, material, cast, into) {
+  if (!buf || !buf.idx.length) return;
+  const g = new T.BufferGeometry();
+  g.setAttribute('position', new T.BufferAttribute(buf.pos, 3));
+  g.setAttribute('normal', new T.BufferAttribute(buf.nrm, 3));
+  g.setAttribute('uv', new T.BufferAttribute(buf.uv, 2));
+  g.setIndex(new T.BufferAttribute(buf.idx, 1));
+  const m = new T.Mesh(g, material); m.castShadow = cast; m.receiveShadow = true; into.add(m);
+}
+
+// list: [{ n, o }] -- a name and the options that differ from the bench's own. Atlas settings ride in o.tex.
+window.__cells = (list) => {
+  while (grid.children.length) grid.remove(grid.children[0]);
+  $('tags').innerHTML = ''; cells = [];
+  const cols = Math.ceil(Math.sqrt(list.length)), rows = Math.ceil(list.length / cols), counts = [];
+  // built at the origin first, measured, and only then placed: a cell's contents reach wherever they reach,
+  // and a grid laid out on a guess at that is a grid of overlaps and empty gutters.
+  const made = list.map((V) => {
+    const G = new T.Group(), I = new T.Group(); G.add(I);
+    const w = new T.Mesh(WOOD, barkMat); w.castShadow = w.receiveShadow = true; I.add(w);
+    const M = Atlas.make(V.o && V.o.tex);
+    const Z = Twigs.build(TREE, Object.assign({ R0, seed: 23, mid: MID, every: 99, distal: 0,
+      from: 0.34, len: 0.3, droop: 0.42, sprigs: 3, size: 0.05, wide: 0.011 }, V.o || {}));
+    // `shade: false` keeps the sheets out of the shadow map. A flat card that casts and receives is a card that
+    // shadows itself, and a tier that should block light instead turns grey.
+    const cast = !(V.o && V.o.shade === false);
+    put(Z.stem, stemMat, true, I); put(Z.core, M.core, cast, I); put(Z.leaf, M.frond, cast, I);
+    counts.push(V.n + '  twigs ' + Z.twigs + '  cores ' + Z.cores + '  sprigs ' + Z.sprigs);
+    const bb = new T.Box3().setFromObject(I), c = bb.getCenter(new T.Vector3()), sz = bb.getSize(new T.Vector3());
+    I.position.set(-c.x, -c.y, -c.z);
+    return { G, I, sz, name: V.n };
+  });
+  // the grid is laid out in the plane the camera faces, and so has to be laid out again for each view: a grid
+  // spread across the ground is a single row of overlaps once the camera drops to the side of it.
+  size = made.reduce((m, c) => [Math.max(m[0], c.sz.x), Math.max(m[1], c.sz.y), Math.max(m[2], c.sz.z)], [0.3, 0.3, 0.3]);
+  made.forEach((m, idx) => {
+    grid.add(m.G);
+    const tag = document.createElement('div'); tag.className = 'tag'; tag.textContent = m.name; $('tags').append(tag);
+    cells.push({ G: m.G, tag, idx });
+  });
+  shape = [cols, rows];
+  window.__counts = counts;
+  look(window.__mode || 'top');
+  return counts;
+};
+
+let mode = 'top', size = [1, 1, 1], shape = [1, 1];
+// which world axis runs across the picture and which runs down it, for each view
+const AXES = { top: [0, 2, [0, 0.94, 0.38], [0, 0, -1]], side: [0, 1, [0, 0.2, 1], [0, 1, 0]], front: [2, 1, [1, 0.26, 0.1], [0, 1, 0]] };
+function look(m) {
+  mode = m;
+  const [ax, ay, dir, up] = AXES[m] || AXES.top;
+  const px = size[ax] * 1.14, py = size[ay] * 1.22;
+  for (const c of cells) {
+    const cx = c.idx % shape[0], cy = (c.idx / shape[0]) | 0, v = [0, 0, 0];
+    v[ax] = (cx - (shape[0] - 1) / 2) * px;
+    v[ay] = -(cy - (shape[1] - 1) / 2) * py * (ay === 2 ? -1 : 1);
+    c.G.position.set(v[0], v[1], v[2]);
+    c.drop = size[ay] * 0.5 + 0.04;
+  }
+  const bb = new T.Box3().setFromObject(grid);
+  centre = bb.getCenter(new T.Vector3());
+  radius = bb.getSize(new T.Vector3()).length() * 0.5;
+  // fit the bounding sphere, with room to spare. Every time this has been a multiplier under one, the pictures
+  // came back cropped and nothing in them could be judged.
+  const d = radius / Math.sin((cam.fov * Math.PI / 180) / 2) * 1.08;
+  const l = Math.hypot(dir[0], dir[1], dir[2]);
+  cam.position.set(centre.x + dir[0] / l * d, centre.y + dir[1] / l * d, centre.z + dir[2] / l * d);
+  cam.up.set(up[0], up[1], up[2]);
+  cam.lookAt(centre); cam.updateMatrixWorld(); renderer.render(scene, cam);
+  const el = $('stage'), v = new T.Vector3();
+  for (const c of cells) {
+    const q = c.G.position.toArray(); q[ay] -= c.drop * (ay === 2 ? -1 : 1);
+    v.set(q[0], q[1], q[2]).project(cam);
+    c.tag.style.left = ((v.x + 1) / 2) * el.clientWidth + 'px'; c.tag.style.top = ((1 - v.y) / 2) * el.clientHeight + 'px';
+  }
+}
+window.__look = (m) => { window.__mode = m; look(m); };
+function fit() { const el = $('stage'); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setSize(el.clientWidth, el.clientHeight, false); cam.aspect = el.clientWidth / el.clientHeight; cam.updateProjectionMatrix(); look(mode); }
+new ResizeObserver(fit).observe($('stage'));
+fit();
+window.__cells([{ n: 'as it stands', o: {} }]);
+window.__ready = true;
+</script>

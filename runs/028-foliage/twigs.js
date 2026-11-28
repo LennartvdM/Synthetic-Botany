@@ -23,8 +23,9 @@
     const o = Object.assign({ from: 0.34, every: 0.07, len: 0.3, fork: 2, droop: 0.42, seg: 6,
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
       orders: 3, kids: 2, shrink: 0.56, open: 1.5, distal: 2.2,
-      core: 0.42, cores: 3, bend: 0,
-      sprigs: 3, size: 0.05, wide: 0.011, seed: 23, R0: 0.2 }, opt);
+      core: 0.42, cores: 3, bend: 0, ride: 0, long: 1, cant: 0, mid: null,
+      sprigs: 3, size: 0.05, wide: 0.011, seed: 23, R0: 0.2,
+      node: 1, turn: 0, pitch: 0.5, splay: 1.1, fall: 0.35, lie: 0, norm: 0.7 }, opt);
     const r = rng(o.seed * 374761393);
 
     // where a branchlet may sprout: along a core branch, once the wood is thin enough to carry one
@@ -45,7 +46,10 @@
           grow: Math.min(1, (1 - rho / (o.from * o.R0)) * 1.3 + 0.25) });
       }
     }
-    const mid = [0, 0, 0]; for (const s of seats) for (let i = 0; i < 3; i++) mid[i] += s.p[i] / Math.max(1, seats.length);
+    // the middle of the canopy: cards turn their faces away from it. On a whole tree the seats give it; a bench
+    // that grows one branchlet has to say where the rest of the tree would have been, or every card faces up.
+    const mid = o.mid ? o.mid.slice() : [0, 0, 0];
+    if (!o.mid) for (const s of seats) for (let i = 0; i < 3; i++) mid[i] += s.p[i] / Math.max(1, seats.length);
 
     // grow one branchlet: a drooping path that forks. returns a list of segments as {a,b,t0,t1,wa,wb}
     const paths = [];
@@ -118,8 +122,14 @@
         // sprigs sit along the branchlet, not at its tip, and alternate sides as leaves do
         // leaves ride the outer orders. An inner branchlet is structure; the mass belongs at the ends of it.
         const share = pa.depth >= o.orders - 1 ? 1 : pa.depth === 0 ? 0.12 : 0.45;
-        if (i > 0 && i < N) for (let c = 0; c < o.sprigs; c++) if (r() < 0.5 * share)
-          leafAt.push({ p: pa.pts[i], t, n, away, u, flut, phase, side: (c + i) % 2 ? 1 : -1, small: pa.depth < o.orders - 1 });
+        // leaves sit at nodes along a twig, not evenly down every millimetre of it. `node` is how many steps
+        // apart the nodes are, `turn` how far round the twig each node is turned from the last: 0 leaves it to
+        // chance, 0.5 puts the leaves in two ranks, 0.382 winds them up the twig as most plants do.
+        if (i > 0 && i % o.node === 0) { const nd = i / o.node;
+          for (let c = 0; c < o.sprigs; c++) if (r() < 0.5 * share * o.node) {
+            const roll = o.turn ? (nd * o.turn + c / o.sprigs) * Math.PI * 2 : r() * Math.PI * 2;
+            leafAt.push({ p: pa.pts[i], t, n, away, u, flut, phase, roll, side: (c + i) % 2 ? 1 : -1, small: pa.depth < o.orders - 1 });
+          } }
       }
     }
 
@@ -144,9 +154,19 @@
       const sz = o.len * o.core * (0.78 + 0.5 * r());
       const roll = r() * Math.PI * 2;
       const u0 = unit(cross3(C.t, C.away)), v0 = cross3(C.t, u0);
-      const face = [0, 1, 2].map((i) => u0[i] * Math.cos(roll) + v0[i] * Math.sin(roll));
+      const free = [0, 1, 2].map((i) => u0[i] * Math.cos(roll) + v0[i] * Math.sin(roll));
+      // `ride`: how far the card's long axis is pulled onto the branchlet's own direction. At 0 it spins freely
+      // and a plume is a disc stuck on a stick; at 1 the plume lies along the wood that carries it.
+      const dt = C.t[0] * C.away[0] + C.t[1] * C.away[1] + C.t[2] * C.away[2];
+      const flat = unit([0, 1, 2].map((i) => C.t[i] - C.away[i] * dt));
+      const face = unit([0, 1, 2].map((i) => free[i] + (flat[i] - free[i]) * o.ride));
+      // `cant`: how far a card is tilted off the direction out of the canopy. At 0 every card in the tier faces
+      // the same way, and the tier is a pane of glass -- a mass from the front and a line from the side. Tilted,
+      // the cards of one plume cross each other and the plume has a thickness. A plume is sheets, not a sheet.
+      const per = unit(cross3(C.away, face)), ang = o.cant * (r() - 0.5) * 2;
+      const out = unit([0, 1, 2].map((i) => C.away[i] * Math.cos(ang) + per[i] * Math.sin(ang)));
       // the card stands across the view out of the canopy, turned a little so the two on a branchlet do not align
-      const across = unit(cross3(C.away, face)), upc = unit(cross3(across, C.away));
+      const across = unit(cross3(out, face)), upc = unit(cross3(across, out));
       const flut = r(), phase = r();
       const base = cv;
       for (let cx = 0; cx < COLS; cx++) {
@@ -155,17 +175,20 @@
         for (let ry = 0; ry < 2; ry++) {
           const sy = ry ? 1 : -1, k = cv;
           for (let i = 0; i < 3; i++) {
-            cp[k * 3 + i] = C.p[i] + across[i] * sz * 0.62 * fx + upc[i] * sz * 0.62 * sy + C.away[i] * (sz * 0.1 + outAmt);
-            cn[k * 3 + i] = unit([0, 1, 2].map((j) => C.away[j] + across[j] * fx * o.bend * 0.8))[i];
+            cp[k * 3 + i] = C.p[i] + across[i] * sz * 0.62 * fx + upc[i] * sz * 0.62 * o.long * sy + out[i] * (sz * 0.1 + outAmt);
+            cn[k * 3 + i] = unit([0, 1, 2].map((j) => out[j] + across[j] * fx * o.bend * 0.8))[i];
             cc[k * 3 + i] = i === 0 ? C.u : i === 1 ? flut : phase;
           }
           cuv[k * 2] = (fx + 1) / (COLS === 2 ? 2 : 2); cuv[k * 2 + 1] = ry;
           cv++;
         }
       }
+      // wound so the face looks OUT of the canopy. Wound the other way the card still draws -- it is
+      // double-sided -- but every pixel of it shades with its normal flipped, against the ground instead of
+      // the sky, and the whole blocker tier comes out grey while the garnish on top of it comes out white.
       for (let cx = 0; cx < COLS - 1; cx++) { const q = base + cx * 2;
-        cidx[ci++] = q; cidx[ci++] = q + 2; cidx[ci++] = q + 3;
-        cidx[ci++] = q; cidx[ci++] = q + 3; cidx[ci++] = q + 1; }
+        cidx[ci++] = q; cidx[ci++] = q + 3; cidx[ci++] = q + 2;
+        cidx[ci++] = q; cidx[ci++] = q + 1; cidx[ci++] = q + 3; }
       cm++;
     }
 
@@ -174,17 +197,24 @@
     let v = 0, ii = 0, made = 0;
     for (const L of leafAt) {
       const sz = o.size * (0.62 + 0.7 * r()) * (L.small ? 0.78 : 1);
-      const roll = r() * Math.PI * 2;
       const u0 = unit(cross3(L.t, L.n)), v0 = L.n;
-      const face = [0, 1, 2].map((i) => u0[i] * Math.cos(roll) + v0[i] * Math.sin(roll));
-      const alongA = unit([0, 1, 2].map((i) => L.t[i] * 0.5 + face[i] * L.side * 1.1 - (i === 1 ? 0.35 : 0)));
-      const across = unit(cross3(alongA, L.away));
+      const face = [0, 1, 2].map((i) => u0[i] * Math.cos(L.roll) + v0[i] * Math.sin(L.roll));
+      // where the sprig points: `pitch` along the twig it grew on, `splay` out from it, `fall` down under itself.
+      const alongA = unit([0, 1, 2].map((i) => L.t[i] * o.pitch + face[i] * L.side * o.splay - (i === 1 ? o.fall : 0)));
+      // which way its sheet is turned: at `lie` 0 it swings round to face out of the canopy, the flat billboard
+      // of every game tree; at 1 it keeps the plane it is seated in, and shows its edge when the light is wrong.
+      const outAx = unit(cross3(alongA, L.away));
+      let ownAx = unit(cross3(alongA, face));
+      if (ownAx[0] * outAx[0] + ownAx[1] * outAx[1] + ownAx[2] * outAx[2] < 0) ownAx = ownAx.map((q) => -q);
+      const across = unit([0, 1, 2].map((i) => outAx[i] + (ownAx[i] - outAx[i]) * o.lie));
+      let trueN = unit(cross3(alongA, across));
+      if (trueN[0] * L.away[0] + trueN[1] * L.away[1] + trueN[2] * L.away[2] < 0) trueN = trueN.map((q) => -q);
       const cq = Math.floor(r() * 4), cu = (cq & 1) * 0.5, cv = (cq >> 1) * 0.5;
       for (let w = 0; w < 4; w++) {
         const sx = (w === 0 || w === 3) ? -1 : 1, sy = (w < 2) ? 0 : 1, k = v;
         for (let i = 0; i < 3; i++) {
           lp[k * 3 + i] = L.p[i] + alongA[i] * sz * 1.7 * sy + across[i] * sz * 0.85 * sx;
-          ln[k * 3 + i] = unit([0, 1, 2].map((j) => L.away[j] * 0.7 + face[j] * 0.3))[i];
+          ln[k * 3 + i] = unit([0, 1, 2].map((j) => trueN[j] + (L.away[j] - trueN[j]) * o.norm))[i];
           lc[k * 3 + i] = i === 0 ? L.u : i === 1 ? L.flut : L.phase;
         }
         lu[k * 2] = cu + ((w === 0 || w === 3) ? 0 : 0.5); lu[k * 2 + 1] = cv + (sy ? 0.5 : 0);

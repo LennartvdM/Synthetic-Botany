@@ -5424,3 +5424,51 @@ prefixed `f_` in the page's query now.
 
 That is the same shape as the measures that kept coming back clean: a
 name that answers one question being read as the answer to another.
+
+## Closing the round
+
+Two more things came out of the bench after the ream.
+
+**The blocker belongs through the depth, not behind it.** Looked at
+down the branch axis, a blocker kept to the first order or two sits
+inboard of everything and the outer half of a branchlet has nothing
+behind its sprays. Carried on every order, smaller and more of them,
+it reaches out among the garnish, and the crown gains interior shadow:
+dark pockets between bright sprays, rather than one lit shell over
+nothing.
+
+      coreOn 2, core 0.5, two a path, deep 95
+
+`deep` had to go with it. At 65, with the blocker spread through the
+depth, it sat too near the garnish's value to read as behind it.
+
+**A tone per branchlet** (`vary`), carried by its stem, its plumes and
+its sprigs alike. A canopy built from one texture is one value
+everywhere however many cards are in it. Drawn from [1 - vary, 1] it
+only ever darkened, so the crown went dimmer rather than patchier --
+mean luminance 99.4 to 88.5 across the range, and the spread NARROWED,
+30.3 to 24.3. The measure was right and the question was wrong: I asked
+whether the values spread and it answered that the canopy got darker.
+Centred on 1, the mean holds and the spread rises with the dial. The
+trade is that a bright branchlet lifts its blocker cards toward the
+garnish and softens the split between the tiers; 0.4 keeps both.
+
+Half the garnish cards are mirrored, so four drawn cells read as eight.
+A frond is not symmetric about its rib, so its mirror is a different
+frond for nothing.
+
+### Pictures
+
+      runs/028-foliage/branchlet-range-{top,side}.png   one dial a cell
+      runs/028-foliage/canopy-before-after.png          this round
+      runs/028-foliage/tree-s{1,4}.png                  two trees
+      runs/027-ream/foliage-ream-{1..4}.png             twenty-four
+
+### Still open
+
+Branchlet seats are evenly spaced along the wood; real twigs come in
+clusters. The garnish fronds vary 2:1 in size and not at all in shape
+beyond four cells and their mirrors. `deep` bakes into the texture what
+is really light failing to reach the inside of a crown, and so cannot
+answer to where the sun is. No baked atlas with normal and translucency
+maps. No LOD chain.

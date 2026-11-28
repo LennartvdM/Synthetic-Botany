@@ -23,7 +23,7 @@
     const o = Object.assign({ from: 0.34, every: 0.03, len: 0.5, fork: 2, droop: 0.42, seg: 6,
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
       orders: 3, kids: 3, shrink: 0.56, open: 1.5, distal: 2.2, sprout: 0.2, inner: 0.5,
-      core: 0.75, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 1, mid: null,
+      core: 0.5, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 2, mid: null,
       sprigs: 2, size: 0.056, wide: 0.0055, seed: 23, R0: 0.2,
       node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8, vary: 0.4 }, opt);
     const r = rng(o.seed * 374761393);
@@ -257,7 +257,9 @@
       const across = unit([0, 1, 2].map((i) => outAx[i] + (ownAx[i] - outAx[i]) * o.lie));
       let trueN = unit(cross3(alongA, across));
       if (trueN[0] * L.away[0] + trueN[1] * L.away[1] + trueN[2] * L.away[2] < 0) trueN = trueN.map((q) => -q);
-      const cq0 = Math.floor(r() * 4), cq1 = (cq0 + 1 + Math.floor(r() * 3)) % 4;
+      // mirrored on half the cards, so four drawn cells read as eight. A frond is not symmetric about its rib
+      // -- its leaflets skip and lean -- so its mirror is a different frond for nothing.
+      const cq0 = Math.floor(r() * 4), cq1 = (cq0 + 1 + Math.floor(r() * 3)) % 4, mir = r() < 0.5;
       for (let c = 0; c < TU; c++) {
         // the second card takes a DIFFERENT cell of the atlas. Two copies of one frond crossed at a right angle
         // read as an asterisk wherever the pair is seen edge-on, because their midribs meet at a point and their
@@ -273,7 +275,7 @@
             lc[k * 3 + i] = i === 0 ? L.u : i === 1 ? L.flut : L.phase;
             lt[k * 3 + i] = L.tone === undefined ? 1 : L.tone;
           }
-          lu[k * 2] = cu + ((w === 0 || w === 3) ? 0 : 0.5); lu[k * 2 + 1] = cv + (sy ? 0.5 : 0);
+          lu[k * 2] = cu + (((w === 0 || w === 3) !== mir) ? 0 : 0.5); lu[k * 2 + 1] = cv + (sy ? 0.5 : 0);
           v++;
         }
         const o4 = (made * TU + c) * 4;

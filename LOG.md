@@ -5558,3 +5558,72 @@ painted into the texture, so a plume's heart is dark whichever way the
 light comes from. That is the cheap answer and it is the right one for
 a card; the honest one is a translucency or occlusion term, and it is
 still open.
+
+## The shade was not coherent, and why
+
+The baked version of the round before gave every card the same ball of
+shading wherever it ended up. Two cards side by side then give two dark
+middles with a LIGHT seam between them -- and that seam is a crevice,
+the one place that should be darkest. Shading that belongs to the card
+fights the volume. Shading has to belong to the crown.
+
+The baked cues are all much gentler now; the depth is carried by three
+terms on the geometry, as a vertex tint.
+
+      shade   how enclosed a piece is by the rest of the foliage, from
+              the local crowding of the seats
+      sky     where it sits between the bottom of the crown and the top.
+              No sun needed to know this one: down is down, and every
+              piece in the tree agrees which way it runs, which is what
+              makes the mass read as one solid rather than a swarm of
+              separately shaded cards
+      tuck    how far out along its branchlet it sits
+
+### Four wrong versions, and what each taught
+
+**Depth from the crown's middle** does almost nothing, because `rim`
+has already culled the inner seats: the crown IS a shell, and a
+shell-depth term on a shell is flat.
+
+**The tier split cannot carry it either.** At this density the blocker
+is mostly hidden behind the garnish, so darkening it moves few pixels.
+`deep` 40, 55, 70, 85 all looked the same. What the eye sees is fronds.
+
+**Crowding at the wrong scale.** A radius of `len` x 2.2 is comparable
+to the crown itself, so the density field is nearly constant and the
+quantile stretch turns a slow ramp into the full range: one side of the
+tree darker, which is not form. At `len` x 0.8 it varies between
+neighbouring clumps, which is the scale a clump is read at.
+
+**And the one that mattered: every term could only multiply DOWN.** A
+term that only darkens can only dim -- it takes the lit parts with it
+and the spread NARROWS. Measured against no shading at all, every
+one-sided version lowered both the mean and the standard deviation:
+
+      none              whole sd 21.7    close sd 26.5
+      one-sided, 0.5    whole sd 25.1    close sd 29.0   <- darker AND flatter
+
+Centred on 1, so the exposed pieces lift above it and the enclosed sink
+below, with `lift` dropping the whole leaf palette to leave headroom:
+
+      none              whole sd 21.7    close sd 26.5
+      centred, gentle   whole sd 25.7    close sd 29.8
+      centred, set      whole sd 27.1    close sd 30.8
+      centred, strong   whole sd 28.6    close sd 31.8
+
+Now the contrast is built rather than spent, and it rises with the
+dial. This is the same mistake `vary` made two rounds ago -- drawn from
+[1-v, 1] it dimmed the crown instead of mottling it -- and I did not
+carry the lesson across when I wrote these.
+
+It also answers "less darker darks" for free: the darks need not go as
+low once the lights come up.
+
+### A measure that earned its keep
+
+A histogram of the tint attribute, built straight off the generator
+with no render. It showed in one line what four renders had not: the
+whole range living between 0.6 and 1.0, with the RANDOM per-branchlet
+term occupying as much of it as the two terms that describe form.
+Shading that varies as much at random as it does with the form reads as
+noise. `vary` went from 0.4 to 0.12.

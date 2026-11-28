@@ -25,8 +25,11 @@
   // `heart`, `under`, `root` and `wash` are the shading BAKED into the cells. A card is flat, so the only
   // depth it can have is painted on it: without these a plume is one value from its heart to its rim and reads
   // as a cut-out of foliage rather than a handful of it.
-  const TEX = { blunt: 0.6, lift: 0, range: 1, green: 0, rake: 1.0, deep: 95, grain: 1.6,
-    heart: 46, under: 26, root: 34, wash: 0.5, stalk: 0.45 };
+  // All of these are much gentler than they were. The depth is the crown's job now (`shade` in twigs.js, which
+  // darkens by how deep in the crown a piece sits); the cell's own shading is only the leaf-scale part of it,
+  // and when it tried to carry the whole thing it both fought the volume and crushed the darks.
+  const TEX = { blunt: 0.6, lift: 36, range: 1, green: 0, rake: 1.0, deep: 62, grain: 1.6,
+    heart: 10, under: 12, root: 26, wash: 0.14, stalk: 0.45 };
   const DEF = Object.assign({}, TEX);
 
   function drawLeaf(x, ll, lw) {

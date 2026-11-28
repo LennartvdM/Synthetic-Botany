@@ -39,7 +39,7 @@
       orders: 3, kids: 3, shrink: 0.56, open: 1.5, distal: 2.2, sprout: 0.2, inner: 0.5,
       core: 0.5, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 2, mid: null,
       sprigs: 2, size: 0.056, wide: 0.0055, seed: 23, R0: 0.2,
-      node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8, vary: 0.4, bunch: 0, wave: 0.72, tier: 0.14 }, opt);
+      node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8, vary: 0.12, bunch: 0, wave: 0.72, tier: 0.14, shade: 0.62, curve: 1.1, span: 0.8, tuck: 0.26, sky: 0.56, skew: 1.3 }, opt);
     const r = rng(o.seed * 374761393);
 
     // where a branchlet may sprout: along a core branch, once the wood is thin enough to carry one
@@ -88,6 +88,49 @@
       for (const st of seats) st.far = H(st.p[0] - F.foot[0], st.p[1] - F.foot[1], st.p[2] - F.foot[2]) / F.scale;
     }
 
+    // How ENCLOSED each seat is by the rest of the foliage. This is the coherent half of the shading, and the
+    // baked cells cannot supply it: every card carries the same ball of shade wherever it ends up, so two
+    // cards side by side give two dark middles with a LIGHT seam between them -- and that seam is a crevice,
+    // the one place that should be darkest. Shading that belongs to the card fights the volume.
+    //
+    // Depth from the crown's middle was tried first and does almost nothing, because `rim` has already culled
+    // the inner seats: the crown IS a shell, and a shell-depth term on a shell is flat. What reads as volume
+    // is local crowding -- a clump dark through its core and lighter at its edge, and darkest of all where two
+    // clumps meet, which is what makes them read as two clumps and not one wall.
+    if (seats.length > 2) {
+      const rad = Math.max(1e-4, o.len * o.span), inv = 1 / rad, grid = new Map();
+      const key = (p) => (Math.floor(p[0] * inv) * 73856093 ^ Math.floor(p[1] * inv) * 19349663 ^ Math.floor(p[2] * inv) * 83492791);
+      seats.forEach((st, i) => { const k = key(st.p); const g = grid.get(k); if (g) g.push(i); else grid.set(k, [i]); });
+      const dens = new Float64Array(seats.length);
+      for (let i = 0; i < seats.length; i++) {
+        const p = seats[i].p;
+        for (let ax = -1; ax <= 1; ax++) for (let ay = -1; ay <= 1; ay++) for (let az = -1; az <= 1; az++) {
+          const g = grid.get(key([p[0] + ax * rad, p[1] + ay * rad, p[2] + az * rad]));
+          if (!g) continue;
+          for (const j of g) {
+            if (j === i) continue;
+            const q = H(p[0] - seats[j].p[0], p[1] - seats[j].p[1], p[2] - seats[j].p[2]);
+            if (q < rad) { const w = 1 - q * inv; dens[i] += w * w; }
+          }
+        }
+      }
+      // Stretched between two quantiles, not divided by one. Divided by a high quantile the least crowded
+      // piece still comes out part-shaded, so the whole canopy darkens together and the spread stays narrow --
+      // which is a canopy that is dimmer, not one with form in it. Between the quartile and the ninetieth, the
+      // open quarter is fully lit and only the crowded end goes dark.
+      const sorted = Array.from(dens).sort((x, y) => x - y), at = (q) => sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * q))];
+      const lo = at(0.25), hi = Math.max(lo + 1e-6, at(0.9));
+      for (let i = 0; i < seats.length; i++) seats[i].occ = Math.max(0, Math.min(1, (dens[i] - lo) / (hi - lo)));
+    }
+
+    // And the cue a canopy cannot do without, which needs no sun to know: down is down. The underside of a
+    // crown is dark and its top is lit, and every piece in the tree agrees about which way that runs -- which
+    // is what makes the whole mass read as one solid rather than as a swarm of separately shaded cards.
+    let cy0 = Infinity, cy1 = -Infinity;
+    for (const st of seats) { cy0 = Math.min(cy0, st.p[1]); cy1 = Math.max(cy1, st.p[1]); }
+    const span2 = Math.max(1e-6, cy1 - cy0);
+    const sky = (y) => 1 + o.sky * (Math.pow(Math.max(0, Math.min(1, (y - cy0) / span2)), o.skew) - 0.5);
+
     // Where the light is. Nothing above asks how deep in the crown a seat sits -- only how thick its wood is and
     // how near the end of its branch -- so wood thin enough at the bottom of the tree is furred like wood at the
     // top, and a tree carries foliage down to its root plate where it would long since have shed it.
@@ -112,7 +155,7 @@
 
     // grow one branchlet: a drooping path that forks. returns a list of segments as {a,b,t0,t1,wa,wb}
     const paths = [];
-    const grow = (p0, d0, L, depth, t0, far) => {
+    const grow = (p0, d0, L, depth, t0, far, occ) => {
       let p = p0.slice(), d = d0.slice();
       const n = o.seg, pts = [p.slice()];
       for (let i = 1; i <= n; i++) {
@@ -123,7 +166,7 @@
         p = [p[0] + d[0] * L / n, p[1] + d[1] * L / n, p[2] + d[2] * L / n];
         pts.push(p.slice());
       }
-      paths.push({ pts, t0, t1: t0 + 1, depth, L, far });
+      paths.push({ pts, t0, t1: t0 + 1, depth, L, far, occ });
       // The hierarchy. Each order is shorter than its parent and there are more of them, and they leave at a wider
       // angle, so the thing opens out toward its end instead of running on as one wire. That is the burst: little
       // at the base of a branchlet and a spray at the end of it.
@@ -139,7 +182,7 @@
           const ph = (c / kids) * Math.PI * 2 + r() * 1.1;
           const wide = o.out * o.open * (0.7 + 0.6 * r());
           const away = unit([0, 1, 2].map((i) => dd[i] * 1.0 + (side[i] * Math.cos(ph) + cross3(dd, side)[i] * Math.sin(ph)) * wide));
-          grow(pts[at], away, L * o.shrink * (0.85 + 0.3 * r()), depth + 1, t0 + at / n, far);
+          grow(pts[at], away, L * o.shrink * (0.85 + 0.3 * r()), depth + 1, t0 + at / n, far, occ);
         }
       }
     };
@@ -150,7 +193,7 @@
       // along the branch first, out from it second: the trajectory of the core branch is what a branchlet obeys
       const out = unit([0, 1, 2].map((i) => s.d[i] * o.lean * (0.8 + 0.5 * r())
         + (s.o[i] * Math.cos(ph) + side[i] * Math.sin(ph)) * o.out * (0.6 + 0.8 * r())));
-      grow(s.p, out, o.len * (0.7 + 0.6 * r()), 0, 0, s.far || 0);
+      grow(s.p, out, o.len * (0.7 + 0.6 * r()), 0, 0, s.far || 0, s.occ || 0);
     }
     if (!paths.length) return { stem: null, leaf: null, twigs: 0, sprigs: 0 };
 
@@ -168,6 +211,18 @@
     // `tier` holds the two sheets back behind the wood that carries them, so a branchlet draws itself first and
     // clothes itself after, rather than everything arriving at once in the same place.
     const due = (far, local, off) => far * o.wave + Math.min(1, local) * (1 - o.wave) + (off || 0) * o.tier;
+    // `tuck`: how much darker a piece is for sitting INBOARD on its branchlet. This is the cue that was
+    // missing. The tier split cannot carry the depth, because at this density the blocker is mostly hidden
+    // behind the garnish and darkening it moves few pixels; what the eye sees is fronds, and they were all one
+    // value. Every branchlet now runs dark at its inside to lit at its tips, and since every branchlet obeys
+    // the same rule the clumps read as clumps -- a lit rim over a dark core, all of them turned the same way
+    // out of the mass, which is what makes the combination read as volume rather than as scatter.
+    // CENTRED on 1, not falling from it. A term that can only multiply down can only dim: it takes the lit
+    // parts with it and the spread NARROWS, which is the opposite of shading. Measured on the renders, every
+    // one-sided version lowered both the mean and the standard deviation against no shading at all. Centred,
+    // the exposed pieces lift above 1 and the enclosed ones sink below, and the contrast is built rather than
+    // spent. `lift` in the atlas drops the whole leaf palette to leave headroom for the lifting.
+    const tuck = (local) => 1 + o.tuck * (Math.min(1, local) - 0.5);
     let a = 0, b = 0;
     const leafAt = [];
     for (const pa of paths) {
@@ -178,7 +233,10 @@
       const piv = pa.pts[0]; let ax0 = null;
       // centred, not one-sided: a tone drawn from [1 - vary, 1] only ever darkens, so the crown goes dimmer
       // rather than patchier, and a measure of its spread comes back saying the values narrowed.
-      pa.tone = 1 + o.vary * (r() - 0.5);
+      // the crown's own shade, times the branchlet's own tone. Every piece in a crowded part of the crown is
+      // dark and every piece standing clear of its neighbours is lit, whatever its texture says, so the cards
+      // reinforce one another into a mass instead of each reading as its own little ball.
+      pa.tone = (1 + o.vary * (r() - 0.5)) * (1 + o.shade * (0.5 - Math.pow(pa.occ || 0, o.curve)));
       const away = unit([pa.pts[0][0] - mid[0], pa.pts[0][1] - mid[1] + 0.05, pa.pts[0][2] - mid[2]]);
       for (let i = 0; i < N; i++) {
         const u = i / (N - 1);
@@ -196,7 +254,7 @@
             sn[a * 3] = nm[0]; sn[a * 3 + 1] = nm[1]; sn[a * 3 + 2] = nm[2];
             su[a * 2] = e; su[a * 2 + 1] = u;
             sc[a * 3] = pa.t0 * 0.3 + u * 0.7; sc[a * 3 + 1] = flut; sc[a * 3 + 2] = phase;
-            st[a * 3] = st[a * 3 + 1] = st[a * 3 + 2] = pa.tone;
+            st[a * 3] = st[a * 3 + 1] = st[a * 3 + 2] = pa.tone * tuck((pa.t0 + u) / 2.2) * sky(pa.pts[i][1]);
             // a stem's own vertices are due in order along it, so it draws itself outward from its base rather
             // than appearing whole
             sb[a] = due(pa.far || 0, (pa.t0 + u) / 2.2);
@@ -273,7 +331,7 @@
             cp[k * 3 + i] = C.p[i] + across[i] * sz * 0.62 * fx + upc[i] * sz * 0.62 * o.long * sy + out[i] * (sz * 0.1 + outAmt);
             cn[k * 3 + i] = unit([0, 1, 2].map((j) => out[j] + across[j] * fx * o.bend * 0.8))[i];
             cc[k * 3 + i] = i === 0 ? C.u : i === 1 ? flut : phase;
-            ct[k * 3 + i] = C.tone === undefined ? 1 : C.tone;
+            ct[k * 3 + i] = (C.tone === undefined ? 1 : C.tone) * tuck((C.t0 + C.u) / 2.2) * sky(C.p[1]);
             cvp[k * 3 + i] = C.p[i]; cax[k * 3 + i] = across[i];
           }
           cuv[k * 2] = (fx + 1) / (COLS === 2 ? 2 : 2); cuv[k * 2 + 1] = ry;
@@ -328,7 +386,7 @@
             lp[k * 3 + i] = L.p[i] + alongA[i] * sz * 1.7 * sy + wide[i] * sz * 0.85 * sx;
             ln[k * 3 + i] = unit([0, 1, 2].map((j) => nrm[j] + (L.away[j] - nrm[j]) * o.norm))[i];
             lc[k * 3 + i] = i === 0 ? L.u : i === 1 ? L.flut : L.phase;
-            lt[k * 3 + i] = L.tone === undefined ? 1 : L.tone;
+            lt[k * 3 + i] = (L.tone === undefined ? 1 : L.tone) * tuck((L.t0 + L.u) / 2.2) * sky(L.p[1]);
             lvp[k * 3 + i] = L.p[i]; lax[k * 3 + i] = wide[i];
           }
           lu[k * 2] = cu + (((w === 0 || w === 3) !== mir) ? 0 : 0.5); lu[k * 2 + 1] = cv + (sy ? 0.5 : 0);

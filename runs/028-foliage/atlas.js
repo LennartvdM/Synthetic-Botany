@@ -28,7 +28,7 @@
   // All of these are much gentler than they were. The depth is the crown's job now (`shade` in twigs.js, which
   // darkens by how deep in the crown a piece sits); the cell's own shading is only the leaf-scale part of it,
   // and when it tried to carry the whole thing it both fought the volume and crushed the darks.
-  const TEX = { blunt: 0.6, lift: 36, range: 1, green: 0, rake: 1.0, deep: 62, grain: 1, body: 1, spray: 1,
+  const TEX = { blunt: 0.6, lift: 58, range: 1, green: 0, rake: 1.0, deep: 62, grain: 1, body: 1, spray: 1, leaf: 230,
     heart: 34, under: 12, root: 26, wash: 0.3, stalk: 0.45 };
   const DEF = Object.assign({}, TEX);
 
@@ -121,10 +121,14 @@
     const c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d');
     const rnd = (() => { let s = 4242; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; })();
     const deep = TEX.deep;
-    // A frond is 0.077 of a world unit and this card is 0.32 across, so about four of them fit: around 110
-    // pixels in a 512 cell, and no amount of canvas resolution changes that. Drawn at half it, as this cell
-    // did, the core is a finer plant standing behind the real one.
-    const LEAF = 104;
+    // `leaf` is the ONE number that keeps this cell's leaves the same size as the garnish's, and it is the
+    // thing that has now gone wrong twice: it is in pixels, and it has to be the garnish's 206 scaled by the
+    // ratio of the two cards' world sizes. Change `size` or `core` in the generator and this has to move with
+    // them, or the blocker quietly becomes a finer plant standing behind the real one again.
+    //   garnish card = size x 1.7 across, 256 px        plume card = L x core x 1.03 x 1.24 across, 512 px
+    // At size 0.196 and core 0.9 on a branchlet of 0.5 that is 775 and 890 pixels per world unit, so the
+    // garnish's 206 px frond is 0.266 of a unit and belongs here at about 236.
+    const LEAF = TEX.leaf;
     const dab = (px, py, R, t, al) => {
       const col = leafTone(rnd, t, 0).slice(4, -1), g = x.createRadialGradient(px, py, 0, px, py, R);
       g.addColorStop(0, 'rgba(' + col + ',' + al + ')');
@@ -134,20 +138,23 @@
     };
     // Clumps, not a rosette. Scattered evenly by angle the cell comes out radially symmetric, a snowflake,
     // and foliage is lumpy: a few knots of leaves that run together where they meet.
-    const CL = 8, hub = [[256, 256, 52 + rnd() * 18]];
+    const CL = 5, hub = [[256, 256, 34 + rnd() * 16]];
     for (let i = 1; i < CL; i++) {
-      const a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), 0.45) * 72;
-      hub.push([256 + Math.cos(a) * rr, 256 + Math.sin(a) * rr * 0.95, 38 + rnd() * 28]);
+      const a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), 0.45) * 62;
+      hub.push([256 + Math.cos(a) * rr, 256 + Math.sin(a) * rr * 0.95, 28 + rnd() * 22]);
     }
     const at = (reach) => { const h = hub[Math.floor(rnd() * CL)], a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), 0.6) * h[2] * reach;
       return [h[0] + Math.cos(a) * rr, h[1] + Math.sin(a) * rr * 0.95]; };
-    const fall = (px, py) => Math.min(1, Math.hypot(px - 256, py - 256) / 150);
+    const fall = (px, py) => Math.min(1, Math.hypot(px - 256, py - 256) / 120);
 
     // 1. THE LEAVES UNDER. Full size, every which way, enough of them to be a thicket.
-    const n = Math.round(52 * TEX.grain);
+    const n = Math.round(18 * TEX.grain);
     for (let i = 0; i < n; i++) {
       const p = at(1.0), H = LEAF * (0.86 + 0.34 * rnd());
-      x.save(); x.translate(p[0], p[1]); x.rotate(rnd() * Math.PI * 2);
+      // placed by its MIDDLE, not its base. A frond drawn from where it is put runs a whole length outward
+      // from there, so at this leaf size anything off-centre hangs over the cell edge and alphaTest cuts it
+      // off square -- a straight edge across a leaf, which is the one thing a leaf must not have.
+      x.save(); x.translate(p[0], p[1]); x.rotate(rnd() * Math.PI * 2); x.translate(0, H * 0.5);
       drawFrond(x, H, H * (0.5 + 0.12 * rnd()), 6 + Math.floor(rnd() * 5), rnd,
         226 - deep - TEX.heart * (1 - fall(p[0], p[1])) * 0.8, 50);
       x.restore();
@@ -161,10 +168,10 @@
     // than in the step from one leaf to the next.
     for (let i = 0; i < Math.round(420 * TEX.body); i++) {
       const p = at(1.25), f = fall(p[0], p[1]);
-      dab(p[0], p[1], 24 + rnd() * 44,
+      dab(p[0], p[1], 34 + rnd() * 56,
         226 - deep - TEX.under - 22 - TEX.heart * (1 - f) + Math.floor(rnd() * 14), 0.44 * (1 - 0.6 * f));
     }
-    for (let i = 0; i < Math.round(900 * TEX.spray); i++) {
+    for (let i = 0; i < Math.round(700 * TEX.spray); i++) {
       const p = at(1.5), f = fall(p[0], p[1]);
       dab(p[0], p[1], 2 + rnd() * 7, 226 - deep - 16 - TEX.heart * (1 - f) + Math.floor(rnd() * 34), 0.45);
     }
@@ -173,7 +180,7 @@
     // half anywhere, so the middle keeps leaves standing ON the mass. A veil that leaves nothing showing
     // through it is not a mass of foliage, it is a smudge -- the interior should read as the same leaves,
     // lower in contrast, not as the absence of them.
-    const m = Math.round(46 * TEX.grain);
+    const m = Math.round(14 * TEX.grain);
     for (let i = 0; i < m; i++) {
       const rim = i % 2 === 0;
       const h = hub[Math.floor(rnd() * CL)], a = rnd() * Math.PI * 2;
@@ -182,6 +189,7 @@
       const out = Math.atan2(py - 256, px - 256), H = LEAF * (0.9 + 0.3 * rnd());
       x.save(); x.translate(px, py);
       x.rotate(rim ? out + Math.PI / 2 + (rnd() - 0.5) * 2.2 : rnd() * Math.PI * 2);
+      x.translate(0, H * (rim ? 0.3 : 0.5));
       drawFrond(x, H, H * (0.5 + 0.12 * rnd()), 6 + Math.floor(rnd() * 5), rnd,
         226 - deep - TEX.heart * (1 - fall(px, py)) * (rim ? 0.35 : 0.8), 50);
       x.restore();

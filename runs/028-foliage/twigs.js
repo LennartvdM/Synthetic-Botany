@@ -37,9 +37,9 @@
     const o = Object.assign({ from: 0.34, every: 0.03, len: 0.5, fork: 2, droop: 0.42, seg: 6,
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
       orders: 3, kids: 3, shrink: 0.56, open: 1.5, distal: 2.2, sprout: 0.2, inner: 0.5,
-      core: 0.5, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 2, mid: null,
-      sprigs: 2, size: 0.056, wide: 0.0055, seed: 23, R0: 0.2,
-      node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8, vary: 0.12, bunch: 0, wave: 0.72, tier: 0.14, shade: 0.62, curve: 1.1, span: 0.8, tuck: 0.26, sky: 0.56, skew: 1.3 }, opt);
+      core: 0.9, cores: 3, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 2, mid: null,
+      sprigs: 2, size: 0.196, wide: 0.0115, seed: 23, R0: 0.2,
+      node: 2, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8, vary: 0.12, bunch: 0, wave: 0.72, tier: 0.14, shade: 0.62, curve: 1.1, span: 0.8, tuck: 0.26, sky: 0.56, skew: 1.3 }, opt);
     const r = rng(o.seed * 374761393);
 
     // where a branchlet may sprout: along a core branch, once the wood is thin enough to carry one

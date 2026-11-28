@@ -5666,3 +5666,50 @@ them. Painting them together is also what makes the shading possible:
 the veil is the only part of the cell continuous enough to hold a
 gradient, where before the step from one leaf to the next was itself
 reading as the shading.
+
+## Five times too small
+
+Measured against the reference: a leaf was 0.75% of the crown's width
+where it should be nearer 5%. The leaf is now 3.5 times longer and the
+counts come down to match.
+
+      size    0.056 -> 0.196      the garnish card
+      core    0.5   -> 0.9        the blocker card, relative to its twig
+      cores   2     -> 3
+      node    1     -> 2          leaves every other step, not every one
+      wide  0.0055  -> 0.0115     the twigs with them
+
+The compensation is what took the tries. Card area goes as the square,
+so matching the old coverage needs a twelfth of the cards -- and a
+twelfth of them, placed lumpily, leaves a crown full of holes. Equal
+coverage is not equal fullness. Three times that count fills it.
+
+And the same fault reappeared INSIDE the plume cell within an hour of
+being fixed. Its leaves were drawn at a fixed 104 pixels, which against
+the old card sizes was right and against the new ones is under half the
+garnish's. That number is now `leaf`, with the arithmetic beside it,
+because it has to move whenever `size` or `core` do:
+
+      garnish card = size x 1.7 across, 256 px
+      plume card   = L x core x 1.03 x 1.24 across, 512 px
+
+At the new sizes that is 775 and 890 pixels per world unit, so the
+garnish's 206 px frond is 0.266 of a unit and belongs in the plume cell
+at about 236.
+
+Two things the bigger leaf broke, both now mended:
+
+- Fronds were placed by their BASE and run a whole length outward from
+  there, so anything off-centre hung over the cell edge and alphaTest
+  cut it off square. A straight edge across a leaf is the one thing a
+  leaf must not have. They are placed by their middle now.
+- The lit end of the shading started clipping to white, because the
+  centred gains push above 1 and there was nothing above 1 to push
+  into. `lift` 36 to 58 drops the palette to make room: white clipping
+  0.32% of the crown to none, and the darks are no further down.
+
+What is still open at this scale: a leaflet now covers enough screen
+that the cutout's own steps show when the camera is close, because the
+atlas is 512 and one leaflet is a quarter of a cell across. That wants
+a larger atlas, or alpha that is a distance field rather than a
+coverage mask.

@@ -72,9 +72,10 @@ function addShape(i) {
     const fol = new T.Group(); m.add(fol);
     const build = (over) => {
       while (fol.children.length) fol.remove(fol.children[0]);
-      const Z = Twigs.build(gr, Object.assign({ R0: (window.__R0 || [0.2])[i], seed: 23 + i,
-        from: +(qs.get('from') || 0.34), every: +(qs.get('every') || 0.08), len: +(qs.get('len') || 0.38),
-        droop: +(qs.get('droop') || 0.42), sprigs: 3, size: 0.05, wide: 0.011 }, over || {}));
+      // only what the page itself knows; everything else is the generator's default, so there is one place to
+      // change a rule and the two benches cannot drift apart
+      const q = {}; for (const k of ['from', 'every', 'len', 'droop', 'sprigs', 'size', 'core', 'cores', 'cant']) if (qs.get(k)) q[k] = +qs.get(k);
+      const Z = Twigs.build(gr, Object.assign({ R0: (window.__R0 || [0.2])[i], seed: 23 + i }, q, over || {}));
       const put = (buf, material, cast) => {
         if (!buf || !buf.idx.length) return;
         const g2 = new T.BufferGeometry();
@@ -133,5 +134,13 @@ new ResizeObserver(fit).observe($('stage'));
 fit();
 (function next(i) { if (i >= Fantastic.names.length) { window.__ready = true; return; } addShape(i); arrange(); setTimeout(() => next(i + 1), 30); })(0);
 $('tint').addEventListener('change', () => { $('key').hidden = !$('tint').checked; shapes.forEach(paint); place(); });
-window.__cheats = { arrange, set: (i, cut, a, p, r, ty, tint) => { if (tint !== undefined && $('tint').checked !== !!tint) { $('tint').checked = !!tint; $('key').hidden = !tint; shapes.forEach(paint); } $('which').value = i; $('cut').value = cut || 'none'; arrange(); if (a != null) az = a; if (p != null) pol = p; if (r) rad = r; if (ty != null) target.y = ty; place(); } };
+// fit the whole of shape i, foliage and all, into the frame. A hand-picked distance is a guess that goes stale
+// the moment the canopy changes size, and a cropped tree cannot be judged at all.
+window.__fit = (i, margin) => {
+  const sh = shapes[i]; if (!sh) return;
+  const bb = new T.Box3().setFromObject(sh.mesh), c = bb.getCenter(new T.Vector3());
+  target.copy(c); rad = bb.getSize(new T.Vector3()).length() * 0.5 / Math.sin((cam.fov * Math.PI / 180) / 2) * (margin || 1.06);
+  place();
+};
+window.__cheats = { arrange, fit: window.__fit, set: (i, cut, a, p, r, ty, tint) => { if (tint !== undefined && $('tint').checked !== !!tint) { $('tint').checked = !!tint; $('key').hidden = !tint; shapes.forEach(paint); } $('which').value = i; $('cut').value = cut || 'none'; arrange(); if (a != null) az = a; if (p != null) pol = p; if (r) rad = r; if (ty != null) target.y = ty; place(); } };
 </script>

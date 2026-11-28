@@ -20,11 +20,11 @@
   const rng = (s) => { let x = s >>> 0 || 1; return () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return ((x >>> 0) % 100000) / 100000; }; };
 
   function build(tree, opt) {
-    const o = Object.assign({ from: 0.34, every: 0.07, len: 0.3, fork: 2, droop: 0.42, seg: 6,
+    const o = Object.assign({ from: 0.34, every: 0.055, len: 0.5, fork: 2, droop: 0.42, seg: 6,
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
-      orders: 3, kids: 2, shrink: 0.56, open: 1.5, distal: 2.2,
-      core: 0.42, cores: 3, bend: 0, ride: 0, long: 1, cant: 0, mid: null,
-      sprigs: 3, size: 0.05, wide: 0.011, seed: 23, R0: 0.2,
+      orders: 3, kids: 3, shrink: 0.56, open: 1.5, distal: 2.2, sprout: 0.2, inner: 0.5,
+      core: 0.75, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 1, mid: null,
+      sprigs: 3, size: 0.045, wide: 0.011, seed: 23, R0: 0.2,
       node: 1, turn: 0, pitch: 0.5, splay: 1.1, fall: 0.35, lie: 0, norm: 0.7 }, opt);
     const r = rng(o.seed * 374761393);
 
@@ -64,14 +64,17 @@
         p = [p[0] + d[0] * L / n, p[1] + d[1] * L / n, p[2] + d[2] * L / n];
         pts.push(p.slice());
       }
-      paths.push({ pts, t0, t1: t0 + 1, depth });
+      paths.push({ pts, t0, t1: t0 + 1, depth, L });
       // The hierarchy. Each order is shorter than its parent and there are more of them, and they leave at a wider
       // angle, so the thing opens out toward its end instead of running on as one wire. That is the burst: little
       // at the base of a branchlet and a spray at the end of it.
       if (depth + 1 < o.orders) {
         const kids = depth === 0 ? o.kids : Math.max(1, o.kids - (r() < 0.35 ? 1 : 0));
         for (let c = 0; c < kids; c++) {
-          const at = Math.max(1, Math.round(n * (0.45 + 0.5 * r())));
+          // `sprout`: how far along its parent the earliest child may leave. Held late, every order leaves in
+          // the outer half of the one before it, and the leaves end up in the last quarter of the system with
+          // bare wire behind them -- a stick with a tuft on the end.
+          const at = Math.max(1, Math.round(n * (o.sprout + (0.95 - o.sprout) * r())));
           const dd = unit([pts[Math.min(n, at)][0] - pts[at - 1][0], pts[Math.min(n, at)][1] - pts[at - 1][1], pts[Math.min(n, at)][2] - pts[at - 1][2]]);
           const side = unit(cross3(dd, Math.abs(dd[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0]));
           const ph = (c / kids) * Math.PI * 2 + r() * 1.1;
@@ -93,8 +96,11 @@
     if (!paths.length) return { stem: null, leaf: null, twigs: 0, sprigs: 0 };
 
     // stems: a flat ribbon per path, its plane turned to face out of the canopy so a twig reads as an edge
+    // Two ribbons crossed at right angles, not one. A card may be flat because a leaf is flat; a twig is a line,
+    // and a single ribbon seen edge-on is a hairline. A limb's worth of them edge-on at once is a hatched smear
+    // across the canopy, which is what the close views kept showing.
     let sv = 0, si = 0;
-    for (const pa of paths) sv += pa.pts.length * 2, si += (pa.pts.length - 1) * 6;
+    for (const pa of paths) sv += pa.pts.length * 4, si += (pa.pts.length - 1) * 12;
     const sp = new Float32Array(sv * 3), sn = new Float32Array(sv * 3), su = new Float32Array(sv * 2), sc = new Float32Array(sv * 3), sidx = new Uint32Array(si);
     let a = 0, b = 0;
     const leafAt = [];
@@ -108,20 +114,24 @@
         let n = unit([0, 1, 2].map((j) => away[j] - t[j] * (away[0] * t[0] + away[1] * t[1] + away[2] * t[2])));
         const across = unit(cross3(t, n));
         const w = o.wide * (1 - 0.72 * u) * (pa.depth ? 0.6 : 1);
-        for (let e = 0; e < 2; e++) {
-          const sx = e ? 1 : -1;
-          sp[a * 3] = pa.pts[i][0] + across[0] * w * sx; sp[a * 3 + 1] = pa.pts[i][1] + across[1] * w * sx; sp[a * 3 + 2] = pa.pts[i][2] + across[2] * w * sx;
-          sn[a * 3] = n[0]; sn[a * 3 + 1] = n[1]; sn[a * 3 + 2] = n[2];
-          su[a * 2] = e; su[a * 2 + 1] = u;
-          sc[a * 3] = pa.t0 * 0.3 + u * 0.7; sc[a * 3 + 1] = flut; sc[a * 3 + 2] = phase;
-          a++;
+        for (let pl = 0; pl < 2; pl++) {
+          const ax = pl ? n : across, nm = pl ? across : n;
+          for (let e = 0; e < 2; e++) {
+            const sx = e ? 1 : -1;
+            sp[a * 3] = pa.pts[i][0] + ax[0] * w * sx; sp[a * 3 + 1] = pa.pts[i][1] + ax[1] * w * sx; sp[a * 3 + 2] = pa.pts[i][2] + ax[2] * w * sx;
+            sn[a * 3] = nm[0]; sn[a * 3 + 1] = nm[1]; sn[a * 3 + 2] = nm[2];
+            su[a * 2] = e; su[a * 2 + 1] = u;
+            sc[a * 3] = pa.t0 * 0.3 + u * 0.7; sc[a * 3 + 1] = flut; sc[a * 3 + 2] = phase;
+            a++;
+          }
         }
-        if (i < N - 1) { const q = base + i * 2;
-          sidx[b++] = q; sidx[b++] = q + 1; sidx[b++] = q + 2;
-          sidx[b++] = q + 1; sidx[b++] = q + 3; sidx[b++] = q + 2; }
+        if (i < N - 1) for (let pl = 0; pl < 2; pl++) {
+          const q = base + i * 4 + pl * 2, q2 = base + (i + 1) * 4 + pl * 2;
+          sidx[b++] = q; sidx[b++] = q + 1; sidx[b++] = q2;
+          sidx[b++] = q + 1; sidx[b++] = q2 + 1; sidx[b++] = q2; }
         // sprigs sit along the branchlet, not at its tip, and alternate sides as leaves do
         // leaves ride the outer orders. An inner branchlet is structure; the mass belongs at the ends of it.
-        const share = pa.depth >= o.orders - 1 ? 1 : pa.depth === 0 ? 0.12 : 0.45;
+        const share = pa.depth >= o.orders - 1 ? 1 : pa.depth === 0 ? o.inner : 0.45;
         // leaves sit at nodes along a twig, not evenly down every millimetre of it. `node` is how many steps
         // apart the nodes are, `turn` how far round the twig each node is turned from the last: 0 leaves it to
         // chance, 0.5 puts the leaves in two ranks, 0.382 winds them up the twig as most plants do.
@@ -138,20 +148,24 @@
     // solid middle. Nothing finer can do that job: a sparse sprig blown up only reads as a bigger sparse sprig.
     const coreAt = [];
     for (const pa of paths) {
-      if (pa.depth !== 0) continue;
+      // `coreOn`: the deepest order that carries a plume. Kept to the first order the mass sits inboard of
+      // everything, on the one stretch of the system that has no leaves on it.
+      if (pa.depth > o.coreOn) continue;
       const N = pa.pts.length;
       for (let c = 0; c < o.cores; c++) {
         const u = 0.35 + 0.42 * (c + r()) / o.cores, i = Math.min(N - 2, Math.max(1, Math.round(u * (N - 1))));
         const t = unit([pa.pts[i + 1][0] - pa.pts[i][0], pa.pts[i + 1][1] - pa.pts[i][1], pa.pts[i + 1][2] - pa.pts[i][2]]);
         const away = unit([pa.pts[i][0] - mid[0], pa.pts[i][1] - mid[1] + 0.05, pa.pts[i][2] - mid[2]]);
-        coreAt.push({ p: pa.pts[i], t, away, u });
+        coreAt.push({ p: pa.pts[i], t, away, u, L: pa.L });
       }
     }
     const COLS = o.bend > 0 ? 3 : 2, CV = COLS * 2, CI = (COLS - 1) * 6;
     const nC = coreAt.length, cp = new Float32Array(nC * CV * 3), cn = new Float32Array(nC * CV * 3), cuv = new Float32Array(nC * CV * 2), cc = new Float32Array(nC * CV * 3), cidx = new Uint32Array(nC * CI);
     let cv = 0, ci = 0, cm = 0;
     for (const C of coreAt) {
-      const sz = o.len * o.core * (0.78 + 0.5 * r());
+      // sized against the twig that carries it, not against the first order, so a plume on a child is a child's
+      // plume and `core` means one thing wherever it is read
+      const sz = C.L * o.core * (0.78 + 0.5 * r());
       const roll = r() * Math.PI * 2;
       const u0 = unit(cross3(C.t, C.away)), v0 = cross3(C.t, u0);
       const free = [0, 1, 2].map((i) => u0[i] * Math.cos(roll) + v0[i] * Math.sin(roll));

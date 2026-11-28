@@ -5343,3 +5343,84 @@ carries foliage down to its root plate, because `from` asks only how
 thick the wood is and nothing asks how deep in the canopy it sits. The
 garnish fronds are all one size. No baked atlas with normal and
 translucency maps. No LOD chain.
+
+## The light a seat gets, and a ream with canopies on
+
+Nothing asked how deep in a crown a seat sat -- only how thick its wood
+was and how near the end of its branch -- so wood thin enough at the
+bottom of a tree was furred exactly like wood at the top. Seed 4 carried
+foliage down to its root plate.
+
+      light   how much of a seat's chance falls to its height within
+              the crown
+      rim     how much to its distance from the crown's middle
+
+Both read the crown that the seats themselves describe, so nothing is
+placed: the shape of the lit region comes out of where the wood went.
+They are a range, not a setting.
+
+      light 1            the canopy lifts off the bole, and the tree
+                         reads as roots, trunk and crown for the first
+                         time
+      rim 1.4            the crown hollows into a shell over open
+                         structure; the limbs show through from below
+      light 1.4, rim 1   open and structural, with holes in the crown
+      light 1, rim 0.8   a solid broad dome on a clear bole
+      and seats at 0.03
+
+Seat spacing has a floor. `every` below about 0.03 changes nothing,
+because it cannot ask for seats closer than the strand's own samples:
+0.022 and 0.030 give the same tree. To fill a crown further the wood has
+to qualify further in, or the systems have to be bigger.
+
+### The garnish is two cards crossed
+
+One card disappears edge-on, so the tier thins exactly on the
+branchlets whose seats face across the view, and the thinning travels
+with the camera. Crossed and fewer beats flat and more at a like
+triangle budget: two sprigs a node at 0.056 carry more mass than three
+flat at 0.045, and the second card picks up different light, which gives
+the tier internal value for nothing.
+
+The second card samples a DIFFERENT cell of the atlas. Two copies of one
+frond crossed at a right angle read as an asterisk wherever the pair is
+seen edge-on -- midribs meeting at a point, leaflets answering each
+other exactly.
+
+### Where a sprig points
+
+      pitch 1.4, splay 0.4   the fronds line up along the twig they sit
+                             on, and a branchlet reads as a compound
+                             leaf: leaflets on a rachis. The hierarchy
+                             is then legible at every scale -- leaf,
+                             frond, branchlet, branch.
+      pitch 0.1, splay 1.5   a bottlebrush: fuller cover, no direction
+      fall 0.95              the mass hangs below the twig
+      fall 0                 it stands up off it
+
+`lie` barely matters now, and that is the crossed cards' doing: a pair
+at right angles already occupies both planes, so which plane the first
+one keeps has little left to say.
+
+### The ream, with canopies
+
+Twenty-four trees across eight sprout rules, two seeds each, and three
+grounds, in `runs/027-ream/foliage-ream-{1,2,3,4}.png`. The foliage
+holds across all of them. The boulder trees are the ones to look at: a
+crown over stilt roots gripping a stone.
+
+What the ream says that one tree could not: the crowns are all broad
+domes. The foliage follows the wood, so variety in crown SHAPE has to
+come from variety in branching, and these sprout rules give much the
+same envelope however different the trunks and roots are.
+
+### What broke
+
+A query-name collision. The ream asks for `from=0` meaning the first
+tree of the slice to grow; the foliage read `from` as the wood a
+branchlet may sit on, so the threshold was zero, nothing qualified, and
+every tree in the ream came out bare. The generator's dials are
+prefixed `f_` in the page's query now.
+
+That is the same shape as the measures that kept coming back clean: a
+name that answers one question being read as the answer to another.

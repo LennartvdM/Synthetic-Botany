@@ -26,4 +26,7 @@
       for (let k = 0; k < n; k++) g.layer[k] = K[i][1].layerAt(g.pos[k * 3] - g.nrm[k * 3] * 0.004, g.pos[k * 3 + 1] - g.nrm[k * 3 + 1] * 0.004, g.pos[k * 3 + 2] - g.nrm[k * 3 + 2] * 0.004); return g; },
     mesh, kit: Fantastic.kit };
   window.__plan = PLAN.length;
+  // so the foliage bench can hang a canopy on each of them
+  window.__grown = K.map((s) => s[1].tree);
+  window.__R0 = K.map((s) => s[1].recipe ? s[1].recipe.trunk[0][3] : 0.2);
 })();

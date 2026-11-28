@@ -25,7 +25,7 @@
       orders: 3, kids: 3, shrink: 0.56, open: 1.5, distal: 2.2, sprout: 0.2, inner: 0.5,
       core: 0.75, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 1, mid: null,
       sprigs: 2, size: 0.056, wide: 0.0055, seed: 23, R0: 0.2,
-      node: 1, turn: 0, pitch: 0.5, splay: 1.1, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8 }, opt);
+      node: 1, turn: 0, pitch: 1.4, splay: 0.4, fall: 0.35, lie: 0, norm: 0.7, tuft: 2, light: 1, rim: 0.8 }, opt);
     const r = rng(o.seed * 374761393);
 
     // where a branchlet may sprout: along a core branch, once the wood is thin enough to carry one

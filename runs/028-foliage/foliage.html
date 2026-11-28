@@ -34,7 +34,12 @@ select:focus-visible { outline: 2px solid var(--pick); outline-offset: 1px; }
 <script src="runs/028-foliage/sprays.js"></script>
 <script src="runs/028-foliage/atlas.js"></script>
 <script src="runs/028-foliage/twigs.js"></script>
-<script src="runs/028-foliage/foliage.js"></script>
+<script>
+// which trees to hang foliage on: this bench's one tree by default, or any other script that sets
+// window.Fantastic and window.__grown -- the ream, for instance. Written out so it loads in order, before the
+// viewer below, rather than duplicating two hundred lines of viewer per set of trees.
+document.write('<scr' + 'ipt src="' + (new URLSearchParams(location.search).get('data') || 'runs/028-foliage/foliage.js') + '"></scr' + 'ipt>');
+</script>
 <script>
 const T = THREE, $ = (id) => document.getElementById(id);
 const renderer = new T.WebGLRenderer({ canvas: $('view'), antialias: true });
@@ -74,7 +79,10 @@ function addShape(i) {
       while (fol.children.length) fol.remove(fol.children[0]);
       // only what the page itself knows; everything else is the generator's default, so there is one place to
       // change a rule and the two benches cannot drift apart
-      const q = {}; for (const k of ['from', 'every', 'len', 'droop', 'sprigs', 'size', 'core', 'cores', 'cant']) if (qs.get(k)) q[k] = +qs.get(k);
+      // prefixed, because the page's own query is not the generator's. `from` here meant the slice of the ream
+      // to grow AND the wood a branchlet may sit on: a ream asked for from=0 and every tree came out bare.
+      const q = {}; for (const k of ['from', 'every', 'len', 'droop', 'sprigs', 'size', 'core', 'cores', 'cant', 'light', 'rim', 'pitch', 'splay'])
+        if (qs.get('f_' + k)) q[k] = +qs.get('f_' + k);
       const Z = Twigs.build(gr, Object.assign({ R0: (window.__R0 || [0.2])[i], seed: 23 + i }, q, over || {}));
       const put = (buf, material, cast) => {
         if (!buf || !buf.idx.length) return;

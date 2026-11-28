@@ -5206,3 +5206,140 @@ neither tier could give on its own.
 Still to do: the core cards are flat discs turned to face out of the
 canopy, so they will swing when the camera orbits. They want either a
 slight bend or a third card crossing, and the LOD chain is still untouched.
+
+## A bench for one branchlet
+
+Every foliage judgement so far was made on a whole tree: minutes to
+grow, every branchlet behind its neighbours, and the one thing under
+test lost in six hundred copies of itself. `runs/028-foliage/one.html`
+grows no tree. A stub of core wood is made by hand -- thick to a
+shoulder, thin past it -- and the generator seats one branchlet on it
+where the wood first becomes thin enough. A grid of them, one cell per
+hypothesis, laid out afresh in the plane each view faces, camera fitted
+to the actual bounds.
+
+The shoulder is not decoration. A seat is taken at the FIRST step thin
+enough, so on an even taper that step is always a hair under the
+threshold, where the generator gives a branchlet barely a third of a
+chance of growing. A cell with no branchlet in it is not a quieter
+result, it is no result.
+
+Its one risk, worth remembering: a single system looks sparse because on
+a tree its neighbours fill the gaps. Density read off this bench alone
+would be wrong. What it is good for is everything else.
+
+### Three faults it found in the first two grids
+
+**The blocker cards were wound backwards.** Their faces looked INTO the
+canopy. They still drew, being double-sided, but every pixel shaded with
+its normal flipped -- against the dark ground hemisphere instead of the
+sky -- so the tier that should block light came out grey under a garnish
+that came out white. I had put that down to self-shadowing; switching
+shadow casting off changed nothing, which is what sent me to look at the
+winding. The sprig quads were wound the other way and so were fine, by
+luck rather than design.
+
+**The leaflet pairs were not pairs.** A leaflet is drawn along +x and
+turned by a signed angle, which only ever sent it up or down the RIGHT
+half of the cell. Both of a pair leaned the same way and the left half
+was blank by construction.
+
+**What was left stood at a quarter-turn to the midrib**, so it lay back
+along it: a forty-pixel stripe down a two-hundred-and-fifty-six pixel
+cell. Five sixths of every sprig card was empty. That is why the sheets
+read meagre however long the leaves were drawn -- the earlier round
+fixed their length and never asked about their angle.
+
+All three were in the texture or the index buffer, and none of them was
+visible on a whole tree. The grid of one branchlet, and a flat render of
+the atlas itself, found them in an hour.
+
+### One plant in both tiers
+
+The blocker was loose single leaves, the garnish pinnate sprays. Close
+up the crown held two plants again -- more quietly than the round discs
+and lances of the round before, but the same fault, and this is the
+third time it has come back in a different costume. Both tiers now draw
+one `drawFrond`: a midrib with leaflets in pairs. The garnish is one per
+cell, at a size where a card is a readable spray; the blocker is sixty
+of them, small and packed and turned every which way, under a sparser
+bed of larger ones. Nothing in the blocker is a shape the garnish does
+not also have.
+
+      grain   how many fronds the blocker packs in, and so how small
+              each is. At 1 one leaf of the blocker is the size of a
+              whole frond of the garnish and the mass reads as a plant
+              with huge leaves rather than as the same plant deeper in.
+              1.6 holds the two at one scale; 3.4 reads as moss.
+
+### The thing that mattered most was not geometry
+
+`deep` darkens the blocker alone. Nothing else all round made the two
+tiers legible AS two tiers. At one value they are a single white lump
+whatever their geometry does, because the blocker is the inside of the
+mass and belongs BELOW the garnish in value, not beside it. Every
+geometric fix -- size, count, placement, thickness -- was invisible
+until the values separated, and obvious afterwards.
+
+A caution with it: the darkening is baked into the texture, which is the
+cheap answer. What it stands in for is light not reaching the inside of
+a canopy, which a translucency or occlusion term would do properly and
+would also respond to where the sun is.
+
+### From the grids
+
+      cant 0.8       a plume has thickness. At 0 the tier is a pane of
+                     glass: a mass from the front, a line from the side.
+                     At 1.2 it breaks into separate visible sheets.
+      coreOn 1       plumes on two orders, not only the first. Kept to
+                     the first the mass sits inboard of everything, on
+                     the one stretch of the system with no leaves on it.
+      sprout 0.2     children held to the outer half of their parent put
+                     every leaf in the last quarter of a branchlet and
+                     left bare wire behind: a stick with a tuft on the
+                     end.
+      inner 0.5      and the first order carries leaves too.
+      every 0.055    0.08 left the crown wispy and holed and one-sided.
+      len 0.5
+      wide 0.0062    a card may be flat because a leaf is flat. A twig
+      crossed        is a line, and one ribbon edge-on is a hairline; a
+                     limb's worth edge-on at once is the hatched smear
+                     the close views kept showing. Two ribbons crossed
+                     at right angles, and a darker value, so what shows
+                     through reads as shadow and not as noise.
+
+Marginal at this scale, kept as dials and left at their old values:
+`lie` (whether a sprig keeps the plane it is seated in or swings round
+to face out of the canopy), `norm`, `turn`/`node` (leaves at nodes, in
+two ranks or a spiral, instead of at every step by chance). They change
+a branchlet visibly and a canopy hardly at all.
+
+`green` is there and off. A hue makes the canopy read as foliage
+instantly, and would make it the only coloured thing in the sketchbook.
+That is a decision about the whole book, not about foliage.
+
+### What surprised me
+
+That the fix was a value and not a shape. I spent the first half of the
+round on geometry -- card size, card count, where cards sit, how they
+tilt -- and every one of those reads clearly NOW, in the pictures taken
+after the blocker went dark, and read as nothing at all before.
+
+### What broke
+
+The batch harness rebuilt the foliage and never redrew the frame, so
+nine variants came back as nine copies of the frame before the first.
+The counts changed; the pictures did not. I had read two of those
+pictures as results before noticing the files were byte-identical.
+
+And a failed edit rolled back a whole file, leaving `grain` out of the
+defaults while the code that reads it stayed in. An unset grain draws an
+empty blocker; it only showed up because the batch always passed one.
+
+### Still open
+
+Branchlets still grow on low limbs a tree would have shed -- seed 4
+carries foliage down to its root plate, because `from` asks only how
+thick the wood is and nothing asks how deep in the canopy it sits. The
+garnish fronds are all one size. No baked atlas with normal and
+translucency maps. No LOD chain.

@@ -22,7 +22,7 @@
   // `deep`  darkens the blocker alone. Both tiers at one value make one white lump; the blocker is the inside
   //         of the mass and belongs below the garnish in value, not beside it.
   // `lift`, `range` and `green` are the value and hue of the whole plant.
-  const TEX = { blunt: 0.6, lift: 0, range: 1, green: 0, rake: 1.0, deep: 65, grain: 2.4 };
+  const TEX = { blunt: 0.6, lift: 0, range: 1, green: 0, rake: 1.0, deep: 65, grain: 1.6 };
   const DEF = Object.assign({}, TEX);
 
   function drawLeaf(x, ll, lw) {

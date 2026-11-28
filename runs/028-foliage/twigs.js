@@ -24,7 +24,7 @@
       lean: 1.25, out: 0.4, hold: 0.55, wander: 0.1,
       orders: 3, kids: 3, shrink: 0.56, open: 1.5, distal: 2.2, sprout: 0.2, inner: 0.5,
       core: 0.75, cores: 2, bend: 0, ride: 0, long: 1, cant: 0.8, coreOn: 1, mid: null,
-      sprigs: 3, size: 0.045, wide: 0.011, seed: 23, R0: 0.2,
+      sprigs: 3, size: 0.045, wide: 0.0062, seed: 23, R0: 0.2,
       node: 1, turn: 0, pitch: 0.5, splay: 1.1, fall: 0.35, lie: 0, norm: 0.7 }, opt);
     const r = rng(o.seed * 374761393);
 

@@ -22,7 +22,11 @@
   // `deep`  darkens the blocker alone. Both tiers at one value make one white lump; the blocker is the inside
   //         of the mass and belongs below the garnish in value, not beside it.
   // `lift`, `range` and `green` are the value and hue of the whole plant.
-  const TEX = { blunt: 0.6, lift: 0, range: 1, green: 0, rake: 1.0, deep: 95, grain: 1.6 };
+  // `heart`, `under`, `root` and `wash` are the shading BAKED into the cells. A card is flat, so the only
+  // depth it can have is painted on it: without these a plume is one value from its heart to its rim and reads
+  // as a cut-out of foliage rather than a handful of it.
+  const TEX = { blunt: 0.6, lift: 0, range: 1, green: 0, rake: 1.0, deep: 95, grain: 1.6,
+    heart: 46, under: 26, root: 34, wash: 0.5, stalk: 0.45 };
   const DEF = Object.assign({}, TEX);
 
   function drawLeaf(x, ll, lw) {
@@ -42,17 +46,20 @@
   // shorter than the last, with daylight between neighbours so a leaf is still a leaf when a dozen sheets
   // overlap. A leaflet is drawn along +x, so turning it by a signed angle only ever sends it up or down the
   // RIGHT half: the left one has to be turned past the half-circle to face the other way.
+  // `root` darkens a frond toward the base of its rachis: the leaflets near the stalk sit under the ones
+  // beyond them and under whatever else the branchlet carries, and the tip is what stands in the light.
   function drawFrond(x, H, reach0, pairs, rnd, base, span) {
-    x.strokeStyle = leafTone(rnd, base, span * 0.4); x.lineWidth = Math.max(0.7, H * 0.011);
+    x.strokeStyle = leafTone(rnd, base - TEX.root * TEX.stalk, span * 0.4); x.lineWidth = Math.max(0.7, H * 0.011);
     x.beginPath(); x.moveTo(0, 0); x.lineTo(0, -H * 0.97); x.stroke();
     for (let i = 0; i < pairs; i++) {
       const v = (i + 0.4) / (pairs + 0.25), y = -v * H, reach = reach0 * Math.pow(1 - v * 0.55, 0.8);
+      const bv = base - TEX.root * (1 - v);
       for (const sgn of [-1, 1]) {
         if (rnd() < 0.1) continue;
         const tilt = Math.PI / 2 - TEX.rake * (0.78 + 0.44 * rnd());
         const ll = reach * (0.82 + 0.28 * rnd()), lw = reach * (0.13 + 0.09 * rnd());
         x.save(); x.translate(0, y + (rnd() - 0.5) * H * 0.05); x.rotate(sgn > 0 ? -tilt : Math.PI + tilt);
-        x.fillStyle = leafTone(rnd, base, span); drawLeaf(x, ll, lw); x.restore();
+        x.fillStyle = leafTone(rnd, bv, span); drawLeaf(x, ll, lw); x.restore();
       }
     }
     // a frond ends in a terminal leaflet, not in a bare spike of rachis
@@ -60,6 +67,16 @@
     x.fillStyle = leafTone(rnd, base, span);
     drawLeaf(x, reach0 * 0.52 * (0.85 + 0.3 * rnd()), reach0 * 0.11);
     x.restore();
+  }
+
+  // A wash laid over what has already been drawn and NOWHERE else. `source-atop` keeps it inside the leaves'
+  // own alpha, so the shading follows the shapes instead of filling the gaps between them with a grey haze --
+  // which is what `multiply` would do, since multiplying into transparency gives opaque grey.
+  function wash(x, grad, ox, oy, w, h) {
+    if (TEX.wash <= 0) return;
+    x.save(); x.beginPath(); x.rect(ox, oy, w, h); x.clip();
+    x.globalCompositeOperation = 'source-atop'; x.globalAlpha = TEX.wash;
+    x.fillStyle = grad; x.fillRect(ox, oy, w, h); x.restore();
   }
 
   // TIER TWO's cell: one frond, four of them, at a size where a single card is a readable spray.
@@ -71,9 +88,15 @@
       // one are different leaves, and with the mirror that is eight to draw the garnish from rather than four
       // near-copies.
       const H = 196 + cell * 10, reach = 118 - cell * 11;
-      x.save(); x.translate((cell & 1) * 256 + 128, (cell >> 1) * 256 + 246 - (206 - H) * 0.5);
+      const ox = (cell & 1) * 256, oy = (cell >> 1) * 256, by = oy + 246 - (206 - H) * 0.5;
+      x.save(); x.translate(ox + 128, by);
       drawFrond(x, H, reach, 7 + cell * 2, rnd, 214, 38);
       x.restore();
+      // and a soft fall from the stalk upward over the whole spray, so a sprig reads as hanging off the twig
+      // rather than floating free of it
+      const g = x.createLinearGradient(0, by, 0, by - H);
+      g.addColorStop(0, 'rgba(0,0,0,0.55)'); g.addColorStop(0.45, 'rgba(0,0,0,0.16)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      wash(x, g, ox, oy, 256, 256);
     }
     const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
   }
@@ -90,11 +113,22 @@
       for (let i = 0; i < n; i++) {
         const a = rnd() * Math.PI * 2, rr = Math.pow(rnd(), pass ? 0.5 : 0.72) * far;
         const H = ((pass ? 120 : 172) + rnd() * 54) / G;
+        // the bed is UNDER the top pass and belongs below it in value. It was the paler of the two, which is
+        // the one thing a layer beneath another cannot be.
+        // `heart` then darkens by where in the cell a frond fell: the middle of a plume is the inside of a
+        // handful of foliage and sees no sky; its rim is the outside and sees nothing else.
+        const lit = pass ? 226 : 212 - TEX.under;
         x.save(); x.translate(256 + Math.cos(a) * rr, 256 + Math.sin(a) * rr * 0.92); x.rotate(rnd() * Math.PI * 2);
-        drawFrond(x, H, H * (0.26 + 0.1 * rnd()), 6 + Math.floor(rnd() * 5), rnd, (pass ? 212 : 226) - TEX.deep, 30);
+        drawFrond(x, H, H * (0.26 + 0.1 * rnd()), 6 + Math.floor(rnd() * 5), rnd,
+          lit - TEX.deep - TEX.heart * (1 - rr / far), 30);
         x.restore();
       }
     }
+    // and a continuous fall into the middle over the top of it all, so the step from one frond to the next
+    // does not read as the shading
+    const gr = x.createRadialGradient(256, 250, 8, 256, 256, 184);
+    gr.addColorStop(0, 'rgba(0,0,0,0.62)'); gr.addColorStop(0.5, 'rgba(0,0,0,0.34)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    wash(x, gr, 0, 0, 512, 512);
     const t = new T.CanvasTexture(c); t.anisotropy = 8; t.encoding = T.sRGBEncoding; return t;
   }
 
